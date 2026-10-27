@@ -339,4 +339,5 @@ if __name__ == '__main__':
             db.session.commit()
             print("[INFO] Usuario maestro 'admin@powerled.com' fue creado automaticamente.")
             
-    app.run(debug=True)
+    # Permite acceder desde la red local / celular (host='0.0.0.0')
+    app.run(host='0.0.0.0', port=5000, debug=True)
