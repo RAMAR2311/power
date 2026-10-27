@@ -1,6 +1,10 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+import os
+import uuid
+import time
+from werkzeug.utils import secure_filename
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app
 from flask_login import login_required, current_user
-from models import db, Cliente, Maneo, Product, ProductVariant, obtener_hora_bogota
+from models import db, Customer, CustomerCreditPayment, Cliente, Maneo, Sale, get_bogota_time
 
 clientes_bp = Blueprint('clientes_bp', __name__)
 
@@ -10,39 +14,34 @@ def index():
     q = request.args.get('q', '').strip()
     filtro = request.args.get('filtro', 'todos').strip()
 
-    query = Cliente.query
+    query = Customer.query
     if q:
         from sqlalchemy import or_
         query = query.filter(
             or_(
-                Cliente.nombre_o_razon_social.ilike(f'%{q}%'),
-                Cliente.telefono.ilike(f'%{q}%'),
-                Cliente.contacto_persona.ilike(f'%{q}%'),
-                Cliente.local_numero.ilike(f'%{q}%'),
-                Cliente.documento_o_nit.ilike(f'%{q}%')
+                Customer.nombre.ilike(f'%{q}%'),
+                Customer.documento.ilike(f'%{q}%'),
+                Customer.telefono.ilike(f'%{q}%'),
+                Customer.placa_frecuente.ilike(f'%{q}%')
             )
         )
 
-    todos_los_clientes = Cliente.query.all()
-    # Calcular KPIs globales del módulo
-    total_clientes = len(todos_los_clientes)
-    total_saldo_calle = sum(c.saldo_maneos_pendiente for c in todos_los_clientes)
-    total_unidades_calle = sum(c.unidades_maneos_pendientes for c in todos_los_clientes)
-    clientes_con_deuda_count = sum(1 for c in todos_los_clientes if c.saldo_maneos_pendiente > 0)
+    todos = Customer.query.order_by(Customer.nombre.asc()).all()
+    total_clientes = len(todos)
+    total_cartera = sum(c.saldo_pendiente for c in todos)
+    clientes_con_deuda_count = sum(1 for c in todos if c.saldo_pendiente > 0)
 
-    lista_clientes = query.order_by(Cliente.nombre_o_razon_social.asc()).all()
-
+    lista_clientes = query.order_by(Customer.nombre.asc()).all()
     if filtro == 'con_deuda':
-        lista_clientes = [c for c in lista_clientes if c.saldo_maneos_pendiente > 0]
+        lista_clientes = [c for c in lista_clientes if c.saldo_pendiente > 0]
     elif filtro == 'al_dia':
-        lista_clientes = [c for c in lista_clientes if c.saldo_maneos_pendiente == 0]
+        lista_clientes = [c for c in lista_clientes if c.saldo_pendiente <= 0]
 
     return render_template(
         'clientes/index.html',
         clientes=lista_clientes,
         total_clientes=total_clientes,
-        total_saldo_calle=total_saldo_calle,
-        total_unidades_calle=total_unidades_calle,
+        total_saldo_calle=total_cartera,
         clientes_con_deuda_count=clientes_con_deuda_count,
         q=q,
         filtro=filtro
@@ -52,165 +51,86 @@ def index():
 @login_required
 def nuevo():
     if request.method == 'POST':
-        nombre = request.form.get('nombre', '').strip()
-        contacto_persona = request.form.get('contacto_persona', '').strip()
-        local_numero = request.form.get('local_numero', '').strip()
-        telefono = request.form.get('telefono', '').strip()
-        email = request.form.get('email', '').strip()
-        direccion = request.form.get('direccion', '').strip()
-        documento_o_nit = request.form.get('documento_o_nit', '').strip() or None
-        notas = request.form.get('notas', '').strip()
+        nombre = (request.form.get('nombre') or '').strip()
+        documento = (request.form.get('documento') or request.form.get('documento_o_nit') or '').strip() or None
+        telefono = (request.form.get('telefono') or '').strip()
+        direccion = (request.form.get('direccion') or '').strip()
+        email = (request.form.get('email') or '').strip()
+        placa_frecuente = (request.form.get('placa_frecuente') or '').strip().upper()
+        lista_precio_default = (request.form.get('lista_precio_default') or 'cliente_final').strip()
+        limite_credito = float(request.form.get('limite_credito') or 0.0)
 
         if not nombre:
-            flash('El nombre del local o persona es obligatorio.', 'danger')
+            flash('El nombre del cliente es obligatorio.', 'danger')
             return render_template('clientes/form.html', cliente=None)
 
-        if documento_o_nit:
-            existente = Cliente.query.filter_by(documento_o_nit=documento_o_nit).first()
-            if existente:
-                flash(f'Ya existe un cliente con el documento/NIT "{documento_o_nit}".', 'warning')
-                return render_template('clientes/form.html', cliente=None)
+        if documento and Customer.query.filter_by(documento=documento).first():
+            flash(f'Ya existe un cliente registrado con el documento/NIT "{documento}".', 'warning')
+            return render_template('clientes/form.html', cliente=None)
 
-        nuevo_cliente = Cliente(
-            nombre_o_razon_social=nombre,
-            contacto_persona=contacto_persona,
-            local_numero=local_numero,
+        nuevo_c = Customer(
+            nombre=nombre,
+            documento=documento,
             telefono=telefono,
-            email=email,
             direccion=direccion,
-            documento_o_nit=documento_o_nit,
-            notas=notas,
-            creado_por_id=current_user.id
+            email=email,
+            placa_frecuente=placa_frecuente,
+            lista_precio_default=lista_precio_default,
+            limite_credito=limite_credito
         )
-
         try:
-            db.session.add(nuevo_cliente)
+            db.session.add(nuevo_c)
+            db.session.flush()
+            if placa_frecuente:
+                from routes.vehiculos import sincronizar_vehiculo
+                sincronizar_vehiculo(placa=placa_frecuente, cliente_id=nuevo_c.id)
             db.session.commit()
-            flash(f'Cliente/Local "{nombre}" registrado exitosamente.', 'success')
-            return redirect(url_for('clientes_bp.estado_cuenta', id=nuevo_cliente.id))
+            flash(f'Cliente "{nombre}" registrado exitosamente.', 'success')
+            return redirect(url_for('clientes_bp.estado_cuenta', id=nuevo_c.id))
         except Exception as e:
             db.session.rollback()
             flash(f'Error al guardar el cliente: {str(e)}', 'danger')
 
     return render_template('clientes/form.html', cliente=None)
 
-@clientes_bp.route('/api/crear_rapido', methods=['POST'])
-@login_required
-def api_crear_rapido():
-    """Endpoint AJAX para crear un local o persona rápidamente desde la vista de Maneos."""
-    data = request.get_json(silent=True) or request.form
-    nombre = (data.get('nombre') or '').strip()
-    local_numero = (data.get('local_numero') or '').strip()
-    contacto_persona = (data.get('contacto_persona') or '').strip()
-    telefono = (data.get('telefono') or '').strip()
-
-    if not nombre:
-        return jsonify({'success': False, 'message': 'El nombre del local o persona es obligatorio.'}), 400
-
-    # Buscar si ya existe uno con ese nombre para evitar duplicados accidentales
-    existente = Cliente.query.filter(Cliente.nombre_o_razon_social.ilike(nombre)).first()
-    if existente:
-        return jsonify({
-            'success': True,
-            'cliente': {
-                'id': existente.id,
-                'nombre': existente.nombre_o_razon_social,
-                'local': existente.local_numero or '',
-                'saldo': existente.saldo_maneos_pendiente
-            },
-            'ya_existia': True
-        })
-
-    nuevo_c = Cliente(
-        nombre_o_razon_social=nombre,
-        local_numero=local_numero,
-        contacto_persona=contacto_persona,
-        telefono=telefono,
-        creado_por_id=current_user.id
-    )
-
-    try:
-        db.session.add(nuevo_c)
-        db.session.commit()
-        return jsonify({
-            'success': True,
-            'cliente': {
-                'id': nuevo_c.id,
-                'nombre': nuevo_c.nombre_o_razon_social,
-                'local': nuevo_c.local_numero or '',
-                'saldo': 0
-            },
-            'ya_existia': False
-        })
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'success': False, 'message': f'Error en base de datos: {str(e)}'}), 500
-
-@clientes_bp.route('/<int:id>/estado_cuenta', methods=['GET'])
-@login_required
-def estado_cuenta(id):
-    cliente = Cliente.query.get_or_404(id)
-
-    # Ordenar maneos
-    maneos_ordenados = sorted(cliente.maneos, key=lambda m: m.fecha_prestamo or obtener_hora_bogota(), reverse=True)
-    maneos_activos = [m for m in maneos_ordenados if m.estado == 'PENDIENTE']
-    maneos_historial = [m for m in maneos_ordenados if m.estado != 'PENDIENTE']
-
-    saldo_pendiente = cliente.saldo_maneos_pendiente
-    unidades_pendientes = cliente.unidades_maneos_pendientes
-    total_prestado = cliente.total_historico_prestado
-    total_cobrado = cliente.total_historico_cobrado
-    total_devuelto = cliente.total_historico_devuelto
-
-    return render_template(
-        'clientes/estado_cuenta.html',
-        cliente=cliente,
-        maneos_activos=maneos_activos,
-        maneos_historial=maneos_historial,
-        saldo_pendiente=saldo_pendiente,
-        unidades_pendientes=unidades_pendientes,
-        total_prestado=total_prestado,
-        total_cobrado=total_cobrado,
-        total_devuelto=total_devuelto
-    )
-
 @clientes_bp.route('/<int:id>/editar', methods=['GET', 'POST'])
 @login_required
 def editar(id):
-    cliente = Cliente.query.get_or_404(id)
-
+    cliente = Customer.query.get_or_404(id)
     if request.method == 'POST':
-        nombre = request.form.get('nombre', '').strip()
-        contacto_persona = request.form.get('contacto_persona', '').strip()
-        local_numero = request.form.get('local_numero', '').strip()
-        telefono = request.form.get('telefono', '').strip()
-        email = request.form.get('email', '').strip()
-        direccion = request.form.get('direccion', '').strip()
-        documento_o_nit = request.form.get('documento_o_nit', '').strip() or None
-        notas = request.form.get('notas', '').strip()
+        nombre = (request.form.get('nombre') or '').strip()
+        documento = (request.form.get('documento') or request.form.get('documento_o_nit') or '').strip() or None
+        telefono = (request.form.get('telefono') or '').strip()
+        direccion = (request.form.get('direccion') or '').strip()
+        email = (request.form.get('email') or '').strip()
+        placa_frecuente = (request.form.get('placa_frecuente') or '').strip().upper()
+        lista_precio_default = (request.form.get('lista_precio_default') or 'cliente_final').strip()
+        limite_credito = float(request.form.get('limite_credito') or 0.0)
 
         if not nombre:
-            flash('El nombre del local o persona es obligatorio.', 'danger')
+            flash('El nombre del cliente es obligatorio.', 'danger')
             return render_template('clientes/form.html', cliente=cliente)
 
-        if documento_o_nit and documento_o_nit != cliente.documento_o_nit:
-            existente = Cliente.query.filter_by(documento_o_nit=documento_o_nit).first()
-            if existente:
-                flash(f'Ya existe otro cliente con el documento/NIT "{documento_o_nit}".', 'warning')
+        if documento and documento != cliente.documento:
+            if Customer.query.filter_by(documento=documento).first():
+                flash(f'Ya existe otro cliente con el documento "{documento}".', 'warning')
                 return render_template('clientes/form.html', cliente=cliente)
 
-        cliente.nombre_o_razon_social = nombre
-        cliente.contacto_persona = contacto_persona
-        cliente.local_numero = local_numero
+        cliente.nombre = nombre
+        cliente.documento = documento
         cliente.telefono = telefono
-        cliente.email = email
         cliente.direccion = direccion
-        cliente.documento_o_nit = documento_o_nit
-        cliente.notas = notas
+        cliente.email = email
+        cliente.placa_frecuente = placa_frecuente
+        cliente.lista_precio_default = lista_precio_default
+        cliente.limite_credito = limite_credito
 
         try:
+            if placa_frecuente:
+                from routes.vehiculos import sincronizar_vehiculo
+                sincronizar_vehiculo(placa=placa_frecuente, cliente_id=cliente.id)
             db.session.commit()
-            flash(f'Datos del cliente "{nombre}" actualizados correctamente.', 'success')
+            flash(f'Datos de "{nombre}" actualizados correctamente.', 'success')
             return redirect(url_for('clientes_bp.estado_cuenta', id=cliente.id))
         except Exception as e:
             db.session.rollback()
@@ -218,24 +138,150 @@ def editar(id):
 
     return render_template('clientes/form.html', cliente=cliente)
 
+@clientes_bp.route('/<int:id>/estado_cuenta', methods=['GET'])
+@clientes_bp.route('/<int:id>/estado-cuenta', methods=['GET'])
+@login_required
+def estado_cuenta(id):
+    cliente = Customer.query.get_or_404(id)
+    ventas_credito = [
+        v for v in sorted(cliente.ventas, key=lambda x: x.fecha_venta or get_bogota_time(), reverse=True)
+        if (v.estado or 'ACTIVO') == 'ACTIVO' and (
+            (v.metodo_pago or '').upper() == 'CREDITO' or
+            any((p.metodo_pago or '').upper() == 'CREDITO' for p in v.pagos)
+        )
+    ]
+    abonos = sorted([a for a in cliente.abonos if (a.estado or 'ACTIVO') == 'ACTIVO'], key=lambda x: x.fecha or get_bogota_time(), reverse=True)
+
+    return render_template(
+        'clientes/estado_cuenta.html',
+        cliente=cliente,
+        ventas_credito=ventas_credito,
+        abonos=abonos,
+        saldo_pendiente=cliente.saldo_pendiente,
+        total_creditos=cliente.total_creditos,
+        total_abonos=cliente.total_abonos
+    )
+
+@clientes_bp.route('/<int:id>/abonar', methods=['POST'])
+@login_required
+def registrar_abono(id):
+    cliente = Customer.query.get_or_404(id)
+    monto_raw = (request.form.get('monto') or '0').replace('.', '').replace(',', '').strip()
+    metodo_pago = (request.form.get('metodo_pago') or 'EFECTIVO').strip().upper()
+    nota = (request.form.get('nota') or '').strip()
+
+    try:
+        monto = float(monto_raw)
+    except ValueError:
+        monto = 0.0
+
+    if monto <= 0:
+        flash('El monto del abono debe ser mayor a $0.', 'danger')
+        return redirect(url_for('clientes_bp.estado_cuenta', id=cliente.id))
+
+    comprobante_url = None
+    if 'comprobante' in request.files:
+        file = request.files['comprobante']
+        if file and file.filename != '':
+            sec_name = secure_filename(file.filename)
+            ext = sec_name.rsplit('.', 1)[-1].lower() if '.' in sec_name else 'jpg'
+            filename = f"abono_cli_{cliente.id}_{uuid.uuid4().hex[:6]}_{int(time.time())}.{ext}"
+            upload_dir = os.path.join(current_app.config['UPLOAD_FOLDER'], 'abonos')
+            os.makedirs(upload_dir, exist_ok=True)
+            file.save(os.path.join(upload_dir, filename))
+            comprobante_url = f"uploads/abonos/{filename}"
+
+    abono = CustomerCreditPayment(
+        cliente_id=cliente.id,
+        monto=monto,
+        fecha=get_bogota_time(),
+        metodo_pago=metodo_pago,
+        comprobante_url=comprobante_url,
+        usuario_id=current_user.id,
+        estado='ACTIVO',
+        nota=nota
+    )
+    try:
+        db.session.add(abono)
+        db.session.commit()
+        flash(f'Abono por ${monto:,.0f} COP registrado exitosamente para {cliente.nombre}.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al registrar el abono: {str(e)}', 'danger')
+
+    return redirect(url_for('clientes_bp.estado_cuenta', id=cliente.id))
+
 @clientes_bp.route('/<int:id>/eliminar', methods=['POST'])
 @login_required
 def eliminar(id):
-    cliente = Cliente.query.get_or_404(id)
-
-    if cliente.saldo_maneos_pendiente > 0 or len(cliente.maneos_activos) > 0:
-        flash(f'No es posible eliminar a "{cliente.nombre_o_razon_social}" porque tiene {len(cliente.maneos_activos)} maneos pendientes por resolver (Saldo: ${cliente.saldo_maneos_pendiente:,.0f}).', 'danger')
+    cliente = Customer.query.get_or_404(id)
+    if cliente.saldo_pendiente > 0:
+        flash(f'No se puede eliminar a "{cliente.nombre}" porque tiene un saldo pendiente de ${cliente.saldo_pendiente:,.0f}.', 'danger')
         return redirect(url_for('clientes_bp.index'))
 
     try:
-        # Desvincular maneos históricos para no romper integridad
-        for m in cliente.maneos:
-            m.cliente_id = None
         db.session.delete(cliente)
         db.session.commit()
-        flash('Cliente / Local eliminado exitosamente.', 'success')
+        flash('Cliente eliminado del directorio.', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'Error al eliminar cliente: {str(e)}', 'danger')
-
     return redirect(url_for('clientes_bp.index'))
+
+@clientes_bp.route('/api/crear_rapido', methods=['POST'])
+@login_required
+def api_crear_rapido():
+    """Endpoint AJAX compatible con Maneos y Caja POS."""
+    data = request.get_json(silent=True) or request.form
+    nombre = (data.get('nombre') or '').strip()
+    documento = (data.get('documento') or '').strip() or None
+    telefono = (data.get('telefono') or '').strip()
+    placa = (data.get('placa_frecuente') or data.get('placa') or '').strip().upper()
+    local_numero = (data.get('local_numero') or '').strip()
+
+    if not nombre:
+        return jsonify({'success': False, 'message': 'El nombre es obligatorio.'}), 400
+
+    # Crear también en Customer y Cliente legacy si aplica
+    cust = None
+    if documento:
+        cust = Customer.query.filter_by(documento=documento).first()
+    if not cust:
+        cust = Customer.query.filter(Customer.nombre.ilike(nombre)).first()
+    if not cust:
+        cust = Customer(
+            nombre=nombre,
+            documento=documento,
+            telefono=telefono,
+            placa_frecuente=placa,
+            lista_precio_default='cliente_final'
+        )
+        db.session.add(cust)
+
+    cli_legacy = Cliente.query.filter(Cliente.nombre_o_razon_social.ilike(nombre)).first()
+    if not cli_legacy:
+        cli_legacy = Cliente(
+            nombre_o_razon_social=nombre,
+            documento_o_nit=documento,
+            local_numero=local_numero,
+            telefono=telefono,
+            creado_por_id=current_user.id
+        )
+        db.session.add(cli_legacy)
+
+    db.session.commit()
+    return jsonify({
+        'success': True,
+        'customer_id': cust.id,
+        'cliente': {
+            'id': cli_legacy.id,
+            'customer_id': cust.id,
+            'nombre': cust.nombre,
+            'documento': cust.documento or '',
+            'telefono': cust.telefono or '',
+            'placa': cust.placa_frecuente or '',
+            'lista_precio': cust.lista_precio_default,
+            'local': local_numero,
+            'saldo': cust.saldo_pendiente
+        }
+    })

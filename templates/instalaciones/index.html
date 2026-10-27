@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}POWER LED | Instalaciones y Liquidación de Técnicos{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h2 class="fw-bold text-white m-0" style="font-family: var(--font-heading);">
+            <i class="fa-solid fa-screwdriver-wrench me-2" style="color: #029CC2;"></i>Instalaciones & Liquidación de Mano de Obra
+        </h2>
+        <small class="text-muted">Catálogo de servicios de taller, directorio de técnicos instaladores y liquidación de comisiones</small>
+    </div>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-info rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#modalNuevoInstalador">
+            <i class="fa-solid fa-user-plus me-1"></i> + Nuevo Técnico
+        </button>
+        <button type="button" class="btn btn-blue rounded-pill px-4 fw-bold shadow" data-bs-toggle="modal" data-bs-target="#modalNuevoServicio">
+            <i class="fa-solid fa-plus me-1"></i> + Nuevo Servicio
+        </button>
+    </div>
+</div>
+
+<!-- KPIs de Liquidación -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card card-custom p-3" style="border-left: 4px solid #029CC2 !important;">
+            <span class="text-muted small fw-bold text-uppercase">Vehículos Atendidos</span>
+            <h3 class="fw-bolder text-white mt-1 mb-0" style="font-family: var(--font-heading);">{{ vehiculos_atendidos }}</h3>
+            <small class="text-muted">{{ jobs|length }} instalaciones registradas</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-custom p-3" style="border-left: 4px solid #40A435 !important;">
+            <span class="text-muted small fw-bold text-uppercase">Facturado en Servicios</span>
+            <h3 class="fw-bolder mt-1 mb-0" style="color: #40A435; font-family: var(--font-heading);">${{ (total_facturado_servicios)|cop }}</h3>
+            <small class="text-muted">Cobrado a clientes en caja</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-custom p-3" style="border-left: 4px solid #fbbf24 !important;">
+            <span class="text-muted small fw-bold text-uppercase">Total Mano de Obra Técnicos</span>
+            <h3 class="fw-bolder text-warning mt-1 mb-0" style="font-family: var(--font-heading);">${{ (total_mano_obra)|cop }}</h3>
+            <small class="text-muted">Comisiones generadas en el periodo</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-custom p-3" style="border-left: 4px solid #E31313 !important;">
+            <span class="text-muted small fw-bold text-uppercase">Pendiente por Liquidar</span>
+            <h3 class="fw-bolder mt-1 mb-0" style="color: #E31313; font-family: var(--font-heading);">${{ (total_pendiente_pagar)|cop }}</h3>
+            <small class="text-muted">Por pagar a instaladores</small>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Columna Izquierda: Catálogo de Servicios e Instaladores -->
+    <div class="col-lg-5">
+        <div class="card card-custom p-4 mb-4">
+            <h5 class="fw-bold text-white mb-3" style="font-family: var(--font-heading);">
+                <i class="fa-solid fa-list-check me-2" style="color: #029CC2;"></i>Catálogo de Servicios de Instalación
+            </h5>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>SERVICIO</th>
+                            <th class="text-end">COBRO CLIENTE</th>
+                            <th class="text-end">PAGO TÉCNICO</th>
+                            <th class="text-end"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in servicios %}
+                        <tr>
+                            <td class="fw-semibold text-white">{{ s.nombre }}</td>
+                            <td class="text-end fw-bold" style="color: #40A435;">${{ (s.precio_estandar)|cop }}</td>
+                            <td class="text-end fw-bold" style="color: #029CC2;">${{ (s.costo_instalador)|cop }}</td>
+                            <td class="text-end">
+                                <form action="{{ url_for('instalaciones_bp.eliminar_servicio', id=s.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Desactivar este servicio?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit" class="btn btn-sm text-danger p-1"><i class="fa-solid fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="4" class="text-center text-muted py-3">Sin servicios registrados</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold text-white mb-3" style="font-family: var(--font-heading);">
+                <i class="fa-solid fa-users-gear me-2" style="color: #40A435;"></i>Directorio de Técnicos Instaladores
+            </h5>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>TÉCNICO</th>
+                            <th>DOCUMENTO / TEL</th>
+                            <th class="text-center">ESTADO</th>
+                            <th class="text-end"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in instaladores %}
+                        <tr>
+                            <td class="fw-bold text-white">{{ i.nombre }}</td>
+                            <td class="small text-muted">{{ i.documento or 'S/D' }} · {{ i.telefono or '' }}</td>
+                            <td class="text-center">
+                                {% if i.activo %}
+                                    <span class="badge" style="background: rgba(64,164,53,0.2); color: #40A435;">Activo</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactivo</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <form action="{{ url_for('instalaciones_bp.toggle_instalador', id=i.id) }}" method="POST" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-0 small">
+                                        {{ 'Desactivar' if i.activo else 'Activar' }}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Columna Derecha: Reporte y Liquidación por Técnico -->
+    <div class="col-lg-7">
+        <div class="card card-custom p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                <h5 class="fw-bold text-white m-0" style="font-family: var(--font-heading);">
+                    <i class="fa-solid fa-file-invoice-dollar me-2" style="color: #029CC2;"></i>Liquidación de Mano de Obra por Técnico
+                </h5>
+            </div>
+
+            <form method="GET" action="{{ url_for('instalaciones_bp.index') }}" class="row g-2 mb-3 p-3 rounded-3" style="background: #161b22; border: 1px solid #21262d;">
+                <div class="col-md-3">
+                    <label class="form-label small text-muted mb-1">Desde</label>
+                    <input type="date" name="fecha_inicio" class="form-control form-control-sm" value="{{ fecha_inicio }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted mb-1">Hasta</label>
+                    <input type="date" name="fecha_fin" class="form-control form-control-sm" value="{{ fecha_fin }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small text-muted mb-1">Técnico Instalador</label>
+                    <select name="installer_id" class="form-select form-select-sm">
+                        <option value="">Todos los Técnicos</option>
+                        {% for i in instaladores %}
+                            <option value="{{ i.id }}" {% if installer_id == i.id %}selected{% endif %}>{{ i.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-blue btn-sm w-100 fw-bold">Consultar</button>
+                </div>
+            </form>
+
+            <form action="{{ url_for('instalaciones_bp.liquidar_trabajos') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input type="hidden" name="installer_id" value="{{ installer_id or '' }}"/>
+                <input type="hidden" name="fecha_inicio" value="{{ fecha_inicio }}"/>
+                <input type="hidden" name="fecha_fin" value="{{ fecha_fin }}"/>
+
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th width="35"><input type="checkbox" onclick="document.querySelectorAll('.chk-job').forEach(c => c.checked = this.checked)"></th>
+                                <th>FECHA / VENTA</th>
+                                <th>TÉCNICO / VEHÍCULO</th>
+                                <th>SERVICIO</th>
+                                <th class="text-end">COBRADO</th>
+                                <th class="text-end">COMISIÓN</th>
+                                <th class="text-center">ESTADO</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for j in jobs %}
+                            <tr>
+                                <td>
+                                    {% if not j.liquidado %}
+                                        <input type="checkbox" name="job_ids[]" value="{{ j.id }}" class="chk-job">
+                                    {% endif %}
+                                </td>
+                                <td class="small">
+                                    <div>{{ j.fecha.strftime('%d/%m/%Y %H:%M') if j.fecha else '' }}</div>
+                                    <a href="{{ url_for('sales_bp.imprimir_ticket', sale_id=j.sale_id) }}" target="_blank" style="color: #029CC2;">Ticket #{{ j.sale_id }}</a>
+                                </td>
+                                <td>
+                                    <strong class="text-white d-block">{{ j.tecnico.nombre if j.tecnico else 'Técnico' }}</strong>
+                                    {% if j.venta and j.venta.placa_vehiculo %}
+                                        <span class="badge bg-warning text-dark font-monospace">Placa: {{ j.venta.placa_vehiculo }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ j.servicio.nombre if j.servicio else 'Instalación' }}</td>
+                                <td class="text-end">${{ (j.precio_cobrado)|cop }}</td>
+                                <td class="text-end fw-bold" style="color: #029CC2;">${{ (j.costo_instalador)|cop }}</td>
+                                <td class="text-center">
+                                    {% if j.liquidado %}
+                                        <span class="badge" style="background: rgba(64,164,53,0.2); color: #40A435;">LIQUIDADO</span>
+                                    {% else %}
+                                        <span class="badge" style="background: rgba(227,19,19,0.2); color: #E31313;">PENDIENTE</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">No hay instalaciones registradas en este rango de fechas.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% if total_pendiente_pagar > 0 %}
+                <div class="d-flex justify-content-between align-items-center p-3 rounded-3" style="background: rgba(64,164,53,0.12); border: 1px solid #40A435;">
+                    <div>
+                        <span class="small text-muted d-block">Total Pendiente Seleccionado / Filtrado:</span>
+                        <strong class="fs-5" style="color: #40A435;">${{ (total_pendiente_pagar)|cop }} COP</strong>
+                    </div>
+                    <button type="submit" class="btn rounded-pill px-4 fw-bold text-white" style="background: #40A435;" onclick="return confirm('¿Confirmar pago y liquidación de mano de obra?');">
+                        <i class="fa-solid fa-check-double me-1"></i> Marcar como Liquidado
+                    </button>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nuevo Servicio -->
+<div class="modal fade" id="modalNuevoServicio" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: #0d1117; border: 1px solid #21262d;">
+            <div class="modal-header border-bottom" style="border-color: #21262d !important;">
+                <h5 class="modal-title fw-bold text-white">Nuevo Servicio de Instalación</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('instalaciones_bp.crear_servicio') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-white">Nombre del Servicio *</label>
+                        <input type="text" name="nombre" class="form-control" required placeholder="Ej: Instalación Exploradoras LED + Switch">
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold" style="color: #40A435;">Precio al Cliente (COP)</label>
+                            <input type="number" step="1" name="precio_estandar" class="form-control fw-bold" required value="30000">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold" style="color: #029CC2;">Pago Mano de Obra Técnico</label>
+                            <input type="number" step="1" name="costo_instalador" class="form-control fw-bold" required value="15000">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top" style="border-color: #21262d !important;">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-blue rounded-pill px-4 fw-bold">Guardar Servicio</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nuevo Instalador -->
+<div class="modal fade" id="modalNuevoInstalador" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: #0d1117; border: 1px solid #21262d;">
+            <div class="modal-header border-bottom" style="border-color: #21262d !important;">
+                <h5 class="modal-title fw-bold text-white">Registrar Técnico Instalador</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('instalaciones_bp.crear_instalador') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-white">Nombre Completo *</label>
+                        <input type="text" name="nombre" class="form-control" required placeholder="Ej: Andrés Gómez">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-white">Cédula / Documento</label>
+                        <input type="text" name="documento" class="form-control" placeholder="Ej: 1098765432">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label fw-bold text-white">Teléfono / WhatsApp</label>
+                        <input type="text" name="telefono" class="form-control" placeholder="Ej: 3001234567">
+                    </div>
+                </div>
+                <div class="modal-footer border-top" style="border-color: #21262d !important;">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-blue rounded-pill px-4 fw-bold">Registrar Técnico</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

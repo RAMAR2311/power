@@ -1,11 +1,26 @@
 {% extends "base.html" %}
 
+{% block title %}POWER LED | Iniciar Sesión{% endblock %}
+
 {% block content %}
 <style>
     body {
+        background-color: var(--power-bg, #000000) !important;
+        background-image: 
+            radial-gradient(circle at 20% 25%, rgba(227, 19, 19, 0.12) 0%, transparent 45%),
+            radial-gradient(circle at 50% 75%, rgba(64, 164, 53, 0.1) 0%, transparent 45%),
+            radial-gradient(circle at 82% 28%, rgba(2, 156, 194, 0.15) 0%, transparent 48%) !important;
+    }
+
+    html[data-bs-theme="light"] .login-card,
+    html[data-bs-theme="light"] .brand-hero-card {
         background-color: #FFFFFF !important;
-        background-image: radial-gradient(circle at 85% 15%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
-                          radial-gradient(circle at 15% 85%, rgba(31, 31, 31, 0.02) 0%, transparent 50%) !important;
+        border-color: #E2E8F0 !important;
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08), 0 0 25px rgba(2, 156, 194, 0.1) !important;
+    }
+
+    html[data-bs-theme="light"] .login-logo-img {
+        content: url("{{ url_for('static', filename='img/logo-power-led.png') }}");
     }
 
     .navbar-custom {
@@ -13,12 +28,12 @@
     }
 
     .login-card {
-        background-color: #FFFFFF;
-        border: 1px solid #E5E7EB;
+        background-color: #0d1117 !important;
+        border: 1px solid #21262d !important;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.05), 0 0 25px rgba(212, 175, 55, 0.06);
-        border-radius: 24px;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(2, 156, 194, 0.14) !important;
+        border-radius: 24px !important;
     }
 
     .login-card::before {
@@ -27,95 +42,133 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 6px;
-        background: var(--brand-gradient);
+        height: 4px;
+        background: linear-gradient(90deg, #E31313 0%, #40A435 50%, #029CC2 100%);
     }
 
     .login-card .form-control {
-        background-color: #FFFFFF !important;
-        border: 1px solid #E5E7EB !important;
-        color: #111827 !important;
+        background-color: #161b22 !important;
+        border: 1px solid #30363d !important;
+        color: #FFFFFF !important;
         font-family: var(--font-body);
         transition: all 0.2s ease;
     }
 
     .login-card .form-control:focus {
-        border-color: #D4AF37 !important;
-        box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.2) !important;
-        background-color: #FFFFFF !important;
+        border-color: #029CC2 !important;
+        box-shadow: 0 0 0 4px rgba(2, 156, 194, 0.28) !important;
+        background-color: #0d1117 !important;
+        color: #FFFFFF !important;
+    }
+
+    .login-card .input-group-text {
+        background-color: #161b22 !important;
+        border: 1px solid #30363d !important;
+        color: #029CC2 !important;
     }
 
     .login-brand-display {
         font-family: var(--font-display);
         font-weight: 900;
-        letter-spacing: 1.5px;
+        letter-spacing: 2px;
     }
 
     .brand-hero-card {
-        background-color: #FBFBFC;
-        border: 1px solid #E5E7EB;
+        background-color: #0d1117 !important;
+        border: 1px solid #21262d !important;
         border-radius: 24px;
-        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.04);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(2, 156, 194, 0.1);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .brand-hero-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #E31313 0%, #40A435 50%, #029CC2 100%);
     }
     
     .brand-hero-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 25px 55px rgba(212, 175, 55, 0.12);
+        box-shadow: 0 30px 65px rgba(2, 156, 194, 0.22);
+        border-color: rgba(2, 156, 194, 0.5) !important;
     }
 
     .btn-login-submit {
-        background: #E5B842 !important;
-        color: #111111 !important;
-        border: 1px solid #D4AF37;
+        background: linear-gradient(135deg, #029CC2 0%, #017896 100%) !important;
+        color: #FFFFFF !important;
+        border: 1px solid #029CC2 !important;
+        font-family: var(--font-display);
+        letter-spacing: 1.5px;
         transition: all 0.25s ease;
+        box-shadow: 0 6px 20px rgba(2, 156, 194, 0.35);
     }
 
     .btn-login-submit:hover {
-        background: #D4AF37 !important;
-        color: #111111 !important;
+        background: linear-gradient(135deg, #04b4df 0%, #029CC2 100%) !important;
+        color: #FFFFFF !important;
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+        box-shadow: 0 8px 28px rgba(2, 156, 194, 0.55);
+    }
+
+    .claim-pill {
+        display: inline-block;
+        font-family: var(--font-heading);
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.25em;
+        color: #029CC2;
+        background: rgba(2, 156, 194, 0.1);
+        border: 1px solid rgba(2, 156, 194, 0.35);
+        padding: 0.35rem 1rem;
+        border-radius: 50px;
+        text-transform: uppercase;
     }
 </style>
 
-<div class="row align-items-center justify-content-evenly" style="min-height: 88vh;">
-    <!-- Columna Izquierda: Formulario de Acceso -->
+<div class="row align-items-center justify-content-evenly" style="min-height: 85vh;">
+    <!-- Columna Izquierda: Formulario de Acceso POWER LED -->
     <div class="col-md-6 col-lg-5 mb-4">
         <div class="card login-card p-4 p-md-5">
             <div class="text-center mb-4">
-                <div class="mb-3 d-inline-block">
-                    <img src="{{ url_for('static', filename='img/Maripocell.png') }}" 
-                         alt="Maripocell Logo" 
-                         class="img-fluid rounded-4 shadow-sm" 
-                         style="width: 100px; height: 100px; object-fit: contain; background: #FFFFFF; padding: 6px; border: 2px solid #E5E7EB;">
+                <div class="mb-3 d-inline-block p-3" style="max-width: 220px;">
+                    <img src="{{ url_for('static', filename='img/logo-power-led-dark.png') }}" 
+                         alt="POWER LED Logo" 
+                         class="img-fluid login-logo-img" 
+                         style="width: 100%; height: auto; object-fit: contain;">
                 </div>
-                <div class="d-flex justify-content-center align-items-center mb-1">
-                    <span class="fs-2 fw-bold font-brand" style="color: #111827; font-family: var(--font-display); font-weight: 900; letter-spacing: 2px;">Maripocell</span>
+                <div class="mb-2">
+                    <span class="claim-pill">ILUMINA TU CAMINO</span>
                 </div>
-                <p class="text-muted small mb-0 fw-semibold" style="letter-spacing: 0.5px; color: #4B5563 !important;">ACCESORIOS & TECNOLOGÍA • POS & GESTIÓN</p>
+                <p class="text-muted small mb-0 fw-semibold mt-2" style="letter-spacing: 0.5px;">
+                    SISTEMA INTEGRAL ERP • POS • BODEGA
+                </p>
             </div>
             
             <form method="POST" action="/auth/login">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="mb-3">
-                    <label class="form-label fw-bold text-dark small text-uppercase" style="letter-spacing: 0.5px; font-family: var(--font-heading);">Correo Electrónico</label>
+                    <label class="form-label fw-bold text-white small text-uppercase" style="letter-spacing: 0.8px; font-family: var(--font-heading);">Correo Electrónico</label>
                     <div class="input-group shadow-sm rounded-3 overflow-hidden">
-                        <span class="input-group-text bg-white border-end-0 text-secondary"><i class="fa-solid fa-envelope" style="color: #D4AF37;"></i></span>
-                        <input type="email" class="form-control form-control-lg border-start-0" name="email" required placeholder="admin@maripocell.com">
+                        <span class="input-group-text border-end-0"><i class="fa-solid fa-envelope"></i></span>
+                        <input type="email" class="form-control form-control-lg border-start-0" name="email" required placeholder="admin@powerled.com">
                     </div>
                 </div>
                 
                 <div class="mb-4">
-                    <label class="form-label fw-bold text-dark small text-uppercase" style="letter-spacing: 0.5px; font-family: var(--font-heading);">Contraseña</label>
+                    <label class="form-label fw-bold text-white small text-uppercase" style="letter-spacing: 0.8px; font-family: var(--font-heading);">Contraseña</label>
                     <div class="input-group shadow-sm rounded-3 overflow-hidden">
-                        <span class="input-group-text bg-white border-end-0 text-secondary"><i class="fa-solid fa-lock" style="color: #D4AF37;"></i></span>
+                        <span class="input-group-text border-end-0"><i class="fa-solid fa-lock"></i></span>
                         <input type="password" class="form-control form-control-lg border-start-0" name="password" required placeholder="••••••••">
                     </div>
                 </div>
                 
                 <div class="d-grid mt-4">
-                    <button type="submit" class="btn btn-login-submit btn-lg rounded-pill fw-bold text-uppercase py-3 shadow" style="letter-spacing: 1px; font-family: var(--font-heading);">
+                    <button type="submit" class="btn btn-login-submit btn-lg rounded-pill fw-bold text-uppercase py-3">
                         Iniciar Sesión <i class="fa-solid fa-arrow-right ms-2"></i>
                     </button>
                 </div>
@@ -123,23 +176,24 @@
         </div>
     </div>
 
-    <!-- Columna Derecha: Branding Tech Visual Maripocell -->
+    <!-- Columna Derecha: Identidad Corporativa POWER LED -->
     <div class="col-md-6 col-lg-5 d-none d-md-flex flex-column justify-content-center align-items-center text-center p-4">
-        <div class="p-4 p-lg-5 brand-hero-card text-center" style="max-width: 440px; width: 100%;">
-            <div class="mb-4 text-center">
-                <img src="{{ url_for('static', filename='img/Maripocell.png') }}" 
-                     alt="Maripocell - Accesorios & Tecnología Logo" 
-                     class="img-fluid rounded-4 shadow-sm" 
-                     style="max-width: 260px; width: 100%; height: auto; aspect-ratio: 1/1; object-fit: contain; background: #FFFFFF; padding: 14px; border: 1px solid #E5E7EB;">
+        <div class="p-4 p-lg-5 brand-hero-card text-center" style="max-width: 460px; width: 100%;">
+            <div class="mb-4 text-center p-3">
+                <img src="{{ url_for('static', filename='img/logo-power-led-dark.png') }}" 
+                     alt="POWER LED — Ilumina tu camino" 
+                     class="img-fluid login-logo-img" 
+                     style="max-width: 290px; width: 100%; height: auto; object-fit: contain;">
             </div>
-            <div class="display-5 login-brand-display mb-2">
-                <span style="color: #111827; font-weight: 900;">Maripocell</span>
+            <div class="h3 login-brand-display mb-3 power-led-wordmark justify-content-center">
+                <span class="word-power">POWER</span>
+                <span><span class="letter-l">L</span><span class="letter-e">E</span><span class="letter-d">D</span></span>
             </div>
-            <div class="badge rounded-pill px-3 py-2 fw-semibold mb-3" style="background-color: rgba(212, 175, 55, 0.1); color: #926C09; border: 1px solid rgba(212, 175, 55, 0.35); font-size: 0.82rem; letter-spacing: 1px; font-family: var(--font-heading);">
-                MARIPOCELL - ACCESORIOS & TECNOLOGÍA
+            <div class="mb-3">
+                <span class="claim-pill">ILUMINA TU CAMINO</span>
             </div>
-            <p class="text-secondary mb-0 fw-normal" style="line-height: 1.6; font-size: 0.92rem; font-family: var(--font-body); color: #4B5563 !important;">
-                Plataforma integral para facturación de alta velocidad, control de inventario y gestión comercial de Maripocell - Accesorios & Tecnología.
+            <p class="text-muted mb-0 fw-normal" style="line-height: 1.65; font-size: 0.92rem; font-family: var(--font-body);">
+                Plataforma oficial para facturación de alta velocidad en mostrador, control de inventario multimarca, cartera mayorista y gestión financiera de <strong class="text-white">POWER LED</strong>.
             </p>
         </div>
     </div>

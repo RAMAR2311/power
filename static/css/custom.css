@@ -1,0 +1,310 @@
+/* =========================================================
+   POWER LED — DESIGN SYSTEM & CORPORATE IDENTITY TOKENS
+   Slogan: "ILUMINA TU CAMINO"
+   Soporta Modo Noche (Dark Theme - Default) y Modo Día (Light Theme)
+   conservando los colores oficiales de la marca:
+   - Led Red ("L"): #E31313
+   - Led Green ("E"): #40A435
+   - Led Blue ("D"): #029CC2
+   ========================================================= */
+:root,
+html[data-bs-theme="dark"] {
+  --power-bg: #000000;
+  --power-card: #0d1117;
+  --power-card-hover: #161b22;
+  --power-border: #21262d;
+  --power-border-hover: #30363d;
+  --power-text: #ffffff;
+  --power-text-muted: #8b949e;
+  --power-red: #E31313;
+  --power-green: #40A435;
+  --power-blue: #029CC2;
+
+  /* Mapeo de compatibilidad con variables --brand-* */
+  --brand-bg: #000000;
+  --brand-white: #0d1117;
+  --brand-surface: #0d1117;
+  --brand-surface-card: #0d1117;
+  --brand-card-bg: #0d1117;
+  --brand-surface-hover: #161b22;
+
+  --brand-primary: #029CC2;
+  --brand-primary-btn: #029CC2;
+  --brand-primary-dark: #027a99;
+  --brand-secondary: #161b22;
+  --brand-secondary-light: #21262d;
+  --brand-accent: #029CC2;
+  --brand-pink: #029CC2;
+  --brand-red: #E31313;
+  --brand-green: #40A435;
+  --brand-cyan: #029CC2;
+  --brand-blue: #029CC2;
+
+  --brand-text: #FFFFFF;
+  --brand-text-dark: #FFFFFF;
+  --brand-black: #FFFFFF;
+  --brand-text-muted: #8b949e;
+  --brand-border: #21262d;
+  --brand-border-dark: #30363d;
+
+  --brand-gradient: linear-gradient(135deg, #029CC2 0%, #027a99 100%);
+  --brand-gradient-hover: linear-gradient(135deg, #04b4df 0%, #029CC2 100%);
+  --brand-neon-glow: 0 0 18px rgba(2, 156, 194, 0.45);
+  --brand-neon-glow-sm: 0 0 10px rgba(2, 156, 194, 0.3);
+
+  --font-display: 'Ethnocentric', 'Orbitron', 'Rajdhani', sans-serif;
+  --font-heading: 'Orbitron', 'Rajdhani', 'Inter', sans-serif;
+  --font-body: 'Inter', 'Roboto', -apple-system, sans-serif;
+}
+
+/* =========================================================
+   MODO DÍA (LIGHT THEME) — FONDO BLANCO CON COLORES DE MARCA
+   ========================================================= */
+html[data-bs-theme="light"] {
+  --power-bg: #FFFFFF;
+  --power-card: #FFFFFF;
+  --power-card-hover: #F1F5F9;
+  --power-border: #E2E8F0;
+  --power-border-hover: #CBD5E1;
+  --power-text: #0F172A;
+  --power-text-muted: #475569;
+  --power-red: #E31313;
+  --power-green: #40A435;
+  --power-blue: #029CC2;
+
+  --brand-bg: #FFFFFF;
+  --brand-white: #FFFFFF;
+  --brand-surface: #FFFFFF;
+  --brand-surface-card: #FFFFFF;
+  --brand-card-bg: #FFFFFF;
+  --brand-surface-hover: #F1F5F9;
+
+  --brand-secondary: #F8FAFC;
+  --brand-secondary-light: #E2E8F0;
+  --brand-text: #0F172A;
+  --brand-text-dark: #0F172A;
+  --brand-black: #000000;
+  --brand-text-muted: #475569;
+  --brand-border: #E2E8F0;
+  --brand-border-dark: #CBD5E1;
+}
+
+/* Utilidades del Logotipo Oficial POWER LED */
+.power-led-wordmark {
+  font-family: var(--font-display);
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+}
+.power-led-wordmark .word-power { color: var(--power-text); }
+.power-led-wordmark .letter-l { color: #E31313; }
+.power-led-wordmark .letter-e { color: #40A435; }
+.power-led-wordmark .letter-d { color: #029CC2; }
+
+/* Ajustes integrales en Modo Día para elementos con clases o estilos oscuros */
+html[data-bs-theme="light"] body {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+}
+
+/* Invertir el isotipo PW blanco a negro en Modo Día (salvo dentro de avatares con fondo negro) */
+html[data-bs-theme="light"] .navbar-custom img[alt*="PW"],
+html[data-bs-theme="light"] .power-footer img[alt*="PW"] {
+  filter: invert(1) brightness(0.08);
+}
+
+html[data-bs-theme="light"] .navbar-custom {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06), 0 1px 0 rgba(2, 156, 194, 0.25) !important;
+}
+
+html[data-bs-theme="light"] .navbar-custom .navbar-brand {
+  color: #000000 !important;
+}
+
+html[data-bs-theme="light"] .offcanvas {
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  border-right: 1px solid #E2E8F0 !important;
+  box-shadow: 10px 0 35px rgba(15, 23, 42, 0.12) !important;
+}
+
+html[data-bs-theme="light"] .sidebar-header-card {
+  background: linear-gradient(145deg, #F8FAFC 0%, #FFFFFF 100%) !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+}
+
+html[data-bs-theme="light"] .sidebar-nav-item {
+  background: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+  color: #1E293B !important;
+}
+
+html[data-bs-theme="light"] .sidebar-nav-item:hover,
+html[data-bs-theme="light"] .sidebar-nav-item.active {
+  background: rgba(2, 156, 194, 0.12) !important;
+  border-color: #029CC2 !important;
+  color: #029CC2 !important;
+}
+
+html[data-bs-theme="light"] .sidebar-icon-box {
+  background: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  color: #475569 !important;
+}
+
+html[data-bs-theme="light"] .sidebar-submenu-box {
+  background: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+}
+
+html[data-bs-theme="light"] .sidebar-sub-item {
+  color: #334155 !important;
+}
+html[data-bs-theme="light"] .sidebar-sub-item:hover {
+  background: rgba(2, 156, 194, 0.12) !important;
+  color: #029CC2 !important;
+}
+
+html[data-bs-theme="light"] .sidebar-nav-highlight {
+  background: linear-gradient(135deg, rgba(2, 156, 194, 0.12) 0%, #F8FAFC 100%) !important;
+  border: 1.5px solid rgba(2, 156, 194, 0.5) !important;
+}
+
+/* Textos blancos en superficies claras pasan a negro/oscuro en Modo Día (excepto botones y badges sólidos) */
+html[data-bs-theme="light"] .text-white:not(.btn):not(.badge):not(.modal-header):not(.bg-danger):not(.bg-success):not(.bg-primary) {
+  color: #0F172A !important;
+}
+html[data-bs-theme="light"] .btn.text-white,
+html[data-bs-theme="light"] .badge.text-white,
+html[data-bs-theme="light"] .btn-primary .text-white,
+html[data-bs-theme="light"] .btn-success .text-white,
+html[data-bs-theme="light"] .btn-danger .text-white,
+html[data-bs-theme="light"] .modal-header .text-white,
+html[data-bs-theme="light"] .bg-danger .text-white,
+html[data-bs-theme="light"] .bg-success .text-white,
+html[data-bs-theme="light"] .bg-primary .text-white {
+  color: #FFFFFF !important;
+}
+
+/* Cards, Modales, Tablas e Inputs en Modo Día */
+html[data-bs-theme="light"] .card-custom,
+html[data-bs-theme="light"] .card:not(.bg-danger):not(.bg-success):not(.bg-primary),
+html[data-bs-theme="light"] .modal-content,
+html[data-bs-theme="light"] .dropdown-menu,
+html[data-bs-theme="light"] .list-group-item {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  color: #0F172A !important;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06) !important;
+}
+
+html[data-bs-theme="light"] .card-header:not([style*="gradient"]),
+html[data-bs-theme="light"] .card-footer,
+html[data-bs-theme="light"] .modal-header:not([style*="gradient"]),
+html[data-bs-theme="light"] .modal-footer {
+  background-color: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+  color: #0F172A !important;
+}
+
+html[data-bs-theme="light"] .btn-close-white {
+  filter: none !important;
+}
+
+html[data-bs-theme="light"] .table-custom,
+html[data-bs-theme="light"] .table {
+  --bs-table-bg: #FFFFFF;
+  --bs-table-color: #0F172A;
+  --bs-table-border-color: #E2E8F0;
+  --bs-table-striped-bg: #F8FAFC;
+  --bs-table-striped-color: #0F172A;
+  --bs-table-hover-bg: #F1F5F9;
+  --bs-table-hover-color: #0F172A;
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #E2E8F0 !important;
+}
+
+html[data-bs-theme="light"] .table-custom thead th,
+html[data-bs-theme="light"] .table thead th,
+html[data-bs-theme="light"] .table-light th {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+  border-bottom: 2px solid #029CC2 !important;
+}
+
+html[data-bs-theme="light"] .table-custom tbody td,
+html[data-bs-theme="light"] .table tbody td {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+}
+
+html[data-bs-theme="light"] .table-hover tbody tr:hover td {
+  background-color: #F1F5F9 !important;
+}
+
+html[data-bs-theme="light"] .form-control,
+html[data-bs-theme="light"] .form-select {
+  background-color: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #0F172A !important;
+}
+
+html[data-bs-theme="light"] .form-control:focus,
+html[data-bs-theme="light"] .form-select:focus {
+  background-color: #FFFFFF !important;
+  border-color: #029CC2 !important;
+  color: #0F172A !important;
+  box-shadow: 0 0 0 3px rgba(2, 156, 194, 0.22) !important;
+}
+
+html[data-bs-theme="light"] .input-group-text {
+  background-color: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+  color: #334155 !important;
+}
+
+html[data-bs-theme="light"] .bg-dark:not(.badge) {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+}
+
+html[data-bs-theme="light"] .badge.bg-dark {
+  background-color: #F1F5F9 !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
+}
+
+html[data-bs-theme="light"] .btn-outline-light {
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
+  background-color: #FFFFFF !important;
+}
+html[data-bs-theme="light"] .btn-outline-light:hover {
+  border-color: #029CC2 !important;
+  color: #029CC2 !important;
+  background-color: rgba(2, 156, 194, 0.08) !important;
+}
+
+/* Adaptar contenedores con fondos oscuros inline (#0d1117, #161b22, #090d13) a blanco/gris claro en Modo Día */
+html[data-bs-theme="light"] [style*="#0d1117"],
+html[data-bs-theme="light"] [style*="#161b22"],
+html[data-bs-theme="light"] [style*="#090d13"],
+html[data-bs-theme="light"] [style*="#090c10"],
+html[data-bs-theme="light"] .fila-ingreso-item {
+  background-color: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+  color: #0F172A !important;
+}
+
+html[data-bs-theme="light"] .power-footer {
+  background-color: #F8FAFC !important;
+  border-top: 1px solid #E2E8F0 !important;
+  color: #475569 !important;
+}

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}POWER LED | Traslados de Bodega a Tienda{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h2 class="fw-bold text-white m-0" style="font-family: var(--font-heading);">
+            <i class="fa-solid fa-truck-arrow-right me-2" style="color: #029CC2;"></i>Traslados Internos: Bodega &rarr; Tienda
+        </h2>
+        <small class="text-muted">Genera remisiones internas para surtir el mostrador POS descontando del almacén central</small>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('ingresos_bp.index') }}" class="btn rounded-pill px-4 fw-bold text-white shadow" style="background-color: #40A435;">
+            <i class="fa-solid fa-dolly me-1"></i> Ingreso de Mercancía
+        </a>
+        <a href="{{ url_for('inventory_bp.index') }}" class="btn btn-outline-light rounded-pill px-4 fw-bold">
+            <i class="fa-solid fa-boxes-stacked me-1"></i> Ver Inventario Central
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Formulario de Nuevo Traslado -->
+    <div class="col-lg-6">
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold text-white mb-3" style="font-family: var(--font-heading);">
+                <i class="fa-solid fa-dolly me-2" style="color: #40A435;"></i>Nueva Remisión de Traslado a Mostrador
+            </h5>
+            <form action="{{ url_for('bodega_bp.crear_traslado') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small text-muted fw-bold">Selecciona los accesorios y cantidades a trasladar:</span>
+                    <button type="button" class="btn btn-sm btn-outline-info rounded-pill" onclick="agregarFilaTraslado()">
+                        <i class="fa-solid fa-plus me-1"></i> Agregar Producto
+                    </button>
+                </div>
+
+                <div id="trasladoRows" class="d-flex flex-column gap-2 mb-3"></div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-white small">Observaciones / Responsable de Recepción</label>
+                    <input type="text" name="observaciones" class="form-control" placeholder="Ej: Surtido vitrina principal LED / Entregado a mostrador">
+                </div>
+
+                <button type="submit" class="btn rounded-pill w-100 py-2 fw-bold text-white shadow" style="background: #40A435;">
+                    <i class="fa-solid fa-check-circle me-2"></i>Confirmar Traslado (Descontar Bodega y Sumar a Tienda)
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Historial de Remisiones de Traslado -->
+    <div class="col-lg-6">
+        <div class="card card-custom p-4">
+            <h5 class="fw-bold text-white mb-3" style="font-family: var(--font-heading);">
+                <i class="fa-solid fa-clock-rotate-left me-2" style="color: #029CC2;"></i>Historial de Comprobantes de Traslado
+            </h5>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>REMISIÓN</th>
+                            <th>FECHA / USUARIO</th>
+                            <th>ARTÍCULOS TRASLADADOS</th>
+                            <th>OBSERVACIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in historial_traslados %}
+                        <tr>
+                            <td><span class="badge bg-dark border border-info" style="color: #029CC2;">#TR-{{ "%04d"|format(t.id) }}</span></td>
+                            <td class="small">
+                                <div class="text-white fw-semibold">{{ t.fecha.strftime('%d/%m/%Y %H:%M') if t.fecha else '' }}</div>
+                                <small class="text-muted">{{ t.usuario.nombre if t.usuario else 'Admin' }}</small>
+                            </td>
+                            <td>
+                                {% for item in t.items %}
+                                    <div class="small">
+                                        <span class="badge rounded-pill" style="background: rgba(64,164,53,0.2); color: #40A435;">+{{ item.cantidad }}</span>
+                                        <span class="text-white">{{ item.producto.nombre if item.producto else 'Producto' }}</span>
+                                    </div>
+                                {% endfor %}
+                            </td>
+                            <td class="small text-muted">{{ t.observaciones or '' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">No se han registrado traslados aún.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const PRODUCTOS_BODEGA = [
+    {% for p in productos %}
+    { id: {{ p.id }}, nombre: {{ p.nombre|tojson }}, sku: {{ (p.codigo_barras or p.sku)|tojson }}, stock_bodega: {{ p.stock_bodega or 0 }}, stock_tienda: {{ p.stock_tienda or 0 }} },
+    {% endfor %}
+];
+
+function agregarFilaTraslado() {
+    const container = document.getElementById('trasladoRows');
+    const div = document.createElement('div');
+    div.className = 'row g-2 align-items-center p-2 rounded-3';
+    div.style.background = '#161b22';
+    let opts = '<option value="">Seleccionar producto...</option>';
+    PRODUCTOS_BODEGA.forEach(p => {
+        opts += `<option value="${p.id}" data-max="${p.stock_bodega}">${p.nombre} [Bodega: ${p.stock_bodega} | Tienda: ${p.stock_tienda}]</option>`;
+    });
+    div.innerHTML = `
+        <div class="col-8">
+            <select name="product_id[]" class="form-select form-select-sm" required>${opts}</select>
+        </div>
+        <div class="col-3">
+            <input type="number" name="cantidad[]" class="form-control form-control-sm text-center fw-bold" placeholder="Cant." value="1" min="1" required>
+        </div>
+        <div class="col-1 text-end">
+            <button type="button" class="btn btn-sm text-danger" onclick="this.closest('.row').remove()"><i class="fa-solid fa-trash"></i></button>
+        </div>
+    `;
+    container.appendChild(div);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    agregarFilaTraslado();
+});
+</script>
+{% endblock %}

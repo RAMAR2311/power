@@ -1,0 +1,495 @@
+{% extends "base.html" %}
+
+{% block title %}POWER LED | Hojas de Trabajo (Taller Automotriz){% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h2 class="fw-bold text-white m-0" style="font-family: var(--font-heading);">
+            <i class="fa-solid fa-car-side me-2" style="color: #029CC2;"></i>Hojas de Trabajo & Taller Automotriz
+        </h2>
+        <small class="text-muted">Control de ingreso de vehículos, accesorios e instalaciones antes de pasar a caja</small>
+    </div>
+    <button type="button" class="btn btn-blue rounded-pill px-4 py-2 fw-bold shadow" data-bs-toggle="modal" data-bs-target="#modalNuevaOrden">
+        <i class="fa-solid fa-plus me-2"></i>Nueva Hoja de Trabajo
+    </button>
+</div>
+
+<!-- KPIs del Taller -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card card-custom p-3" style="border-left: 4px solid #029CC2 !important;">
+            <span class="text-muted small fw-bold text-uppercase">Vehículos En Proceso</span>
+            <h3 class="fw-bolder text-white mt-1 mb-0" style="font-family: var(--font-heading); color: #029CC2 !important;">{{ en_proceso_count }}</h3>
+            <small class="text-muted">Actualmente en bahía de instalación</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-custom p-3" style="border-left: 4px solid #fbbf24 !important;">
+            <span class="text-muted small fw-bold text-uppercase">Listos para Cobro en Caja</span>
+            <h3 class="fw-bolder text-warning mt-1 mb-0" style="font-family: var(--font-heading);">{{ listo_cobro_count }}</h3>
+            <small class="text-muted">Trabajo terminado pendiente de factura</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-custom p-3" style="border-left: 4px solid #40A435 !important;">
+            <span class="text-muted small fw-bold text-uppercase">Órdenes Liquidadas / Cobradas</span>
+            <h3 class="fw-bolder mt-1 mb-0" style="font-family: var(--font-heading); color: #40A435;">{{ cobradas_count }}</h3>
+            <small class="text-muted">Histórico facturado en POS</small>
+        </div>
+    </div>
+</div>
+
+<!-- Barra de Filtros -->
+<div class="card card-custom p-3 mb-4">
+    <form method="GET" action="{{ url_for('hojas_trabajo_bp.index') }}" class="row g-2 align-items-center">
+        <div class="col-md-5">
+            <input type="text" name="q" class="form-control" placeholder="Buscar por placa (ej: ABC123), modelo o # orden..." value="{{ q }}">
+        </div>
+        <div class="col-md-4">
+            <select name="estado" class="form-select">
+                <option value="">Todos los Estados</option>
+                <option value="EN_PROCESO" {% if estado_filtro == 'EN_PROCESO' %}selected{% endif %}>🔧 EN PROCESO</option>
+                <option value="LISTO_COBRO" {% if estado_filtro == 'LISTO_COBRO' %}selected{% endif %}>⚡ LISTO PARA COBRO</option>
+                <option value="COBRADO" {% if estado_filtro == 'COBRADO' %}selected{% endif %}>✅ COBRADO</option>
+                <option value="CANCELADO" {% if estado_filtro == 'CANCELADO' %}selected{% endif %}>❌ CANCELADO</option>
+            </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-blue w-100 fw-bold">Filtrar</button>
+            <a href="{{ url_for('hojas_trabajo_bp.index') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-rotate-left"></i></a>
+        </div>
+    </form>
+</div>
+
+<!-- Listado de Hojas de Trabajo -->
+<div class="row g-3">
+    {% for o in ordenes %}
+    <div class="col-12 col-lg-6">
+        <div class="card card-custom p-4 h-100 d-flex flex-column justify-content-between" style="border-top: 3px solid {% if o.estado == 'COBRADO' %}#40A435{% elif o.estado == 'CANCELADO' %}#E31313{% else %}#029CC2{% endif %} !important;">
+            <div>
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <a href="{{ url_for('vehiculos_bp.ver_por_placa', placa=o.placa_vehiculo) }}" class="text-decoration-none" title="Ver Historial del Vehículo {{ o.placa_vehiculo }}">
+                            <div class="px-3 py-2 rounded-3 fw-bolder text-center" style="background: #ffdd00; color: #000000; border: 2px solid #000; font-family: 'Orbitron', monospace; font-size: 1.15rem; letter-spacing: 1.5px;">
+                                {{ o.placa_vehiculo }}
+                            </div>
+                        </a>
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="badge bg-dark border border-secondary">{{ o.numero_orden }}</span>
+                                <a href="{{ url_for('vehiculos_bp.ver_por_placa', placa=o.placa_vehiculo) }}" class="badge bg-dark border text-info text-decoration-none">
+                                    <i class="fa-solid fa-clock-rotate-left me-1"></i>Historial Vehículo
+                                </a>
+                            </div>
+                            <h5 class="fw-bold text-white mb-0">{{ o.modelo_vehiculo or 'Vehículo Registrado' }}</h5>
+                            {% if o.cliente %}
+                                <small class="text-muted"><i class="fa-solid fa-user me-1"></i>{{ o.cliente.nombre }} ({{ o.cliente.telefono or 'Sin tel' }})</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        {% if o.estado == 'EN_PROCESO' %}
+                            <span class="badge rounded-pill px-3 py-2" style="background: rgba(2,156,194,0.2); color: #029CC2; border: 1px solid #029CC2;">EN PROCESO</span>
+                        {% elif o.estado == 'LISTO_COBRO' %}
+                            <span class="badge bg-warning text-dark rounded-pill px-3 py-2 fw-bold">LISTO COBRO</span>
+                        {% elif o.estado == 'COBRADO' %}
+                            <span class="badge rounded-pill px-3 py-2" style="background: rgba(64,164,53,0.2); color: #40A435; border: 1px solid #40A435;">COBRADO</span>
+                        {% else %}
+                            <span class="badge rounded-pill px-3 py-2" style="background: rgba(227,19,19,0.2); color: #E31313; border: 1px solid #E31313;">CANCELADO</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-2 small mb-3 p-2 rounded-3" style="background: #161b22; border: 1px solid #21262d;">
+                    <div class="col-6">
+                        <span class="text-muted d-block">Asesor Comercial:</span>
+                        <strong class="text-white">{{ o.asesor.nombre if o.asesor else 'No asignado' }}</strong>
+                    </div>
+                    <div class="col-6">
+                        <span class="text-muted d-block">Técnico Instalador:</span>
+                        <strong style="color: #029CC2;">{{ o.instalador.nombre if o.instalador else 'Sin asignar' }}</strong>
+                    </div>
+                    <div class="col-6 mt-2">
+                        <span class="text-muted d-block">Ingreso:</span>
+                        <span class="text-white">{{ o.fecha_creacion.strftime('%d/%m/%Y %H:%M') if o.fecha_creacion else '' }}</span>
+                    </div>
+                    <div class="col-6 mt-2">
+                        <span class="text-muted d-block">Entrega Estimada:</span>
+                        <span class="text-warning">{{ o.fecha_entrega.strftime('%d/%m/%Y %H:%M') if o.fecha_entrega else 'Por definir' }}</span>
+                    </div>
+                </div>
+
+                {% if o.observaciones %}
+                    <p class="small text-muted mb-3"><i class="fa-solid fa-clipboard-list me-1" style="color: #029CC2;"></i>{{ o.observaciones }}</p>
+                {% endif %}
+
+                <!-- Tabla de Ítems -->
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm mb-0 small">
+                        <thead>
+                            <tr>
+                                <th>TIPO</th>
+                                <th>DESCRIPCIÓN</th>
+                                <th class="text-center">CANT</th>
+                                <th class="text-end">SUBTOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for it in o.items %}
+                            <tr>
+                                <td>
+                                    {% if it.tipo == 'SERVICIO' %}
+                                        <span class="badge" style="background: rgba(2,156,194,0.2); color: #029CC2;">MANO DE OBRA</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">ACCESORIO</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ it.servicio.nombre if it.tipo == 'SERVICIO' and it.servicio else (it.producto.nombre if it.producto else 'Ítem') }}</td>
+                                <td class="text-center">{{ it.cantidad }}</td>
+                                <td class="text-end fw-bold">${{ (it.subtotal or 0)|cop }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">Sin ítems pre-cargados</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center pt-3 border-top" style="border-color: #21262d !important;">
+                <div>
+                    <span class="text-muted small d-block">Total Estimado Orden:</span>
+                    <span class="fs-4 fw-bolder" style="color: #40A435; font-family: var(--font-heading);">${{ (o.total_estimado)|cop }}</span>
+                </div>
+                <div class="d-flex gap-2">
+                    {% if o.estado in ['EN_PROCESO', 'LISTO_COBRO'] %}
+                        <form action="{{ url_for('hojas_trabajo_bp.cambiar_estado', id=o.id) }}" method="POST" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <input type="hidden" name="estado" value="CANCELADO"/>
+                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('¿Cancelar esta orden de trabajo?');">
+                                Cancelar
+                            </button>
+                        </form>
+                        <a href="{{ url_for('hojas_trabajo_bp.cobrar_en_caja', id=o.id) }}" class="btn rounded-pill px-4 fw-bold text-white shadow" style="background: #40A435;">
+                            <i class="fa-solid fa-cash-register me-2"></i>Cobrar en Caja
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="card card-custom p-5 text-center text-muted">
+            <i class="fa-solid fa-car-tunnel fs-1 mb-3" style="color: #029CC2;"></i>
+            <h5>No hay Hojas de Trabajo registradas</h5>
+            <p class="small mb-0">Crea una nueva hoja cuando ingrese un vehículo a instalación de luces LED, polarizado, alarmas o sonido.</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Modal Nueva Hoja de Trabajo -->
+<div class="modal fade" id="modalNuevaOrden" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="background: #0d1117; border: 1px solid #21262d;">
+            <div class="modal-header border-bottom" style="border-color: #21262d !important;">
+                <h5 class="modal-title fw-bold text-white" style="font-family: var(--font-heading);">
+                    <i class="fa-solid fa-car-on me-2" style="color: #029CC2;"></i>Registrar Ingreso de Vehículo (Hoja de Trabajo)
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('hojas_trabajo_bp.crear') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="modal-body p-4">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-white">Placa del Vehículo *</label>
+                            <input type="text" name="placa_vehiculo" id="ht_placa_input" class="form-control text-uppercase fw-bold" required maxlength="10" placeholder="Ej: KLM456" onchange="buscarVehiculoPorPlacaTaller(this.value)" onblur="buscarVehiculoPorPlacaTaller(this.value)">
+                            <small id="ht_placa_feedback" class="text-info d-none"></small>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-white">Marca / Línea / Modelo</label>
+                            <input type="text" name="modelo_vehiculo" id="ht_modelo_input" class="form-control" placeholder="Ej: Mazda 3 / Toyota Hilux">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-white">Entrega Estimada</label>
+                            <input type="datetime-local" name="fecha_entrega" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label fw-bold text-white m-0">Cliente Asociado (Opcional)</label>
+                                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none fw-bold" style="color: #029CC2; font-size: 0.76rem;" onclick="toggleCrearClienteTaller()">
+                                    <i class="fa-solid fa-user-plus me-1"></i>+ Crear Cliente
+                                </button>
+                            </div>
+                            <select name="cliente_id" id="ht_cliente_select" class="form-select">
+                                <option value="">-- Consumidor / Sin asociar --</option>
+                                {% for c in clientes %}
+                                    <option value="{{ c.id }}">{{ c.nombre }} ({{ c.documento or 'S/D' }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-white">Asesor Comercial</label>
+                            <select name="asesor_id" class="form-select">
+                                {% for u in asesores %}
+                                    <option value="{{ u.id }}" {% if u.id == current_user.id %}selected{% endif %}>{{ u.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold" style="color: #029CC2;">Técnico Instalador Asignado</label>
+                            <select name="instalador_id" class="form-select">
+                                <option value="">-- Seleccionar Instalador --</option>
+                                {% for ins in instaladores %}
+                                    <option value="{{ ins.id }}">{{ ins.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Mini-panel desplegable para crear Cliente Rápido desde Hoja de Trabajo -->
+                        <div class="col-12" id="panelNuevoClienteTaller" style="display: none;">
+                            <div class="p-3 rounded-3" style="background: var(--power-card-hover, #161b22); border: 1px dashed #029CC2;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="small fw-bold" style="color: #029CC2;">
+                                        <i class="fa-solid fa-user-plus me-1"></i>Registrar Nuevo Cliente y Asociar a la Orden
+                                    </span>
+                                    <button type="button" class="btn-close btn-close-white btn-sm" onclick="toggleCrearClienteTaller()"></button>
+                                </div>
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-md-4">
+                                        <label class="form-label small mb-1">Nombre Completo / Razón Social *</label>
+                                        <input type="text" id="ht_nuevo_cli_nombre" class="form-control form-control-sm" placeholder="Ej: Andrés Felipe Mora">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small mb-1">Cédula / NIT</label>
+                                        <input type="text" id="ht_nuevo_cli_doc" class="form-control form-control-sm" placeholder="Ej: 1098765432">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small mb-1">Teléfono / WhatsApp</label>
+                                        <input type="text" id="ht_nuevo_cli_tel" class="form-control form-control-sm" placeholder="Ej: 3158889900">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" id="btnGuardarCliTaller" class="btn btn-sm w-100 fw-bold text-white" style="background: #40A435;" onclick="guardarClienteRapidoTaller()">
+                                            <i class="fa-solid fa-check me-1"></i>Guardar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr style="border-color: #21262d;">
+
+                    <!-- Agregar Productos y Servicios a la Orden -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-white m-0"><i class="fa-solid fa-screwdriver-wrench me-2" style="color: #40A435;"></i>Accesorios y Servicios a Instalar</h6>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill" onclick="agregarFilaProducto()">
+                                <i class="fa-solid fa-box me-1"></i>+ Accesorio
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-success rounded-pill" onclick="agregarFilaServicio()">
+                                <i class="fa-solid fa-wrench me-1"></i>+ Servicio Instalación
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="ordenItemsContainer" class="d-flex flex-column gap-2 mb-3"></div>
+
+                    <div class="mb-2">
+                        <label class="form-label fw-bold text-white">Notas / Estado de Ingreso del Vehículo</label>
+                        <textarea name="observaciones" class="form-control" rows="2" placeholder="Observaciones del vehículo, rayones previos, requerimientos eléctricos..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-top" style="border-color: #21262d !important;">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-blue rounded-pill px-4 fw-bold">Guardar Hoja de Trabajo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+const CSRF_TOKEN_HT = "{{ csrf_token() }}";
+
+function toggleCrearClienteTaller() {
+    const panel = document.getElementById('panelNuevoClienteTaller');
+    if (!panel) return;
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    if (panel.style.display === 'block') {
+        document.getElementById('ht_nuevo_cli_nombre')?.focus();
+    }
+}
+
+async function guardarClienteRapidoTaller() {
+    const nombreInput = document.getElementById('ht_nuevo_cli_nombre');
+    const docInput = document.getElementById('ht_nuevo_cli_doc');
+    const telInput = document.getElementById('ht_nuevo_cli_tel');
+    const placaInput = document.getElementById('ht_placa_input');
+    const btn = document.getElementById('btnGuardarCliTaller');
+
+    const nombre = (nombreInput?.value || '').trim();
+    if (!nombre) {
+        alert('Por favor escribe el nombre del cliente.');
+        nombreInput?.focus();
+        return;
+    }
+
+    if (btn) btn.disabled = true;
+    try {
+        const res = await fetch('/clientes/api/crear_rapido', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': CSRF_TOKEN_HT
+            },
+            body: JSON.stringify({
+                nombre: nombre,
+                documento: (docInput?.value || '').trim(),
+                telefono: (telInput?.value || '').trim(),
+                placa_frecuente: (placaInput?.value || '').trim().toUpperCase()
+            })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+            alert(data.message || 'No se pudo crear el cliente.');
+            if (btn) btn.disabled = false;
+            return;
+        }
+
+        const selectCli = document.getElementById('ht_cliente_select');
+        const cId = data.customer_id || data.cliente.customer_id;
+        let opt = selectCli.querySelector(`option[value="${cId}"]`);
+        if (!opt) {
+            opt = document.createElement('option');
+            opt.value = cId;
+            selectCli.appendChild(opt);
+        }
+        opt.textContent = `${data.cliente.nombre} (${data.cliente.documento || 'S/D'})`;
+        selectCli.value = cId;
+
+        if (nombreInput) nombreInput.value = '';
+        if (docInput) docInput.value = '';
+        if (telInput) telInput.value = '';
+        toggleCrearClienteTaller();
+    } catch (e) {
+        alert('Error de conexión al crear el cliente.');
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+}
+
+const CATALOGO_PRODUCTOS = [
+    {% for p in productos %}
+    { id: {{ p.id }}, nombre: {{ p.nombre|tojson }}, precio: {{ (p.precio_final or p.precio_sugerido or 0)|float }}, stock: {{ p.stock_tienda or 0 }} },
+    {% endfor %}
+];
+
+const CATALOGO_SERVICIOS = [
+    {% for s in servicios %}
+    { id: {{ s.id }}, nombre: {{ s.nombre|tojson }}, precio: {{ (s.precio_estandar or 0)|float }} },
+    {% endfor %}
+];
+
+function agregarFilaProducto() {
+    const container = document.getElementById('ordenItemsContainer');
+    const div = document.createElement('div');
+    div.className = 'row g-2 align-items-center p-2 rounded-3';
+    div.style.background = '#161b22';
+    let opts = '<option value="">Seleccionar Accesorio...</option>';
+    CATALOGO_PRODUCTOS.forEach(p => {
+        opts += `<option value="${p.id}" data-precio="${p.precio}">${p.nombre} (Stock: ${p.stock}) - $${p.precio.toLocaleString()}</option>`;
+    });
+    div.innerHTML = `
+        <input type="hidden" name="item_tipo[]" value="PRODUCTO">
+        <div class="col-md-6">
+            <select name="item_ref_id[]" class="form-select form-select-sm" required onchange="actualizarPrecioFila(this)">${opts}</select>
+        </div>
+        <div class="col-md-2">
+            <input type="number" name="item_cantidad[]" class="form-control form-control-sm text-center" value="1" min="1" required>
+        </div>
+        <div class="col-md-3">
+            <input type="number" step="1" name="item_precio[]" class="form-control form-control-sm text-end fw-bold" placeholder="Precio U." required>
+        </div>
+        <div class="col-md-1 text-end">
+            <button type="button" class="btn btn-sm text-danger" onclick="this.closest('.row').remove()"><i class="fa-solid fa-trash"></i></button>
+        </div>
+    `;
+    container.appendChild(div);
+}
+
+function agregarFilaServicio() {
+    const container = document.getElementById('ordenItemsContainer');
+    const div = document.createElement('div');
+    div.className = 'row g-2 align-items-center p-2 rounded-3';
+    div.style.background = 'rgba(2, 156, 194, 0.1)';
+    let opts = '<option value="">Seleccionar Servicio de Mano de Obra...</option>';
+    CATALOGO_SERVICIOS.forEach(s => {
+        opts += `<option value="${s.id}" data-precio="${s.precio}">[INSTALACIÓN] ${s.nombre} - $${s.precio.toLocaleString()}</option>`;
+    });
+    div.innerHTML = `
+        <input type="hidden" name="item_tipo[]" value="SERVICIO">
+        <div class="col-md-6">
+            <select name="item_ref_id[]" class="form-select form-select-sm" required onchange="actualizarPrecioFila(this)">${opts}</select>
+        </div>
+        <div class="col-md-2">
+            <input type="number" name="item_cantidad[]" class="form-control form-control-sm text-center" value="1" min="1" required>
+        </div>
+        <div class="col-md-3">
+            <input type="number" step="1" name="item_precio[]" class="form-control form-control-sm text-end fw-bold" placeholder="Valor Servicio" required>
+        </div>
+        <div class="col-md-1 text-end">
+            <button type="button" class="btn btn-sm text-danger" onclick="this.closest('.row').remove()"><i class="fa-solid fa-trash"></i></button>
+        </div>
+    `;
+    container.appendChild(div);
+}
+
+function actualizarPrecioFila(selectEl) {
+    const opt = selectEl.options[selectEl.selectedIndex];
+    const precio = opt ? opt.getAttribute('data-precio') : 0;
+    const row = selectEl.closest('.row');
+    const inputPrecio = row.querySelector('input[name="item_precio[]"]');
+    if (inputPrecio && precio) {
+        inputPrecio.value = Math.round(parseFloat(precio));
+    }
+}
+
+async function buscarVehiculoPorPlacaTaller(placa) {
+    const p = (placa || '').trim().toUpperCase();
+    const fb = document.getElementById('ht_placa_feedback');
+    if (p.length < 5) {
+        if (fb) fb.classList.add('d-none');
+        return;
+    }
+    try {
+        const res = await fetch(`/vehiculos/api/buscar/${encodeURIComponent(p)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.found) {
+            const modInput = document.getElementById('ht_modelo_input');
+            const cliSel = document.getElementById('ht_cliente_select');
+            if (modInput && !modInput.value && (data.descripcion_completa || data.modelo)) {
+                modInput.value = data.descripcion_completa || data.modelo;
+            }
+            if (cliSel && data.cliente_id) {
+                cliSel.value = data.cliente_id;
+            }
+            if (fb) {
+                fb.innerHTML = `<i class="fa-solid fa-circle-check me-1"></i>Vehículo registrado (${data.ordenes_count} visitas previas). <a href="${data.historial_url}" target="_blank" class="text-info fw-bold">Ver expediente</a>`;
+                fb.classList.remove('d-none');
+            }
+        } else if (fb) {
+            fb.innerHTML = `<i class="fa-solid fa-sparkles me-1"></i>Placa nueva: se creará en el Historial de Vehículos.`;
+            fb.classList.remove('d-none');
+        }
+    } catch (e) {}
+}
+</script>
+{% endblock %}

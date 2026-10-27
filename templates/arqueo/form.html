@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Arqueo y Cierre de Caja Diario{% endblock %}
+{% block title %}POWER LED | Arqueo y Cierre de Caja{% endblock %}
 
 {% block extra_css %}
 <style>
     /* Layout Asimétrico y Estilos del Arqueo */
     .arqueo-header {
-        background: #ffffff;
+        background: #0d1117;
         border-radius: 16px;
         padding: 1.25rem 1.5rem;
     }
@@ -102,31 +102,31 @@
     }
     
     .diff-neutral {
-        background-color: #f8fafc;
+        background-color: #161b22;
         color: #64748b;
         border-color: #cbd5e1;
     }
     .diff-cuadrada {
-        background-color: #ecfdf5;
-        color: #065f46;
-        border-color: #a7f3d0;
+        background-color: rgba(64, 164, 53, 0.15);
+        color: #40A435;
+        border-color: #40A435;
     }
     .diff-faltante {
-        background-color: #fef2f2;
-        color: #991b1b;
-        border-color: #fecaca;
+        background-color: rgba(227, 19, 19, 0.15);
+        color: #E31313;
+        border-color: #E31313;
     }
     .diff-sobrante {
-        background-color: #fffbeb;
-        color: #92400e;
-        border-color: #fde68a;
+        background-color: rgba(2, 156, 194, 0.15);
+        color: #029CC2;
+        border-color: #029CC2;
     }
 
     /* Desglose Digital mini cards */
     .mini-canal-card {
         border-radius: 12px;
         padding: 0.65rem 0.5rem;
-        background: #ffffff;
+        background: #0d1117;
         border: 1px solid #e2e8f0;
         height: 100%;
         display: flex;
@@ -198,7 +198,7 @@
 
     <!-- Alerta de Estado: Caja Cerrada vs Abierta -->
     {% if caja_cerrada %}
-    <div class="alert alert-warning border-0 shadow-sm d-flex flex-wrap justify-content-between align-items-center mb-4 p-3 rounded-4" style="background-color: #fffbeb; border-left: 5px solid #f59e0b !important;">
+    <div class="alert alert-warning border-0 shadow-sm d-flex flex-wrap justify-content-between align-items-center mb-4 p-3 rounded-4" style="background-color: rgba(2, 156, 194, 0.15); border-left: 5px solid #f59e0b !important;">
         <div class="d-flex align-items-center gap-3">
             <div class="rounded-circle bg-warning bg-opacity-25 p-2 text-warning-emphasis fs-4">
                 <i class="fa-solid fa-lock"></i>
@@ -235,16 +235,16 @@
         <!-- COLUMNA IZQUIERDA (70%): Auditoría Operativa, Desgloses y Tirilla -->
         <div class="col-lg-8">
             
-            <!-- 3 KPI Cards Superiores -->
+            <!-- 3 KPI Cards Superiores: Verde #40A435, Azul #029CC2, Neutro Oscuro -->
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
-                    <div class="card kpi-card-arqueo text-white p-3 shadow-sm h-100" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;">
+                    <div class="card kpi-card-arqueo text-white p-3 shadow-sm h-100" style="background: linear-gradient(135deg, #40A435 0%, #2d7a24 100%) !important; border: 1px solid #40A435 !important;">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <small class="text-white text-opacity-75 fw-bold text-uppercase d-block mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Efectivo en Sistema</small>
                                 <h3 class="fw-bolder m-0 text-white font-orbitron" style="color: #ffffff !important; font-size: 1.75rem;">${{ total_efectivo|cop }}</h3>
                             </div>
-                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 50px; height: 50px; background-color: rgba(255, 255, 255, 0.25); font-size: 1.4rem;">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 50px; height: 50px; background-color: rgba(255, 255, 255, 0.2); font-size: 1.4rem;">
                                 <i class="fa-solid fa-money-bill-wave"></i>
                             </div>
                         </div>
@@ -252,13 +252,13 @@
                 </div>
 
                 <div class="col-md-4">
-                    <div class="card kpi-card-arqueo text-white p-3 shadow-sm h-100" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;">
+                    <div class="card kpi-card-arqueo text-white p-3 shadow-sm h-100" style="background: linear-gradient(135deg, #029CC2 0%, #016f8a 100%) !important; border: 1px solid #029CC2 !important;">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <small class="text-white text-opacity-75 fw-bold text-uppercase d-block mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Dinero Digital / Bancos</small>
                                 <h3 class="fw-bolder m-0 text-white font-orbitron" style="color: #ffffff !important; font-size: 1.75rem;">${{ total_digital|cop }}</h3>
                             </div>
-                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 50px; height: 50px; background-color: rgba(255, 255, 255, 0.25); font-size: 1.4rem;">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 50px; height: 50px; background-color: rgba(255, 255, 255, 0.2); font-size: 1.4rem;">
                                 <i class="fa-solid fa-mobile-screen-button"></i>
                             </div>
                         </div>
@@ -266,13 +266,13 @@
                 </div>
 
                 <div class="col-md-4">
-                    <div class="card kpi-card-arqueo text-white p-3 shadow-sm h-100" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;">
+                    <div class="card kpi-card-arqueo text-white p-3 shadow-sm h-100" style="background: linear-gradient(135deg, #161b22 0%, #0d1117 100%) !important; border: 1px solid #30363d !important;">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <small class="text-white text-opacity-75 fw-bold text-uppercase d-block mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Venta Total Bruta</small>
                                 <h3 class="fw-bolder m-0 text-white font-orbitron" style="color: #ffffff !important; font-size: 1.75rem;">${{ (total_efectivo + total_digital)|cop }}</h3>
                             </div>
-                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 50px; height: 50px; background-color: rgba(255, 255, 255, 0.25); font-size: 1.4rem;">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 50px; height: 50px; background-color: rgba(2, 156, 194, 0.25); color: #029CC2 !important; font-size: 1.4rem;">
                                 <i class="fa-solid fa-sack-dollar"></i>
                             </div>
                         </div>

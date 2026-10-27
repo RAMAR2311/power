@@ -1,122 +1,148 @@
 {% extends "base.html" %}
 
+{% block title %}POWER LED | {% if producto %}Editar Producto{% else %}Nuevo Producto{% endif %}{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="d-flex align-items-center mb-4">
-            <a href="/inventory" class="btn btn-light rounded-circle me-3 border-0"><i class="fa-solid fa-arrow-left"></i></a>
-            <h2 class="fw-bold text-brand-black mb-0">{% if producto %}Editar Producto{% else %}Crear Producto{% endif %}</h2>
+    <div class="col-lg-9">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <a href="{{ url_for('inventory_bp.index') }}" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <div>
+                    <h2 class="fw-bold text-white mb-0" style="font-family: var(--font-heading);">
+                        {% if producto %}Editar Accesorio / Repuesto{% else %}Registrar Nuevo Accesorio / Repuesto{% endif %}
+                    </h2>
+                    <small class="text-muted">Configura las 3 listas de precios oficiales y el stock separado en Tienda y Bodega</small>
+                </div>
+            </div>
         </div>
 
-        <div class="card card-custom p-5">
+        <div class="card card-custom p-4 p-md-5" style="background: #0d1117; border: 1px solid #21262d;">
             <form method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                
-                <div class="row g-4">
+
+                <!-- 1. Identificación y Clasificación -->
+                <h6 class="text-uppercase fw-bold mb-3 pb-2 border-bottom" style="color: #029CC2; letter-spacing: 1px; border-color: #21262d !important;">
+                    <i class="fa-solid fa-barcode me-2"></i>1. Identificación y Categoría Automotriz
+                </h6>
+                <div class="row g-3 mb-4">
                     <div class="col-md-4">
-                        <label class="form-label fw-bold text-brand-black">SKU / Código Maestro</label>
-                        <input type="text" class="form-control bg-light border-0" name="sku" required placeholder="Ej: FUNDA-XXX" value="{{ producto.sku if producto else '' }}">
+                        <label class="form-label fw-bold text-white">Código de Barras / SKU *</label>
+                        <input type="text" class="form-control" name="codigo_barras" required placeholder="Ej: LED-H4-TURBO" value="{{ (producto.codigo_barras or producto.sku) if producto else '' }}">
                     </div>
                     <div class="col-md-8">
-                        <label class="form-label fw-bold text-brand-black">Nombre del Producto Maestro</label>
-                        <input type="text" class="form-control bg-light border-0" name="nombre" required placeholder="Acme Case Pro" value="{{ producto.nombre if producto else '' }}">
-                    </div>
-                    
-                    <div class="col-md-12">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="fw-bold text-brand-black mb-0"><i class="fa-solid fa-sitemap me-2"></i>Subcategorías</h5>
-                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" id="addVariantBtn">
-                                <i class="fa-solid fa-plus me-1"></i> Añadir Subcategoría
-                            </button>
-                        </div>
-                        <div class="alert alert-info py-2 small border-0 rounded-3">
-                            <i class="fa-solid fa-circle-info me-1"></i> Si no añades variantes, el sistema usará los valores base (stock y precios) definidos abajo.
-                        </div>
-                        
-                        <div id="variantsContainer" class="mb-4">
-                            {% if producto and producto.variantes %}
-                                {% for v in producto.variantes %}
-                                <div class="variant-row card border-0 shadow-sm p-3 mb-2 bg-white">
-                                    <input type="hidden" name="variant_id[]" value="{{ v.id }}">
-                                    <div class="row g-2 align-items-end">
-                                        <div class="col-md-3">
-                                            <label class="form-label small fw-bold">Nombre</label>
-                                            <input type="text" name="v_nombre[]" class="form-control form-control-sm" value="{{ v.nombre_variante }}" required>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <label class="form-label small fw-bold">Stock</label>
-                                            <input type="number" name="v_stock[]" class="form-control form-control-sm" value="{{ v.cantidad_stock }}" required>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <label class="form-label small fw-bold">Costo</label>
-                                            <input type="number" step="1" name="v_costo[]" class="form-control form-control-sm" value="{{ "%.0f"|format(v.precio_costo|float) if v.precio_costo else '' }}">
-                                        </div>
-                                        <div class="col-md-2">
-                                            <label class="form-label small fw-bold">P. Min</label>
-                                            <input type="number" step="1" name="v_min[]" class="form-control form-control-sm" value="{{ "%.0f"|format(v.precio_minimo|float) if v.precio_minimo else '' }}">
-                                        </div>
-                                        <div class="col-md-2">
-                                            <label class="form-label small fw-bold">P. Sug</label>
-                                            <input type="number" step="1" name="v_sug[]" class="form-control form-control-sm" value="{{ "%.0f"|format(v.precio_sugerido|float) if v.precio_sugerido else '' }}">
-                                        </div>
-                                        <div class="col-md-1 text-end">
-                                            <button type="button" class="btn btn-sm btn-link text-danger remove-variant" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            {% endif %}
-                        </div>
+                        <label class="form-label fw-bold text-white">Nombre del Accesorio / Producto *</label>
+                        <input type="text" class="form-control" name="nombre" required placeholder="Ej: Kit Bombillos LED H4 24000LM Canbus" value="{{ producto.nombre if producto else '' }}">
                     </div>
 
-                    <div id="baseInfoSection" class="row g-4 {% if producto and producto.variantes %}d-none{% endif %}">
-                        <div class="col-md-3 mt-4">
-                            <label class="form-label fw-bold text-brand-black text-truncate">Existencias (Base)</label>
-                            <input type="number" class="form-control bg-light border-0" name="cantidad_stock" value="{{ producto.cantidad_stock if producto else '0' }}">
-                        </div>
-                        <div class="col-md-3 mt-4">
-                            <label class="form-label fw-bold text-brand-black text-truncate">Costo Compra (Base)</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white border-0">$</span>
-                                <input type="number" step="1" class="form-control bg-light border-0" name="precio_costo" value="{{ "%.0f"|format(producto.precio_costo|float) if producto else '0' }}">
-                            </div>
-                        </div>
-                        <div class="col-md-3 mt-4">
-                            <label class="form-label fw-bold text-brand-black text-truncate">Precio Mínimo (Base)</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white border-0">$</span>
-                                <input type="number" step="1" class="form-control bg-light border-0" name="precio_minimo" value="{{ "%.0f"|format(producto.precio_minimo|float) if producto else '0' }}">
-                            </div>
-                        </div>
-                        <div class="col-md-3 mt-4">
-                            <label class="form-label fw-bold text-brand-black text-truncate">Precio Sugerido (Base)</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white border-0">$</span>
-                                <input type="number" step="1" class="form-control bg-light border-0" name="precio_sugerido" value="{{ "%.0f"|format(producto.precio_sugerido|float) if producto else '0' }}">
-                            </div>
-                        </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-white">Categoría Principal</label>
+                        <select class="form-select" name="categoria_id" id="categoriaSelect">
+                            <option value="">-- Seleccionar Categoría --</option>
+                            {% for cat in categorias %}
+                                <option value="{{ cat.id }}" {% if producto and producto.categoria_id == cat.id %}selected{% endif %}>
+                                    {{ cat.nombre }} (Alerta Mín: {{ cat.stock_minimo_alerta }})
+                                </option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    
-                    <div class="col-md-6 mt-4">
-                        <label class="form-label fw-bold text-brand-black">Imagen del Producto Maestro</label>
-                        <input type="file" class="form-control bg-light border-0" name="imagen" accept="image/*">
-                        {% if producto and producto.imagen %}
-                            <small class="text-muted d-block mt-2">Imagen actual: <a href="{{ url_for('static', filename='uploads/' ~ producto.imagen) }}" target="_blank">{{ producto.imagen }}</a></small>
-                        {% endif %}
-                    </div>
-                    <div class="col-md-6 mt-4">
-                        <label class="form-label fw-bold text-brand-black">Observaciones Generales</label>
-                        <textarea class="form-control bg-light border-0" name="observacion" rows="3" placeholder="Notas sobre el producto maestro...">{{ producto.observacion if producto and producto.observacion else '' }}</textarea>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-white">Subcategoría</label>
+                        <select class="form-select" name="subcategory_id" id="subcategoriaSelect">
+                            <option value="">-- Seleccionar Subcategoría --</option>
+                            {% for sub in subcategorias %}
+                                <option value="{{ sub.id }}" data-cat="{{ sub.categoria_id }}" {% if producto and producto.subcategory_id == sub.id %}selected{% endif %}>
+                                    {{ sub.nombre }}
+                                </option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
 
-                <hr class="my-5 border-light">
-                
-                <div class="text-end">
-                    <a href="/inventory" class="btn btn-link text-muted text-decoration-none fw-bold me-3">Cancelar</a>
-                    <!-- Botón Guardar en Azul Turquesa -->
-                    <button type="submit" class="btn btn-blue px-5 py-2 rounded-pill shadow-sm fw-bold">
-                        Guardar Producto Maestro
+                <!-- 2. Costo y 3 Listas de Precios -->
+                <h6 class="text-uppercase fw-bold mb-3 pb-2 border-bottom" style="color: #40A435; letter-spacing: 1px; border-color: #21262d !important;">
+                    <i class="fa-solid fa-tags me-2"></i>2. Costo y 3 Listas de Precios Oficiales (COP)
+                </h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold text-white">Costo Adquisición *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" step="1" min="0" class="form-control fw-bold" name="costo" required value="{{ '%.0f'|format((producto.costo or producto.precio_costo or 0)|float) if producto else '0' }}">
+                        </div>
+                        <small class="text-muted">Costo base de compra</small>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold" style="color: #029CC2;">1. Precio Distribuidor *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" step="1" min="0" class="form-control fw-bold" name="precio_distribuidor" required value="{{ '%.0f'|format((producto.precio_distribuidor or producto.precio_minimo or 0)|float) if producto else '0' }}">
+                        </div>
+                        <small class="text-muted">Mayoristas / Talleres aliados</small>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold text-warning">2. Precio Local *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" step="1" min="0" class="form-control fw-bold" name="precio_local" required value="{{ '%.0f'|format((producto.precio_local or producto.precio_final or producto.precio_sugerido or 0)|float) if producto else '0' }}">
+                        </div>
+                        <small class="text-muted">Comerciantes / Local vecino</small>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold" style="color: #40A435;">3. Precio Cliente Final *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" step="1" min="0" class="form-control fw-bold" name="precio_final" required value="{{ '%.0f'|format((producto.precio_final or producto.precio_sugerido or 0)|float) if producto else '0' }}">
+                        </div>
+                        <small class="text-muted">Público general / Mostrador</small>
+                    </div>
+                </div>
+
+                <!-- 3. Inventario Dual por Ubicación y Umbral de Alerta -->
+                <h6 class="text-uppercase fw-bold mb-3 pb-2 border-bottom" style="color: #E31313; letter-spacing: 1px; border-color: #21262d !important;">
+                    <i class="fa-solid fa-warehouse me-2"></i>3. Inventario por Ubicación y Umbral de Alerta
+                </h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-white">Stock en Tienda (Mostrador / POS)</label>
+                        <input type="number" class="form-control fw-bold" name="stock_tienda" min="0" value="{{ (producto.stock_tienda if producto and producto.stock_tienda is not none else (producto.cantidad_stock if producto else 0)) }}">
+                        <small class="text-muted">Disponible para venta inmediata</small>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-white">Stock en Bodega Central</label>
+                        <input type="number" class="form-control fw-bold" name="stock_bodega" min="0" value="{{ producto.stock_bodega if producto and producto.stock_bodega is not none else 0 }}">
+                        <small class="text-muted">Reserva en almacén para traslados</small>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold" style="color: #E31313;">Stock Mínimo de Alerta</label>
+                        <input type="number" class="form-control fw-bold" name="stock_minimo" min="0" value="{{ producto.stock_minimo if producto and producto.stock_minimo is not none else 5 }}">
+                        <small class="text-muted">Alerta roja cuando Tienda &le; este valor (Default: 5)</small>
+                    </div>
+                </div>
+
+                <!-- 4. Fotografía y Observaciones -->
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-white">Fotografía del Producto</label>
+                        <input type="file" class="form-control" name="imagen" accept="image/*">
+                        {% if producto and producto.imagen %}
+                            <small class="text-muted d-block mt-2">Imagen actual: <a href="{{ url_for('static', filename='uploads/' ~ producto.imagen) }}" target="_blank" style="color: #029CC2;">{{ producto.imagen }}</a></small>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-white">Ficha Técnica / Compatibilidad Vehicular</label>
+                        <textarea class="form-control" name="observacion" rows="3" placeholder="Ej: Compatible con Chevrolet Spark GT, Renault Logan, 12V-24V...">{{ producto.observacion if producto and producto.observacion else '' }}</textarea>
+                    </div>
+                </div>
+
+                <hr class="my-4" style="border-color: #21262d;">
+
+                <div class="d-flex justify-content-end gap-3">
+                    <a href="{{ url_for('inventory_bp.index') }}" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">Cancelar</a>
+                    <button type="submit" class="btn btn-blue rounded-pill px-5 py-2 fw-bold shadow">
+                        <i class="fa-solid fa-floppy-disk me-2"></i>Guardar Producto
                     </button>
                 </div>
             </form>
@@ -124,64 +150,34 @@
     </div>
 </div>
 
-<template id="variantTemplate">
-    <div class="variant-row card border-0 shadow-sm p-3 mb-2 bg-white animate__animated animate__fadeInUp">
-        <input type="hidden" name="variant_id[]" value="">
-        <div class="row g-2 align-items-end">
-            <div class="col-md-3">
-                <label class="form-label small fw-bold">Nombre de Subcategoría</label>
-                <input type="text" name="v_nombre[]" class="form-control form-control-sm" placeholder="Ej: Rojo / L" required>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label small fw-bold">Stock</label>
-                <input type="number" name="v_stock[]" class="form-control form-control-sm" placeholder="0" required>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label small fw-bold">Costo</label>
-                <input type="number" step="1" name="v_costo[]" class="form-control form-control-sm" placeholder="Opcional">
-            </div>
-            <div class="col-md-2">
-                <label class="form-label small fw-bold">P. Min</label>
-                <input type="number" step="1" name="v_min[]" class="form-control form-control-sm" placeholder="Opcional">
-            </div>
-            <div class="col-md-2">
-                <label class="form-label small fw-bold">P. Sug</label>
-                <input type="number" step="1" name="v_sug[]" class="form-control form-control-sm" placeholder="Opcional">
-            </div>
-            <div class="col-md-1 text-end">
-                <button type="button" class="btn btn-sm btn-link text-danger remove-variant" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
-            </div>
-        </div>
-    </div>
-</template>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const container = document.getElementById('variantsContainer');
-    const addBtn = document.getElementById('addVariantBtn');
-    const template = document.getElementById('variantTemplate');
-    const baseInfoSection = document.getElementById('baseInfoSection');
+    const catSelect = document.getElementById('categoriaSelect');
+    const subSelect = document.getElementById('subcategoriaSelect');
+    const currentSubId = "{{ producto.subcategory_id if producto and producto.subcategory_id else '' }}";
 
-    function toggleBaseInfo() {
-        if (container.children.length > 0) {
-            baseInfoSection.classList.add('d-none');
-        } else {
-            baseInfoSection.classList.remove('d-none');
-        }
+    if (catSelect && subSelect) {
+        catSelect.addEventListener('change', async function() {
+            const catId = this.value;
+            subSelect.innerHTML = '<option value="">-- Seleccionar Subcategoría --</option>';
+            if (!catId) return;
+            try {
+                const resp = await fetch(`/inventory/api/subcategorias/${catId}`);
+                if (resp.ok) {
+                    const subs = await resp.json();
+                    subs.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s.id;
+                        opt.textContent = s.nombre;
+                        if (String(s.id) === String(currentSubId)) opt.selected = true;
+                        subSelect.appendChild(opt);
+                    });
+                }
+            } catch (e) {
+                console.error('Error cargando subcategorías:', e);
+            }
+        });
     }
-
-    addBtn.addEventListener('click', () => {
-        const clone = template.content.cloneNode(true);
-        container.appendChild(clone);
-        toggleBaseInfo();
-    });
-
-    container.addEventListener('click', (e) => {
-        if (e.target.closest('.remove-variant')) {
-            e.target.closest('.variant-row').remove();
-            toggleBaseInfo();
-        }
-    });
 });
 </script>
 {% endblock %}

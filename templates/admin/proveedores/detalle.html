@@ -131,6 +131,13 @@
                                 </td>
                                 <td class="fw-bold text-brand-black">
                                     {{ inv.numero_factura if inv.numero_factura else '-' }}
+                                    {% if inv.ingreso_mercancia_rel %}
+                                        {% for ing_rel in inv.ingreso_mercancia_rel %}
+                                        <a href="{{ url_for('ingresos_bp.ticket_revision', id=ing_rel.id) }}" class="badge rounded-pill ms-1 text-decoration-none" style="background: rgba(2,156,194,0.18); color: #029CC2; border: 1px solid #029CC2; font-size: 0.7rem;" title="Ver Ticket de Revisión de Mercancía">
+                                            <i class="fa-solid fa-dolly me-1"></i>{{ ing_rel.numero_ingreso }}
+                                        </a>
+                                        {% endfor %}
+                                    {% endif %}
                                 </td>
                                 <td class="text-truncate" style="max-width: 140px;" title="{{ inv.descripcion or '' }}">
                                     {{ inv.descripcion if inv.descripcion else '-' }}

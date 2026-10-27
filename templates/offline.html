@@ -1,29 +1,32 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maripocell - Sin Conexión</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=maripocell_v3">
-    <link rel="icon" type="image/png" sizes="32x32" href="/static/img/icons/favicon-32x32.png?v=maripocell_v3">
-    <link rel="icon" type="image/png" sizes="16x16" href="/static/img/icons/favicon-16x16.png?v=maripocell_v3">
-    <link rel="apple-touch-icon" sizes="180x180" href="/static/img/icons/apple-touch-icon.png?v=maripocell_v3">
-    <meta name="theme-color" content="#D4AF37">
-    <!-- Google Fonts: Montserrat & Roboto -->
+    <title>POWER LED | Sin Conexión</title>
+    <link rel="icon" type="image/png" href="/static/img/favicon-pw.png?v=powerled_v2">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=powerled_v2">
+    <link rel="icon" type="image/png" sizes="64x64" href="/static/img/icons/favicon-64x64.png?v=powerled_v2">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/img/icons/favicon-32x32.png?v=powerled_v2">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/img/icons/favicon-16x16.png?v=powerled_v2">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/img/icons/apple-touch-icon.png?v=powerled_v2">
+    <link rel="manifest" href="/manifest.json?v=powerled_v2">
+    <meta name="theme-color" content="#000000">
+    <!-- Google Fonts: Orbitron, Rajdhani & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
-            --brand-bg: #FFFFFF;
-            --brand-white: #FFFFFF;
-            --brand-primary: #D4AF37;
-            --brand-secondary: #1F1F1F;
-            --brand-text: #111827;
-            --brand-muted: #4B5563;
-            --brand-border: #E5E7EB;
-            --brand-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(212, 175, 55, 0.08);
+            --power-bg: #000000;
+            --power-card: #0d1117;
+            --power-border: #21262d;
+            --power-text: #ffffff;
+            --power-text-muted: #8b949e;
+            --power-red: #E31313;
+            --power-green: #40A435;
+            --power-blue: #029CC2;
         }
 
         * {
@@ -33,9 +36,13 @@
         }
 
         body {
-            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--brand-bg);
-            color: var(--brand-text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--power-bg);
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(227, 19, 19, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 50% 80%, rgba(64, 164, 53, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 80% 30%, rgba(2, 156, 194, 0.1) 0%, transparent 45%);
+            color: var(--power-text);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -44,10 +51,10 @@
         }
 
         .offline-card {
-            background: var(--brand-white);
-            border: 1px solid var(--brand-border);
+            background: var(--power-card);
+            border: 1px solid var(--power-border);
             border-radius: 20px;
-            box-shadow: var(--brand-shadow);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(2, 156, 194, 0.1);
             padding: 2.5rem 2rem;
             max-width: 480px;
             width: 100%;
@@ -62,94 +69,99 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 6px;
-            background: linear-gradient(90deg, var(--brand-primary), var(--brand-secondary));
+            height: 4px;
+            background: linear-gradient(90deg, var(--power-red) 0%, var(--power-green) 50%, var(--power-blue) 100%);
         }
 
-        .brand-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(212, 175, 55, 0.12);
-            color: #926C09;
-            padding: 0.4rem 1rem;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            letter-spacing: 0.05em;
+        .brand-logo-img {
+            max-width: 170px;
+            height: auto;
+            margin-bottom: 0.5rem;
+        }
+
+        .brand-slogan {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.72rem;
+            letter-spacing: 0.25em;
+            color: var(--power-blue);
             text-transform: uppercase;
+            font-weight: 700;
             margin-bottom: 1.5rem;
-            border: 1px solid rgba(212, 175, 55, 0.3);
         }
 
         .icon-container {
-            width: 84px;
-            height: 84px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
-            background: rgba(212, 175, 55, 0.12);
+            background: rgba(227, 19, 19, 0.12);
+            border: 1px solid rgba(227, 19, 19, 0.3);
             display: inline-flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 1.5rem;
-            color: var(--brand-primary);
-            font-size: 2.25rem;
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+            color: var(--power-red);
+            font-size: 2rem;
+            box-shadow: 0 0 20px rgba(227, 19, 19, 0.2);
         }
 
         h1 {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 1.6rem;
-            font-weight: 900;
-            color: var(--brand-text);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--power-text);
             margin-bottom: 0.75rem;
-            letter-spacing: -0.02em;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
         }
 
         p {
-            color: var(--brand-muted);
+            color: var(--power-text-muted);
             font-size: 0.95rem;
-            line-height: 1.55;
+            line-height: 1.6;
             margin-bottom: 1.75rem;
         }
 
         .btn-retry {
-            background: linear-gradient(135deg, #D4AF37 0%, #F3D079 100%);
-            color: #111827;
-            border: 1px solid #D4AF37;
+            background: var(--power-blue);
+            color: #FFFFFF;
+            border: 1px solid var(--power-blue);
             padding: 0.85rem 1.75rem;
             border-radius: 12px;
-            font-size: 0.95rem;
-            font-weight: 800;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
             cursor: pointer;
             transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.6rem;
             text-decoration: none;
-            box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
+            box-shadow: 0 4px 16px rgba(2, 156, 194, 0.35);
         }
 
         .btn-retry:hover {
             transform: translateY(-2px);
-            background: linear-gradient(135deg, #E5B842 0%, #FCE8B2 100%);
-            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
+            background: #04b4df;
+            box-shadow: 0 6px 24px rgba(2, 156, 194, 0.55);
         }
 
         .status-pill {
             margin-top: 1.5rem;
             font-size: 0.8rem;
-            color: var(--brand-muted);
+            color: var(--power-text-muted);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.4rem;
+            gap: 0.5rem;
         }
 
         .status-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background-color: #EF4444;
+            background-color: var(--power-red);
             animation: pulse 1.8s infinite;
         }
 
@@ -162,18 +174,16 @@
 </head>
 <body>
     <div class="offline-card">
-        <div class="mb-3">
-            <img src="/static/img/icons/icon-192x192.png" alt="Maripocell Logo" style="width: 72px; height: 72px; object-fit: contain; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); padding: 4px; border: 1px solid #E5E7EB; background: #FFFFFF;">
+        <div>
+            <img src="/static/img/logo-power-led-dark.png" alt="POWER LED" class="brand-logo-img">
         </div>
-        <div class="brand-badge">
-            <i class="fas fa-bolt"></i> Maripocell POS
-        </div>
+        <div class="brand-slogan">ILUMINA TU CAMINO</div>
         <div class="icon-container">
             <i class="fas fa-wifi-slash"></i>
         </div>
         <h1>Sin Conexión a Internet</h1>
         <p>
-            No pudimos sincronizar con el servidor de Maripocell. Por favor verifica tu conexión Wi-Fi o datos móviles.
+            No pudimos sincronizar con el servidor de <strong>POWER LED</strong>. Por favor verifica tu conexión Wi-Fi o datos móviles.
         </p>
         <button class="btn-retry" onclick="window.location.reload();">
             <i class="fas fa-rotate-right"></i> Reintentar Conexión
@@ -184,7 +194,6 @@
     </div>
 
     <script>
-        // Si vuelve el internet, recargar automáticamente
         window.addEventListener('online', () => {
             window.location.reload();
         });

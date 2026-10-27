@@ -1,21 +1,23 @@
 {% extends "base.html" %}
 
+{% block title %}POWER LED | Dashboard Operativo{% endblock %}
+
 {% block extra_css %}
 <style>
     /* Estilos Premium para Tarjetas KPI del Dashboard (Gold Glow & Shimmer) */
     .kpi-card {
         position: relative;
         overflow: hidden;
-        background: linear-gradient(150deg, #FFFFFF 0%, #FAFAFC 60%, #FFFDF6 100%);
-        border: 1.5px solid rgba(229, 231, 235, 0.95);
+        background: linear-gradient(150deg, #0d1117 0%, #161b22 100%) !important;
+        border: 1.5px solid #21262d !important;
         border-radius: 20px;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.035);
         transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .kpi-card-gold {
-        border-color: rgba(212, 175, 55, 0.38) !important;
-        background: linear-gradient(150deg, #FFFFFF 0%, #FFFEFA 50%, #FFF9E9 100%) !important;
+        border-color: rgba(2, 156, 194, 0.45) !important;
+        background: linear-gradient(150deg, #0d1117 0%, #111822 100%) !important;
     }
     
     /* Destello de luz ambiental en la esquina */
@@ -56,7 +58,7 @@
     .kpi-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 12px 28px -4px rgba(212, 175, 55, 0.22), 0 4px 14px rgba(0, 0, 0, 0.05);
-        border-color: #D4AF37 !important;
+        border-color: #029CC2 !important;
     }
 
     /* Cajas de Iconos Superiores */
@@ -116,10 +118,10 @@
 
     /* Contenedor de detalles secundarios */
     .kpi-details-box {
-        background: rgba(248, 250, 252, 0.85);
+        background: rgba(22, 27, 34, 0.9);
         border-radius: 10px;
         padding: 0.45rem 0.65rem;
-        border: 1px solid #EEF2F6;
+        border: 1px solid #21262d;
     }
 
     /* Cifras Grandes */

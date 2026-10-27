@@ -1,14 +1,21 @@
 {
     "id": "/",
-    "name": "Maripocell - Accesorios & Tecnología",
-    "short_name": "Maripocell",
-    "description": "Sistema integral de gestión de inventario, punto de venta y finanzas Maripocell - Accesorios & Tecnología",
+    "name": "POWER LED - Ilumina tu camino",
+    "short_name": "POWER LED",
+    "description": "Plataforma ERP/POS/CRM Automotriz POWER LED — Ilumina tu camino: Caja POS, Taller, Vehículos, Ingresos de Mercancía, Bodega e Instalaciones.",
+    "lang": "es-CO",
+    "dir": "ltr",
     "start_url": "/?source=pwa",
     "scope": "/",
     "display": "standalone",
+    "display_override": [
+        "window-controls-overlay",
+        "standalone",
+        "minimal-ui"
+    ],
     "orientation": "any",
-    "background_color": "#FFFFFF",
-    "theme_color": "#D4AF37",
+    "background_color": "#000000",
+    "theme_color": "#000000",
     "categories": [
         "business",
         "finance",
@@ -16,25 +23,73 @@
     ],
     "icons": [
         {
-            "src": "/static/img/icons/icon-192x192.png?v=maripocell_v3",
+            "src": "/static/img/icons/icon-72x72.png?v=powerled_v2",
+            "sizes": "72x72",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/static/img/icons/icon-96x96.png?v=powerled_v2",
+            "sizes": "96x96",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/static/img/icons/icon-128x128.png?v=powerled_v2",
+            "sizes": "128x128",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/static/img/icons/icon-144x144.png?v=powerled_v2",
+            "sizes": "144x144",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/static/img/icons/icon-152x152.png?v=powerled_v2",
+            "sizes": "152x152",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/static/img/icons/icon-180x180.png?v=powerled_v2",
+            "sizes": "180x180",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/static/img/icons/icon-192x192.png?v=powerled_v2",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any"
         },
         {
-            "src": "/static/img/icons/icon-192x192.png?v=maripocell_v3",
+            "src": "/static/img/icons/icon-maskable-192x192.png?v=powerled_v2",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "maskable"
         },
         {
-            "src": "/static/img/icons/icon-512x512.png?v=maripocell_v3",
+            "src": "/static/img/icons/icon-256x256.png?v=powerled_v2",
+            "sizes": "256x256",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/static/img/icons/icon-384x384.png?v=powerled_v2",
+            "sizes": "384x384",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/static/img/icons/icon-512x512.png?v=powerled_v2",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any"
         },
         {
-            "src": "/static/img/icons/icon-512x512.png?v=maripocell_v3",
+            "src": "/static/img/icons/icon-maskable-512x512.png?v=powerled_v2",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
@@ -42,18 +97,56 @@
     ],
     "shortcuts": [
         {
-            "name": "Caja Registradora",
-            "short_name": "Caja",
-            "description": "Registrar venta en caja",
+            "name": "Caja Registradora POS",
+            "short_name": "Caja POS",
+            "description": "Facturación en mostrador y cobro de órdenes de trabajo",
             "url": "/sales/caja_visual",
-            "icons": [{ "src": "/static/img/icons/icon-192x192.png?v=maripocell_v3", "sizes": "192x192" }]
+            "icons": [
+                {
+                    "src": "/static/img/icons/icon-192x192.png?v=powerled_v2",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                }
+            ]
         },
         {
-            "name": "Arqueo de Caja",
-            "short_name": "Arqueo",
-            "description": "Consultar o realizar arqueo de caja",
-            "url": "/arqueo/nuevo",
-            "icons": [{ "src": "/static/img/icons/icon-192x192.png?v=maripocell_v3", "sizes": "192x192" }]
+            "name": "Ingreso de Mercancía",
+            "short_name": "Ingresos",
+            "description": "Recepción de mercancía con proveedor y ticket de revisión",
+            "url": "/ingresos/",
+            "icons": [
+                {
+                    "src": "/static/img/icons/icon-192x192.png?v=powerled_v2",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                }
+            ]
+        },
+        {
+            "name": "Hojas de Trabajo (Taller)",
+            "short_name": "Taller",
+            "description": "Órdenes de trabajo automotrices en bahía de instalación",
+            "url": "/hojas-trabajo/",
+            "icons": [
+                {
+                    "src": "/static/img/icons/icon-192x192.png?v=powerled_v2",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                }
+            ]
+        },
+        {
+            "name": "Historial de Vehículos",
+            "short_name": "Vehículos",
+            "description": "Consultar expediente técnico e historial por placa",
+            "url": "/vehiculos/",
+            "icons": [
+                {
+                    "src": "/static/img/icons/icon-192x192.png?v=powerled_v2",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                }
+            ]
         }
     ]
 }

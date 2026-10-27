@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block title %}POWER LED | Balance Financiero Operativo{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
     <!-- Navbar y Botones de Opción -->
@@ -18,13 +20,14 @@
     <div class="col-12 col-xl-10 report-container">
         <div class="card p-4 p-md-5 border-0 shadow-sm rounded-4 printable-document" style="background-color: #FFFFFF; border: 1px solid #E5E7EB !important; color: #111827;">
             
-            <!-- Cabecera Oficial Maripocell -->
-            <div class="text-center mb-5 pb-4 border-bottom d-print-block" style="border-color: #E5E7EB !important;">
-                <div class="display-6 fw-bold mb-1" style="font-family: var(--font-display); letter-spacing: 1.5px;">
-                    <span style="color: #111827; font-weight: 900;">Maripocell</span>
+            <!-- Cabecera Oficial POWER LED -->
+            <div class="text-center mb-5 pb-4 border-bottom d-print-block" style="border-color: #21262d !important;">
+                <div class="display-6 fw-bold mb-1 power-led-wordmark justify-content-center" style="font-family: var(--font-display); letter-spacing: 2px;">
+                    <span class="word-power">POWER</span>
+                    <span><span class="letter-l">L</span><span class="letter-e">E</span><span class="letter-d">D</span></span>
                 </div>
-                <div class="small fw-semibold text-uppercase mb-2" style="letter-spacing: 1.5px; font-family: var(--font-heading); color: #926C09;">
-                    MARIPOCELL - ACCESORIOS & TECNOLOGÍA • POS & GESTIÓN COMERCIAL
+                <div class="small fw-semibold text-uppercase mb-2" style="letter-spacing: 2px; font-family: var(--font-heading); color: #029CC2;">
+                    POWER LED — ILUMINA TU CAMINO • POS & GESTIÓN COMERCIAL
                 </div>
                 <h4 class="text-dark fw-bold mb-2" style="font-family: var(--font-heading);">ESTADO DE RESULTADOS CONTABLE</h4>
                 <p class="mb-0 text-muted small" style="font-family: var(--font-body);">
@@ -144,7 +147,7 @@
                     <hr class="w-100 border-dark border-1 opacity-100">
                     <p class="mb-0 fw-bold" style="font-family: var(--font-heading);">Verificado y Autorizado</p>
                     <p class="text-muted small mb-0">{{ current_user.nombre }}</p>
-                    <p class="text-muted" style="font-size: 0.75rem;">Administración General • MARIPOCELL</p>
+                    <p class="text-muted" style="font-size: 0.75rem;">Administración General • POWER LED — Ilumina tu camino</p>
                 </div>
             </div>
 

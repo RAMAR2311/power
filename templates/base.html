@@ -1,306 +1,438 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Maripocell - Accesorios & Tecnología{% endblock %}</title>
+    <title>{% block title %}POWER LED | Ilumina tu camino{% endblock %}</title>
     <!-- Favicon y PWA Manifest -->
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}?v=maripocell_v3">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/icons/favicon-32x32.png') }}?v=maripocell_v3">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/icons/favicon-16x16.png') }}?v=maripocell_v3">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/icons/apple-touch-icon.png') }}?v=maripocell_v3">
-    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='img/icons/icon-192x192.png') }}?v=maripocell_v3">
-    <link rel="manifest" href="/manifest.json?v=maripocell_v3">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon-pw.png') }}?v=powerled_v2">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}?v=powerled_v2">
+    <link rel="icon" type="image/png" sizes="64x64" href="{{ url_for('static', filename='img/icons/favicon-64x64.png') }}?v=powerled_v2">
+    <link rel="icon" type="image/png" sizes="48x48" href="{{ url_for('static', filename='img/icons/favicon-48x48.png') }}?v=powerled_v2">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/icons/favicon-32x32.png') }}?v=powerled_v2">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/icons/favicon-16x16.png') }}?v=powerled_v2">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/icons/apple-touch-icon.png') }}?v=powerled_v2">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='img/icons/icon-192x192.png') }}?v=powerled_v2">
+    <link rel="manifest" href="/manifest.json?v=powerled_v2">
     
     <!-- Meta tags PWA para Android, iOS y Navegadores Modernos -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Maripocell">
-    <meta name="application-name" content="Maripocell">
-    <link rel="apple-touch-icon" sizes="192x192" href="{{ url_for('static', filename='img/icons/icon-192x192.png') }}?v=maripocell_v3">
-    <link rel="apple-touch-icon" sizes="512x512" href="{{ url_for('static', filename='img/icons/icon-512x512.png') }}?v=maripocell_v3">
-    <meta name="theme-color" content="#D4AF37">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="POWER LED">
+    <meta name="application-name" content="POWER LED">
+    <link rel="apple-touch-icon" sizes="152x152" href="{{ url_for('static', filename='img/icons/icon-152x152.png') }}?v=powerled_v2">
+    <link rel="apple-touch-icon" sizes="192x192" href="{{ url_for('static', filename='img/icons/icon-192x192.png') }}?v=powerled_v2">
+    <link rel="apple-touch-icon" sizes="512x512" href="{{ url_for('static', filename='img/icons/icon-512x512.png') }}?v=powerled_v2">
+    <meta name="theme-color" content="#000000">
 
-    <!-- Google Fonts: Montserrat, Poppins, Inter, Roboto -->
+    <!-- Google Fonts: Orbitron (Cybernetic Display), Rajdhani, Inter, Roboto -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=Poppins:wght@600;700;800;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
     <!-- Bootstrap 5 CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('powerled_theme') || 'dark';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        })();
+    </script>
     <style>
         /* =========================================================
-           MARIPOCELL DESIGN SYSTEM: TECH LIGHT THEME
-           Canvas Base: #FFFFFF (Blanco Puro)
-           Cards / Containers: #FBFBFC, Bordes #E5E7EB
-           Color Primario: #D4AF37 / #E5B842 (Oro Metálico Tech)
-           Color Secundario: #1F1F1F (Negro Grafito)
-           Color Acento: #D7A86E (Ámbar Cálido)
-           Texto: Principal #111827, Secundario #4B5563
-           Degradado Corporativo: linear-gradient(135deg, #D4AF37 0%, #F3D079 100%)
+           POWER LED DESIGN SYSTEM — "ILUMINA TU CAMINO"
+           Paleta Oficial RGB / Color Luz:
+           - Dark Neutral (Fondo Base): #000000
+           - Light Neutral (Textos): #FFFFFF
+           - Led Red ("L" / Danger): #E31313
+           - Led Green ("E" / Success): #40A435
+           - Led Blue ("D" / Primary): #029CC2
+           - Cards / Elevación: #0d1117 / #161b22
+           - Bordes: #21262d / #30363d
            ========================================================= */
         :root {
-            --brand-bg: #FFFFFF;            /* Canvas blanco puro */
-            --brand-white: #FFFFFF;
-            --brand-surface: #FBFBFC;       /* Contenedores y Cards */
-            --brand-surface-card: #FBFBFC;
-            --brand-card-bg: #FBFBFC;
-            --brand-surface-hover: #F3F4F6;
+            --power-bg: #000000;
+            --power-card: #0d1117;
+            --power-card-hover: #161b22;
+            --power-border: #21262d;
+            --power-border-hover: #30363d;
+            --power-text: #ffffff;
+            --power-text-muted: #8b949e;
+            --power-red: #E31313;
+            --power-green: #40A435;
+            --power-blue: #029CC2;
 
-            --brand-primary: #D4AF37;       /* Oro Metálico Tech */
-            --brand-primary-btn: #E5B842;   /* Botón primario y focus */
-            --brand-primary-dark: #B89028;  /* Oro Oscuro */
-            --brand-secondary: #1F1F1F;     /* Negro Grafito */
-            --brand-secondary-light: #374151;
-            --brand-accent: #D7A86E;        /* Ámbar Cálido */
-            --brand-pink: #D4AF37;
-            --brand-red: #DC2626;           /* Alertas y faltantes */
-            --brand-cyan: #D4AF37;
-            --brand-blue: #1F1F1F;
+            --brand-bg: #000000;
+            --brand-white: #0d1117;
+            --brand-surface: #0d1117;
+            --brand-surface-card: #0d1117;
+            --brand-card-bg: #0d1117;
+            --brand-surface-hover: #161b22;
 
-            --brand-text: #111827;          /* Negro profundo para legibilidad total */
-            --brand-text-dark: #111827;
-            --brand-black: #111827;
-            --brand-text-muted: #4B5563;    /* Texto secundario */
-            --brand-border: #E5E7EB;        /* Bordes sutiles */
-            --brand-border-dark: #D1D5DB;
+            --brand-primary: #029CC2;
+            --brand-primary-btn: #029CC2;
+            --brand-primary-dark: #027a99;
+            --brand-secondary: #161b22;
+            --brand-secondary-light: #21262d;
+            --brand-accent: #029CC2;
+            --brand-pink: #029CC2;
+            --brand-red: #E31313;
+            --brand-green: #40A435;
+            --brand-cyan: #029CC2;
+            --brand-blue: #029CC2;
 
-            --brand-gradient: linear-gradient(135deg, #D4AF37 0%, #F3D079 100%);
-            --brand-gradient-hover: linear-gradient(135deg, #E5B842 0%, #F8E3A1 100%);
-            --brand-neon-glow: 0 4px 15px rgba(212, 175, 55, 0.35);
-            --brand-neon-glow-sm: 0 2px 8px rgba(212, 175, 55, 0.25);
+            --brand-text: #FFFFFF;
+            --brand-text-dark: #FFFFFF;
+            --brand-black: #FFFFFF;
+            --brand-text-muted: #8b949e;
+            --brand-border: #21262d;
+            --brand-border-dark: #30363d;
 
-            --font-display: 'Montserrat', 'Poppins', sans-serif;
-            --font-heading: 'Montserrat', sans-serif;
+            --brand-gradient: linear-gradient(135deg, #029CC2 0%, #016f8a 100%);
+            --brand-gradient-hover: linear-gradient(135deg, #04b4df 0%, #029CC2 100%);
+            --brand-neon-glow: 0 0 18px rgba(2, 156, 194, 0.45);
+            --brand-neon-glow-sm: 0 0 10px rgba(2, 156, 194, 0.28);
+
+            --font-display: 'Ethnocentric', 'Orbitron', 'Rajdhani', sans-serif;
+            --font-heading: 'Orbitron', 'Rajdhani', 'Inter', sans-serif;
             --font-body: 'Inter', 'Roboto', -apple-system, sans-serif;
         }
 
         body {
-            background-color: var(--brand-bg) !important;
-            color: var(--brand-text) !important;
+            background-color: var(--power-bg) !important;
+            color: var(--power-text) !important;
             font-family: var(--font-body);
             -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         h1, h2, h3, h4, h5, h6, .font-orbitron, .font-brand {
             font-family: var(--font-heading);
-            letter-spacing: 0.2px;
-            color: var(--brand-text);
+            letter-spacing: 0.5px;
+            color: var(--power-text);
             font-weight: 700;
         }
 
         .section-subtitle {
-            font-family: 'Montserrat', sans-serif;
+            font-family: var(--font-heading);
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.2em;
-            color: var(--brand-text-muted);
+            color: var(--power-text-muted);
             font-size: 0.8rem;
         }
 
         .display-total {
-            font-family: 'Montserrat', 'Poppins', sans-serif;
+            font-family: var(--font-heading);
             font-weight: 800;
-            color: var(--brand-text);
+            color: var(--power-text);
         }
 
-        /* Clases base con alto contraste */
-        .bg-brand-blue { background-color: var(--brand-secondary) !important; color: #FFFFFF !important; border: 1px solid var(--brand-secondary); }
-        .text-brand-blue { color: var(--brand-primary) !important; font-weight: 700; }
-        .bg-brand-pink { background: var(--brand-gradient) !important; color: #111827 !important; box-shadow: var(--brand-neon-glow-sm); }
-        .bg-brand-white { background-color: #FFFFFF !important; color: var(--brand-text) !important; border: 1px solid var(--brand-border); }
-        
-        .text-brand-black { color: var(--brand-text) !important; }
-        .text-brand-pink { color: var(--brand-primary) !important; font-weight: 700; }
-        .badge-accent { background-color: var(--brand-accent) !important; color: #FFFFFF !important; font-weight: 600; }
+        /* Adaptación global de clases utilitarias a Dark Theme POWER LED */
+        .bg-white, .bg-light, .card.bg-white, .card.bg-light {
+            background-color: var(--power-card) !important;
+            color: var(--power-text) !important;
+            border-color: var(--power-border) !important;
+        }
+        .text-dark, .text-brand-black, .text-black {
+            color: var(--power-text) !important;
+        }
+        .text-muted, .text-secondary, .text-black-50 {
+            color: var(--power-text-muted) !important;
+        }
+        .border, .border-top, .border-bottom, .border-start, .border-end {
+            border-color: var(--power-border) !important;
+        }
 
-        /* Navbar Clean White para Maripocell */
+        .bg-brand-blue { background-color: var(--power-blue) !important; color: #FFFFFF !important; border: 1px solid var(--power-blue); }
+        .text-brand-blue { color: var(--power-blue) !important; font-weight: 700; }
+        .bg-brand-pink { background: var(--brand-gradient) !important; color: #FFFFFF !important; box-shadow: var(--brand-neon-glow-sm); }
+        .bg-brand-white { background-color: var(--power-card) !important; color: var(--power-text) !important; border: 1px solid var(--power-border); }
+        .text-brand-pink { color: var(--power-blue) !important; font-weight: 700; }
+        .badge-accent { background-color: var(--power-blue) !important; color: #FFFFFF !important; font-weight: 600; }
+
+        /* Colores Semánticos Oficiales POWER LED */
+        .text-primary { color: var(--power-blue) !important; }
+        .text-success { color: var(--power-green) !important; }
+        .text-danger { color: var(--power-red) !important; }
+        .bg-primary { background-color: var(--power-blue) !important; }
+        .bg-success { background-color: var(--power-green) !important; }
+        .bg-danger { background-color: var(--power-red) !important; }
+
+        /* Navbar Dark Neutral con acento RGB / Cyan #029CC2 */
         .navbar-custom {
-            background-color: #FFFFFF !important;
-            border-bottom: 2px solid var(--brand-border);
-            padding: 0.85rem 0;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            background-color: rgba(13, 17, 23, 0.95) !important;
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--power-border);
+            padding: 0.75rem 0;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(2, 156, 194, 0.25);
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+        }
+        .navbar-custom::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--power-red) 0%, var(--power-green) 50%, var(--power-blue) 100%);
+            opacity: 0.85;
         }
         
         .navbar-custom .navbar-brand {
             font-family: var(--font-display);
             font-weight: 900;
-            color: #111827 !important;
-            font-size: 1.6rem;
-            letter-spacing: 1px;
+            color: #FFFFFF !important;
+            font-size: 1.45rem;
+            letter-spacing: 1.5px;
         }
 
         .navbar-brand-tech {
-            color: var(--brand-primary) !important;
+            color: var(--power-blue) !important;
+            font-family: var(--font-heading);
         }
 
         .navbar-custom .nav-link {
-            color: #111827;
-            font-weight: 500;
+            color: var(--power-text-muted);
+            font-weight: 600;
             margin-left: 1rem;
-            transition: color 0.2s;
+            transition: all 0.2s ease;
             font-family: var(--font-heading);
+            border-bottom: 2px solid transparent;
         }
 
-        .navbar-custom .nav-link:hover {
-            color: var(--brand-primary);
+        .navbar-custom .nav-link:hover,
+        .navbar-custom .nav-link.active {
+            color: #FFFFFF;
+            border-bottom-color: var(--power-blue);
+            text-shadow: 0 0 10px rgba(2, 156, 194, 0.5);
         }
 
-        /* Botones Pro */
-        .btn-pink, .btn-primary, .btn-brand {
-            background: var(--brand-gradient) !important;
-            color: #111827 !important;
+        /* Botones Corporativos POWER LED */
+        .btn-primary, .btn-blue, .btn-pink, .btn-brand {
+            background: var(--power-blue) !important;
+            color: #FFFFFF !important;
             font-weight: 700;
-            border: 1px solid #D4AF37;
+            border: 1px solid var(--power-blue) !important;
             transition: all 0.2s ease-in-out;
-            box-shadow: 0 4px 10px rgba(212, 175, 55, 0.25);
+            box-shadow: 0 4px 12px rgba(2, 156, 194, 0.28);
             font-family: var(--font-heading);
+            letter-spacing: 0.5px;
         }
-        .btn-pink:hover, .btn-primary:hover, .btn-brand:hover {
-            background: var(--brand-gradient-hover) !important;
-            color: #111827 !important;
+        .btn-primary:hover, .btn-blue:hover, .btn-pink:hover, .btn-brand:hover {
+            background: #03b3de !important;
+            color: #FFFFFF !important;
             transform: translateY(-2px);
             box-shadow: var(--brand-neon-glow);
         }
 
-        .btn-blue, .btn-dark-graphite {
-            background-color: var(--brand-secondary) !important;
+        .btn-success {
+            background-color: var(--power-green) !important;
+            border-color: var(--power-green) !important;
+            color: #FFFFFF !important;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(64, 164, 53, 0.3);
+        }
+        .btn-success:hover {
+            background-color: #49b83d !important;
+            border-color: #49b83d !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(64, 164, 53, 0.45);
+        }
+
+        .btn-danger {
+            background-color: var(--power-red) !important;
+            border-color: var(--power-red) !important;
+            color: #FFFFFF !important;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(227, 19, 19, 0.3);
+        }
+        .btn-danger:hover {
+            background-color: #f51b1b !important;
+            border-color: #f51b1b !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(227, 19, 19, 0.45);
+        }
+
+        .btn-dark, .btn-dark-graphite {
+            background-color: #161b22 !important;
             color: #FFFFFF !important;
             font-weight: 600;
-            border: 1px solid var(--brand-secondary);
+            border: 1px solid #30363d !important;
             transition: all 0.2s ease-in-out;
             font-family: var(--font-heading);
         }
-        .btn-blue:hover, .btn-dark-graphite:hover {
-            background-color: #2D2D2D !important;
+        .btn-dark:hover, .btn-dark-graphite:hover {
+            background-color: #21262d !important;
+            border-color: var(--power-blue) !important;
             color: #FFFFFF !important;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
-        .btn-outline-pink, .btn-outline-brand {
-            background-color: transparent;
-            color: #B89028 !important;
+        .btn-light {
+            background-color: #161b22 !important;
+            border: 1px solid #30363d !important;
+            color: #FFFFFF !important;
+        }
+        .btn-light:hover {
+            background-color: #21262d !important;
+            border-color: #8b949e !important;
+            color: #FFFFFF !important;
+        }
+
+        .btn-outline-primary, .btn-outline-pink, .btn-outline-brand {
+            background-color: transparent !important;
+            color: var(--power-blue) !important;
             font-weight: 600;
-            border: 1.5px solid var(--brand-primary);
+            border: 1.5px solid var(--power-blue) !important;
             transition: all 0.2s ease-in-out;
             font-family: var(--font-heading);
         }
-        .btn-outline-pink:hover, .btn-outline-brand:hover {
-            background: var(--brand-gradient) !important;
-            color: #111827 !important;
+        .btn-outline-primary:hover, .btn-outline-pink:hover, .btn-outline-brand:hover {
+            background: var(--power-blue) !important;
+            color: #FFFFFF !important;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+            box-shadow: 0 4px 12px rgba(2, 156, 194, 0.35);
         }
 
-        /* Superficies y Cards */
+        .btn-outline-secondary {
+            color: var(--power-text-muted) !important;
+            border-color: #30363d !important;
+        }
+        .btn-outline-secondary:hover {
+            background-color: #21262d !important;
+            color: #FFFFFF !important;
+            border-color: #8b949e !important;
+        }
+
+        /* Superficies, Cards y Modales */
+        .card-custom, .card, .modal-content, .dropdown-menu, .list-group-item {
+            background-color: var(--power-card) !important;
+            border: 1px solid var(--power-border) !important;
+            color: var(--power-text) !important;
+        }
         .card-custom, .card {
-            background-color: var(--brand-surface);
-            border: 1px solid var(--brand-border);
             border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-            color: var(--brand-text);
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+        }
+        .card-header, .card-footer, .modal-header, .modal-footer {
+            background-color: #161b22 !important;
+            border-color: var(--power-border) !important;
+            color: var(--power-text) !important;
         }
 
-        /* Tablas */
+        /* Tablas Oscuras de Alta Legibilidad */
         .table-custom, .table {
-            background-color: #FFFFFF;
-            border-radius: 12px;
-            color: var(--brand-text);
-            border-color: var(--brand-border);
+            --bs-table-bg: #0d1117;
+            --bs-table-color: #FFFFFF;
+            --bs-table-border-color: #21262d;
+            --bs-table-striped-bg: #121720;
+            --bs-table-striped-color: #FFFFFF;
+            --bs-table-hover-bg: #161b22;
+            --bs-table-hover-color: #FFFFFF;
+            background-color: var(--power-card) !important;
+            color: var(--power-text) !important;
+            border-color: var(--power-border) !important;
             font-family: var(--font-body);
         }
-        .table-custom thead th, .table thead th {
-            background-color: #F9FAFB !important;
-            color: #111827 !important;
-            border-bottom: 2px solid var(--brand-primary) !important;
+        .table-custom thead th, .table thead th, .table-light th, thead.bg-light th, thead.table-light th {
+            background-color: #161b22 !important;
+            color: var(--power-text) !important;
+            border-bottom: 2px solid var(--power-blue) !important;
             text-transform: uppercase;
-            font-size: 0.78rem;
-            letter-spacing: 0.5px;
-            padding: 1rem;
+            font-size: 0.76rem;
+            letter-spacing: 0.8px;
+            padding: 0.95rem 1rem;
             font-family: var(--font-heading);
             font-weight: 700;
         }
         .table-custom tbody td, .table tbody td {
-            padding: 1rem;
+            padding: 0.9rem 1rem;
             vertical-align: middle;
-            border-bottom: 1px solid var(--brand-border);
-            color: var(--brand-text);
-            background-color: #FFFFFF;
+            border-bottom: 1px solid var(--power-border) !important;
+            color: var(--power-text) !important;
+            background-color: var(--power-card) !important;
             font-family: var(--font-body);
         }
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: #FBFBFC;
+        .table-hover tbody tr:hover td {
+            background-color: #161b22 !important;
         }
 
-        /* Inputs y Formularios */
+        /* Inputs y Formularios con Focus Ring en Cyan #029CC2 */
         .form-control, .form-select {
-            background-color: #FFFFFF !important;
-            border: 1px solid #E5E7EB !important;
-            color: var(--brand-text) !important;
+            background-color: #161b22 !important;
+            border: 1px solid #30363d !important;
+            color: var(--power-text) !important;
             font-family: var(--font-body);
         }
+        .form-control::placeholder {
+            color: #6e7681 !important;
+        }
         .form-control:focus, .form-select:focus {
-            border-color: var(--brand-primary) !important;
-            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25) !important;
-            background-color: #FFFFFF !important;
-            color: var(--brand-text) !important;
+            border-color: var(--power-blue) !important;
+            box-shadow: 0 0 0 3px rgba(2, 156, 194, 0.28) !important;
+            background-color: #0d1117 !important;
+            color: var(--power-text) !important;
         }
         .input-group-text {
-            background-color: #F9FAFB !important;
-            border-color: #E5E7EB !important;
-            color: var(--brand-text) !important;
+            background-color: #161b22 !important;
+            border-color: #30363d !important;
+            color: var(--power-text-muted) !important;
             font-weight: 600;
         }
 
-        /* Sidebar Offcanvas Estilos Premium (Maripocell Tech Luxury Theme) */
+        /* Sidebar Offcanvas Estilo POWER LED Dark */
         .offcanvas {
-            background: #FFFFFF !important;
-            color: var(--brand-text) !important;
-            border-right: 1px solid rgba(229, 231, 235, 0.8) !important;
-            box-shadow: 10px 0 35px rgba(0, 0, 0, 0.08) !important;
+            background: #0d1117 !important;
+            color: var(--power-text) !important;
+            border-right: 1px solid var(--power-border) !important;
+            box-shadow: 10px 0 40px rgba(0, 0, 0, 0.85) !important;
             border-top-right-radius: 20px;
             border-bottom-right-radius: 20px;
         }
         .sidebar-header-card {
-            background: linear-gradient(135deg, #111827 0%, #1F2937 100%);
-            padding: 1.25rem 1.25rem 1rem 1.25rem;
+            background: linear-gradient(145deg, #000000 0%, #0d1117 100%);
+            padding: 1.25rem;
             position: relative;
             overflow: hidden;
+            border-bottom: 1px solid var(--power-border);
             border-top-right-radius: 20px;
         }
-        .sidebar-header-card::before {
+        .sidebar-header-card::after {
             content: '';
             position: absolute;
-            top: -30px;
-            right: -30px;
-            width: 100px;
-            height: 100px;
-            background: radial-gradient(circle, rgba(212, 175, 55, 0.25) 0%, rgba(212, 175, 55, 0) 70%);
-            border-radius: 50%;
-            pointer-events: none;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--power-red) 0%, var(--power-green) 50%, var(--power-blue) 100%);
         }
         .sidebar-avatar-circle {
-            width: 44px;
-            height: 44px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, #D4AF37 0%, #F3D079 100%);
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            background: #000000;
+            border: 1.5px solid var(--power-blue);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #111827;
+            color: #FFFFFF;
             font-weight: 800;
-            font-size: 1.2rem;
-            box-shadow: 0 4px 14px rgba(212, 175, 55, 0.4);
+            font-size: 1.1rem;
+            box-shadow: 0 0 14px rgba(2, 156, 194, 0.35);
             flex-shrink: 0;
+            padding: 5px;
         }
         .sidebar-close-btn {
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #F3F4F6;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--power-border);
+            color: var(--power-text-muted);
             width: 32px;
             height: 32px;
             border-radius: 10px;
@@ -311,19 +443,21 @@
             transition: all 0.2s ease;
         }
         .sidebar-close-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(227, 19, 19, 0.2);
+            border-color: var(--power-red);
             color: #FFFFFF;
             transform: rotate(90deg);
         }
         
-        /* Categorías y Títulos de Sección */
+        /* Categorías del Sidebar */
         .sidebar-category-label {
+            font-family: var(--font-heading);
             font-size: 0.68rem;
-            font-weight: 800;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1.2px;
-            color: #9CA3AF;
-            margin: 0.85rem 0.5rem 0.35rem 0.5rem;
+            letter-spacing: 1.5px;
+            color: var(--power-text-muted);
+            margin: 0.9rem 0.5rem 0.4rem 0.5rem;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -332,41 +466,35 @@
             content: '';
             flex-grow: 1;
             height: 1px;
-            background: #F3F4F6;
+            background: var(--power-border);
         }
 
-        /* Enlaces de Navegación Estilizados como Tarjetas */
+        /* Enlaces de Navegación del Sidebar: Monocromáticos con Hover/Active en Cyan #029CC2 */
         .sidebar-nav-item {
             display: flex;
             align-items: center;
             padding: 0.65rem 0.85rem;
             margin-bottom: 0.35rem;
             border-radius: 12px;
-            color: #1F2937 !important;
+            color: #c9d1d9 !important;
             font-weight: 600;
             font-size: 0.9rem;
             text-decoration: none;
-            background: #FFFFFF;
-            border: 1px solid #F1F5F9;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
-            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #161b22;
+            border: 1px solid var(--power-border);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
         }
-        .sidebar-nav-item:hover {
-            background: #FFFFFF !important;
-            border-color: rgba(212, 175, 55, 0.4) !important;
-            color: #111827 !important;
-            transform: translateX(4px);
-            box-shadow: 0 5px 14px rgba(212, 175, 55, 0.12) !important;
-        }
+        .sidebar-nav-item:hover,
         .sidebar-nav-item.active {
-            background: linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(243, 208, 121, 0.05) 100%) !important;
-            border-color: #D4AF37 !important;
-            color: #926C09 !important;
-            font-weight: 700;
+            background: rgba(2, 156, 194, 0.12) !important;
+            border-color: var(--power-blue) !important;
+            color: #FFFFFF !important;
+            transform: translateX(4px);
+            box-shadow: 0 0 15px rgba(2, 156, 194, 0.2) !important;
         }
         
-        /* Cajas de Iconos con Colores Vivos */
+        /* Cajas de Iconos Monocromáticas que se iluminan en #029CC2 */
         .sidebar-icon-box {
             width: 34px;
             height: 34px;
@@ -377,95 +505,92 @@
             font-size: 0.95rem;
             margin-right: 0.75rem;
             flex-shrink: 0;
-            transition: transform 0.2s ease;
+            background: #0d1117 !important;
+            color: #8b949e !important;
+            border: 1px solid #21262d;
+            transition: all 0.2s ease;
         }
-        .sidebar-nav-item:hover .sidebar-icon-box {
-            transform: scale(1.1);
+        .sidebar-nav-item:hover .sidebar-icon-box,
+        .sidebar-nav-item.active .sidebar-icon-box {
+            transform: scale(1.08);
+            background: rgba(2, 156, 194, 0.2) !important;
+            color: var(--power-blue) !important;
+            border-color: var(--power-blue);
+            box-shadow: 0 0 10px rgba(2, 156, 194, 0.35);
         }
-        .icon-box-gold { background: rgba(212, 175, 55, 0.14); color: #B89028; }
-        .icon-box-indigo { background: rgba(99, 102, 241, 0.14); color: #4F46E5; }
-        .icon-box-emerald { background: rgba(16, 185, 129, 0.14); color: #059669; }
-        .icon-box-amber { background: rgba(245, 158, 11, 0.14); color: #D97706; }
-        .icon-box-sky { background: rgba(14, 165, 233, 0.14); color: #0284C7; }
-        .icon-box-purple { background: rgba(139, 92, 246, 0.14); color: #7C3AED; }
-        .icon-box-rose { background: rgba(244, 63, 94, 0.14); color: #E11D48; }
-        .icon-box-pink { background: rgba(236, 72, 153, 0.14); color: #DB2777; }
-        .icon-box-teal { background: rgba(20, 184, 166, 0.14); color: #0D9488; }
 
         /* Tarjeta Destacada para Arqueo de Caja */
         .sidebar-nav-highlight {
-            background: linear-gradient(135deg, #FFFDF7 0%, #FFF8E6 100%) !important;
-            border: 1.5px solid rgba(212, 175, 55, 0.45) !important;
-            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15) !important;
+            background: linear-gradient(135deg, rgba(2, 156, 194, 0.14) 0%, rgba(13, 17, 23, 0.95) 100%) !important;
+            border: 1.5px solid rgba(2, 156, 194, 0.5) !important;
         }
         .sidebar-nav-highlight:hover {
-            border-color: #D4AF37 !important;
-            box-shadow: 0 6px 18px rgba(212, 175, 55, 0.25) !important;
+            border-color: var(--power-blue) !important;
+            box-shadow: 0 0 18px rgba(2, 156, 194, 0.35) !important;
         }
 
         /* Submenú desplegable estilizado */
         .sidebar-submenu-box {
-            background: #F8FAFC;
+            background: #090c10;
             border-radius: 12px;
             padding: 0.4rem;
             margin-top: 0.25rem;
             margin-bottom: 0.5rem;
-            border: 1px solid #EEF2F6;
+            border: 1px solid var(--power-border);
         }
         .sidebar-sub-item {
             display: flex;
             align-items: center;
             padding: 0.5rem 0.75rem;
             border-radius: 8px;
-            color: #4B5563;
+            color: var(--power-text-muted);
             font-size: 0.84rem;
             font-weight: 600;
             text-decoration: none;
             transition: all 0.18s ease;
         }
         .sidebar-sub-item:hover {
-            background: #FFFFFF;
-            color: #111827;
+            background: rgba(2, 156, 194, 0.12);
+            color: #FFFFFF;
             transform: translateX(3px);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
         }
         .sidebar-sub-item i {
             font-size: 0.8rem;
             margin-right: 0.6rem;
+            color: var(--power-blue) !important;
         }
         
         .chevron-toggle {
             transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            color: #9CA3AF;
+            color: var(--power-text-muted);
         }
         [aria-expanded="true"] .chevron-toggle {
             transform: rotate(180deg);
-            color: #D4AF37;
+            color: var(--power-blue);
         }
 
         /* Botón PWA Tech */
         .btn-sidebar-pwa {
-            background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
-            border: 1.5px solid #F59E0B;
-            color: #B45309;
+            background: rgba(2, 156, 194, 0.12);
+            border: 1.5px solid var(--power-blue);
+            color: var(--power-blue);
             font-weight: 700;
             padding: 0.7rem 1rem;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
             transition: all 0.2s ease;
         }
         .btn-sidebar-pwa:hover {
-            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
-            color: #92400E;
+            background: var(--power-blue);
+            color: #FFFFFF;
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(245, 158, 11, 0.25);
+            box-shadow: 0 4px 16px rgba(2, 156, 194, 0.35);
         }
 
-        /* Botón Salir Elegante */
+        /* Botón Salir en Rojo LED #E31313 */
         .btn-sidebar-logout {
-            background: #FFF5F5;
-            border: 1px solid #FECACA;
-            color: #DC2626;
+            background: rgba(227, 19, 19, 0.1);
+            border: 1px solid rgba(227, 19, 19, 0.35);
+            color: var(--power-red);
             font-weight: 700;
             padding: 0.65rem 1rem;
             border-radius: 12px;
@@ -476,14 +601,24 @@
             justify-content: center;
         }
         .btn-sidebar-logout:hover {
-            background: #DC2626;
-            border-color: #DC2626;
+            background: var(--power-red);
+            border-color: var(--power-red);
             color: #FFFFFF;
             transform: translateY(-2px);
-            box-shadow: 0 4px 14px rgba(220, 38, 38, 0.25);
+            box-shadow: 0 4px 14px rgba(227, 19, 19, 0.35);
         }
 
-        /* Reglas EXCLUSIVAS para móviles (<768px): el computador permanece 100% intacto */
+        /* Footer Oficial POWER LED */
+        .power-footer {
+            background-color: #090c10;
+            border-top: 1px solid var(--power-border);
+            padding: 1.25rem 0;
+            margin-top: auto;
+            color: var(--power-text-muted);
+            font-size: 0.82rem;
+        }
+
+        /* Reglas EXCLUSIVAS para móviles (<768px) */
         @media (max-width: 767.98px) {
             html, body {
                 overflow-x: hidden;
@@ -512,38 +647,53 @@
             }
         }
     </style>
+    <!-- Power LED Global Design Tokens & Modo Día / Modo Noche -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}?v=powerled_v2">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Navbar MARIPOCELL -->
+    <!-- Navbar POWER LED -->
     <nav class="navbar navbar-custom mb-4 mb-md-5">
         <div class="container-fluid px-2 px-md-3 d-flex align-items-center justify-content-between">
             
-            <!-- Columna Izquierda: Botón Hamburguesa -->
-            <div class="d-flex align-items-center" style="min-width: 44px;">
+            <!-- Columna Izquierda: Botón Hamburguesa con Monograma PW -->
+            <div class="d-flex align-items-center gap-2" style="min-width: 44px;">
                 {% if current_user.is_authenticated %}
-                <button class="navbar-toggler border-0 shadow-none p-1 p-md-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" title="Menú">
-                    <i class="fa-solid fa-bars fs-3" style="color: #111827;"></i>
+                <button class="navbar-toggler border-0 shadow-none p-1 p-md-2 d-flex align-items-center gap-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" title="Menú POWER LED">
+                    <i class="fa-solid fa-bars fs-4" style="color: var(--power-blue);"></i>
+                    <img src="{{ url_for('static', filename='img/pw-isotipo.png') }}" alt="PW" class="d-none d-sm-inline-block" style="height: 22px; width: auto; object-fit: contain;">
                 </button>
                 {% else %}
                 <div style="width: 40px;"></div>
                 {% endif %}
             </div>
 
-            <!-- Columna Centro: Brand Logo (Maripocell) -->
+            <!-- Columna Centro: Imagotipo Oficial POWER LED (PW + POWER LED RGB) -->
             <div class="d-flex justify-content-center flex-grow-1 px-1 px-sm-2 text-center overflow-hidden">
-                <a class="navbar-brand d-inline-flex align-items-center fw-bold m-0 text-nowrap" href="{{ url_for('index') }}" style="letter-spacing: 1.5px; font-size: clamp(1.3rem, 4vw, 1.7rem); font-family: var(--font-display);">
-                    <img src="{{ url_for('static', filename='img/Maripocell.png') }}" alt="Maripocell Logo" class="me-2 rounded-2" style="width: 38px; height: 38px; object-fit: contain;">
-                    <span style="color: #111827; font-weight: 900;">Maripocell</span>
-                    <span class="navbar-brand-tech small ms-2 px-2 py-0 rounded" style="color: #926C09; font-size: 0.72rem; font-weight: 700; border: 1px solid rgba(212, 175, 55, 0.4); background-color: rgba(212, 175, 55, 0.08); letter-spacing: 1px;">ACCESORIOS & TECNOLOGÍA</span>
+                <a class="navbar-brand d-inline-flex align-items-center fw-bold m-0 text-nowrap gap-2" href="{{ url_for('index') }}" style="letter-spacing: 2px; font-size: clamp(1.15rem, 3.5vw, 1.55rem); font-family: var(--font-display);">
+                    <img src="{{ url_for('static', filename='img/pw-isotipo.png') }}" alt="PW Isotipo" style="height: 30px; width: auto; object-fit: contain;">
+                    <span class="power-led-wordmark">
+                        <span class="word-power">POWER</span>
+                        <span><span class="letter-l">L</span><span class="letter-e">E</span><span class="letter-d">D</span></span>
+                    </span>
+                    <span class="navbar-brand-tech small ms-2 px-2 py-1 rounded d-none d-md-inline-block" style="color: var(--power-blue); font-size: 0.68rem; font-weight: 700; border: 1px solid rgba(2, 156, 194, 0.4); background-color: rgba(2, 156, 194, 0.1); letter-spacing: 1.5px;">ILUMINA TU CAMINO</span>
                 </a>
             </div>
 
-            <!-- Columna Derecha: Badge Notificaciones y Servidor Zenic (Compacto y responsivo) -->
+            <!-- Columna Derecha: Selector Modo Día / Noche, Badge Notificaciones (#E31313) y Servidor Zenic -->
             <div class="d-flex align-items-center justify-content-end gap-1 gap-md-2" style="min-width: 44px;">
+                <button type="button"
+                        id="btnToggleThemeNavbar"
+                        onclick="togglePowerLedTheme()"
+                        class="btn btn-sm rounded-pill px-2 px-md-3 py-1 fw-bold d-flex align-items-center gap-1 shadow-sm"
+                        style="border: 1.5px solid var(--power-blue); color: var(--power-blue); background: rgba(2, 156, 194, 0.1); font-size: 0.78rem;"
+                        title="Cambiar entre Modo Día (Fondo Blanco) y Modo Noche (Fondo Negro)">
+                    <i class="fa-solid fa-sun" id="iconThemeNavbar"></i>
+                    <span class="d-none d-sm-inline" id="labelThemeNavbar">Modo Día</span>
+                </button>
                 {% if current_user.is_authenticated and current_user.rol == 'admin' %}
                     <div id="admin_approval_badge_btn" style="display: none;" class="me-1">
-                        <span class="badge bg-danger rounded-pill px-2 py-1 shadow-sm d-flex align-items-center gap-1" style="font-size: 0.78rem;">
+                        <span class="badge rounded-pill px-2 py-1 shadow-sm d-flex align-items-center gap-1" style="background-color: var(--power-red) !important; font-size: 0.78rem;">
                             <i class="fa-solid fa-bell fa-shake text-white"></i>
                             <span id="admin_approval_count">0</span>
                             <span class="d-none d-lg-inline">solicitud(es)</span>
@@ -552,10 +702,10 @@
                     {% if pago_servidor.estado == 'pagado' or pago_servidor.estado == 'al_dia' %}
                     <button type="button" 
                             class="btn btn-sm px-2 px-md-3 py-1 rounded-pill fw-bold d-flex align-items-center gap-1 shadow-sm text-nowrap"
-                            style="background-color: #112211; color: #00E676; border: 1.5px solid #00E676; font-size: 0.78rem;"
+                            style="background-color: rgba(64, 164, 53, 0.15); color: #40A435; border: 1.5px solid #40A435; font-size: 0.78rem;"
                             data-bs-toggle="modal" 
                             data-bs-target="#modalPagoServidor">
-                        <i class="fa-solid fa-circle-check" style="color: #00E676;"></i>
+                        <i class="fa-solid fa-circle-check" style="color: #40A435;"></i>
                         <span class="d-none d-sm-inline">✓ Zenic: </span>
                         <span>Al día</span>
                     </button>
@@ -569,25 +719,21 @@
 
 
     {% if current_user.is_authenticated %}
-    <!-- Offcanvas Menú Lateral Premium (Sidebar) -->
+    <!-- Offcanvas Menú Lateral Premium POWER LED (Sidebar) -->
     <div class="offcanvas offcanvas-start border-0 shadow-lg" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel" style="width: 300px;">
-        <!-- Header con Avatar y Rol -->
+        <!-- Header con Monograma PW, Usuario y Rol -->
         <div class="sidebar-header-card">
             <div class="d-flex align-items-center justify-content-between mb-2">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="sidebar-avatar-circle">
-                        {% if current_user.rol == 'admin' %}
-                            <i class="fa-solid fa-crown text-dark" style="font-size: 1.1rem;"></i>
-                        {% else %}
-                            <i class="fa-solid fa-user-tie text-dark" style="font-size: 1.1rem;"></i>
-                        {% endif %}
+                    <div class="sidebar-avatar-circle" title="POWER LED — Ilumina tu camino">
+                        <img src="{{ url_for('static', filename='img/pw-isotipo.png') }}" alt="PW" style="width: 100%; height: 100%; object-fit: contain;">
                     </div>
                     <div>
-                        <h6 class="text-white fw-bold mb-0 text-truncate" style="max-width: 140px; font-family: var(--font-heading); letter-spacing: 0.3px;">
+                        <h6 class="text-white fw-bold mb-0 text-truncate" style="max-width: 145px; font-family: var(--font-heading); letter-spacing: 0.5px;">
                             {{ current_user.nombre if current_user.nombre else (current_user.rol | capitalize) }}
                         </h6>
-                        <span class="badge rounded-pill text-dark fw-bold px-2 py-0 mt-1" style="font-size: 0.68rem; background: linear-gradient(135deg, #D4AF37 0%, #F3D079 100%); letter-spacing: 0.5px;">
-                            {{ 'ADMINISTRADOR' if current_user.rol == 'admin' else 'VENDEDOR' }}
+                        <span class="badge rounded-pill text-white fw-bold px-2 py-1 mt-1" style="font-size: 0.65rem; background: var(--power-blue); letter-spacing: 0.8px;">
+                            {{ 'ADMINISTRADOR' if current_user.rol == 'admin' else (current_user.rol | upper) }}
                         </span>
                     </div>
                 </div>
@@ -595,16 +741,23 @@
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
+            <div class="mt-2 pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+                <span class="power-led-wordmark" style="font-size: 0.78rem;">
+                    <span class="word-power">POWER</span>
+                    <span><span class="letter-l">L</span><span class="letter-e">E</span><span class="letter-d">D</span></span>
+                </span>
+                <span style="font-size: 0.62rem; color: var(--power-blue); font-family: var(--font-heading); letter-spacing: 1px;">ILUMINA TU CAMINO</span>
+            </div>
         </div>
 
         <!-- Cuerpo del Menú con Scroll Suave -->
-        <div class="offcanvas-body d-flex flex-column px-3 py-3" style="scrollbar-width: thin; scrollbar-color: #E5E7EB transparent;">
+        <div class="offcanvas-body d-flex flex-column px-3 py-3" style="scrollbar-width: thin; scrollbar-color: #21262d transparent;">
             <div class="mb-auto">
                 {% if current_user.rol == 'admin' %}
                     <!-- Categoría: PRINCIPAL -->
                     <div class="sidebar-category-label">Principal</div>
-                    <a class="sidebar-nav-item" href="/admin/dashboard">
-                        <div class="sidebar-icon-box icon-box-indigo">
+                    <a class="sidebar-nav-item {% if request.path.startswith('/admin/dashboard') %}active{% endif %}" href="/admin/dashboard">
+                        <div class="sidebar-icon-box">
                             <i class="fa-solid fa-chart-pie"></i>
                         </div>
                         <span>Dashboard General</span>
@@ -615,9 +768,9 @@
                     
                     <!-- Módulo Inventario Desplegable -->
                     <div>
-                        <a class="sidebar-nav-item d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#collapseInventario" role="button" aria-expanded="false" aria-controls="collapseInventario">
+                        <a class="sidebar-nav-item d-flex justify-content-between align-items-center {% if request.path.startswith('/inventory') or request.path.startswith('/ingresos') or request.path.startswith('/sales/catalogo') or request.path.startswith('/bodega/traslados') %}active{% endif %}" data-bs-toggle="collapse" href="#collapseInventario" role="button" aria-expanded="false" aria-controls="collapseInventario">
                             <div class="d-flex align-items-center">
-                                <div class="sidebar-icon-box icon-box-emerald">
+                                <div class="sidebar-icon-box">
                                     <i class="fa-solid fa-boxes-stacked"></i>
                                 </div>
                                 <span>Módulo Inventario</span>
@@ -626,98 +779,236 @@
                         </a>
                         <div class="collapse" id="collapseInventario">
                             <div class="sidebar-submenu-box">
+                                <a class="sidebar-sub-item" href="/ingresos">
+                                    <i class="fa-solid fa-dolly"></i>
+                                    <span>Ingreso de Mercancía</span>
+                                </a>
                                 <a class="sidebar-sub-item" href="/inventory">
-                                    <i class="fa-solid fa-box-open text-emerald" style="color: #059669;"></i>
-                                    <span>Inventario Tienda</span>
+                                    <i class="fa-solid fa-box-open"></i>
+                                    <span>Inventario & Categorías</span>
+                                </a>
+                                <a class="sidebar-sub-item" href="/bodega/traslados">
+                                    <i class="fa-solid fa-truck-Arrow-right fa-right-left"></i>
+                                    <span>Traslados Bodega → Tienda</span>
                                 </a>
                                 <a class="sidebar-sub-item" href="/sales/catalogo">
-                                    <i class="fa-solid fa-book-open text-teal" style="color: #0D9488;"></i>
-                                    <span>Catálogo Físico</span>
+                                    <i class="fa-solid fa-book-open"></i>
+                                    <span>Catálogo Visual</span>
                                 </a>
                             </div>
                         </div>
                     </div>
 
-                    <a class="sidebar-nav-item" href="/sales/caja_visual">
-                        <div class="sidebar-icon-box icon-box-amber">
+                    <a class="sidebar-nav-item {% if request.path.startswith('/ingresos') %}active{% endif %}" href="/ingresos">
+                        <div class="sidebar-icon-box">
+                            <i class="fa-solid fa-dolly"></i>
+                        </div>
+                        <span>Ingreso de Mercancía</span>
+                    </a>
+
+                    <a class="sidebar-nav-item {% if request.path.startswith('/sales/caja_visual') or request.path.startswith('/sales/nueva') or request.path.startswith('/pos') %}active{% endif %}" href="/sales/caja_visual">
+                        <div class="sidebar-icon-box">
                             <i class="fa-solid fa-cash-register"></i>
                         </div>
-                        <span>Caja Registradora</span>
+                        <span>Caja Registradora POS</span>
+                    </a>
+
+                    <a class="sidebar-nav-item {% if request.path.startswith('/hojas-trabajo') %}active{% endif %}" href="/hojas-trabajo">
+                        <div class="sidebar-icon-box">
+                            <i class="fa-solid fa-car-side"></i>
+                        </div>
+                        <span>Hojas de Trabajo (Taller)</span>
+                    </a>
+
+                    <a class="sidebar-nav-item {% if request.path.startswith('/vehiculos') %}active{% endif %}" href="/vehiculos">
+                        <div class="sidebar-icon-box">
+                            <i class="fa-solid fa-car-burst"></i>
+                        </div>
+                        <span>Historial de Vehículos</span>
+                    </a>
+
+                    <a class="sidebar-nav-item {% if request.path.startswith('/instalaciones') %}active{% endif %}" href="/instalaciones">
+                        <div class="sidebar-icon-box">
+                            <i class="fa-solid fa-screwdriver-wrench"></i>
+                        </div>
+                        <span>Instalaciones & Técnicos</span>
+                    </a>
+
+                    <a class="sidebar-nav-item {% if request.path.startswith('/clientes') %}active{% endif %}" href="/clientes">
+                        <div class="sidebar-icon-box">
+                            <i class="fa-solid fa-address-book"></i>
+                        </div>
+                        <span>Clientes & Cartera Crédito</span>
+                    </a>
+
+                    <a class="sidebar-nav-item {% if request.path.startswith('/bodega') and not request.path.startswith('/bodega/traslados') %}active{% endif %}" href="/bodega/dashboard">
+                        <div class="sidebar-icon-box">
+                            <i class="fa-solid fa-warehouse"></i>
+                        </div>
+                        <span>Bodega & Mayoristas</span>
+                    </a>
+
+                    <a class="sidebar-nav-item {% if request.path.startswith('/maneos') %}active{% endif %}" href="/maneos">
+                        <div class="sidebar-icon-box">
+                            <i class="fa-solid fa-handshake"></i>
+                        </div>
+                        <span>Maneos & Préstamos</span>
                     </a>
 
                     <!-- Categoría: ADMINISTRACIÓN -->
                     <div class="sidebar-category-label">Administración</div>
                     
-                    <a class="sidebar-nav-item" href="/admin/vendedores">
-                        <div class="sidebar-icon-box icon-box-sky">
+                    <a class="sidebar-nav-item {% if request.path.startswith('/admin/vendedores') %}active{% endif %}" href="/admin/vendedores">
+                        <div class="sidebar-icon-box">
                             <i class="fa-solid fa-users-gear"></i>
                         </div>
                         <span>Personal & Equipo</span>
                     </a>
 
-                    <a class="sidebar-nav-item" href="/proveedores">
-                        <div class="sidebar-icon-box icon-box-purple">
+                    <a class="sidebar-nav-item {% if request.path.startswith('/proveedores') %}active{% endif %}" href="/proveedores">
+                        <div class="sidebar-icon-box">
                             <i class="fa-solid fa-truck-ramp-box"></i>
                         </div>
                         <span>Proveedores</span>
                     </a>
 
-                    <a class="sidebar-nav-item" href="/gastos">
-                        <div class="sidebar-icon-box icon-box-rose">
+                    <a class="sidebar-nav-item {% if request.path.startswith('/gastos') %}active{% endif %}" href="/gastos">
+                        <div class="sidebar-icon-box">
                             <i class="fa-solid fa-receipt"></i>
                         </div>
                         <span>Control de Gastos</span>
                     </a>
 
-                    <a class="sidebar-nav-item d-flex align-items-center justify-content-between" href="{{ url_for('admin_bp.aprobaciones') }}">
+                    <a class="sidebar-nav-item d-flex align-items-center justify-content-between {% if request.path.startswith('/admin/aprobaciones') %}active{% endif %}" href="{{ url_for('admin_bp.aprobaciones') }}">
                         <div class="d-flex align-items-center">
-                            <div class="sidebar-icon-box icon-box-pink">
+                            <div class="sidebar-icon-box">
                                 <i class="fa-solid fa-stamp"></i>
                             </div>
                             <span>Aprobaciones</span>
                         </div>
-                        <span class="badge bg-danger rounded-pill px-2 py-1 small" id="sidebar_approval_badge" style="display: none;">0</span>
+                        <span class="badge rounded-pill px-2 py-1 small" id="sidebar_approval_badge" style="display: none; background-color: var(--power-red) !important;">0</span>
                     </a>
 
                     <!-- Tarjeta Destacada: Arqueo -->
                     <div class="sidebar-category-label">Cierre de Caja</div>
-                    <a class="sidebar-nav-item sidebar-nav-highlight" href="/arqueo/nuevo">
-                        <div class="sidebar-icon-box icon-box-gold">
+                    <a class="sidebar-nav-item sidebar-nav-highlight {% if request.path.startswith('/arqueo') %}active{% endif %}" href="/arqueo/nuevo">
+                        <div class="sidebar-icon-box">
                             <i class="fa-solid fa-calculator"></i>
                         </div>
                         <div class="d-flex flex-column">
-                            <span class="fw-bold" style="color: #111827;">Arqueo de Caja</span>
-                            <span style="font-size: 0.72rem; color: #926C09; font-weight: 600;">Cuadre y cierre diario</span>
+                            <span class="fw-bold text-white">Arqueo de Caja</span>
+                            <span style="font-size: 0.72rem; color: var(--power-blue); font-weight: 600;">Cuadre y cierre diario</span>
                         </div>
+                    </a>
+
+                {% elif current_user.rol in ['bodega', 'vendedor_bodega'] %}
+                    <div class="sidebar-category-label">Operación Mayorista & Almacén</div>
+                    <a class="sidebar-nav-item {% if request.path.startswith('/bodega/dashboard') %}active{% endif %}" href="/bodega/dashboard">
+                        <div class="sidebar-icon-box">
+                            <i class="fa-solid fa-warehouse"></i>
+                        </div>
+                        <span>Dashboard Bodega</span>
+                    </a>
+                    <a class="sidebar-nav-item {% if request.path.startswith('/ingresos') %}active{% endif %}" href="/ingresos">
+                        <div class="sidebar-icon-box">
+                            <i class="fa-solid fa-dolly"></i>
+                        </div>
+                        <span>Ingreso de Mercancía</span>
+                    </a>
+                    <a class="sidebar-nav-item {% if request.path.startswith('/bodega/traslados') %}active{% endif %}" href="{{ url_for('bodega_bp.traslados') }}">
+                        <div class="sidebar-icon-box">
+                            <i class="fa-solid fa-right-left"></i>
+                        </div>
+                        <span>Traslados Bodega → Tienda</span>
+                    </a>
+                    <a class="sidebar-nav-item {% if request.path.startswith('/bodega/caja-rapida') %}active{% endif %}" href="{{ url_for('bodega_bp.caja_rapida') }}">
+                        <div class="sidebar-icon-box">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
+                        <span>Caja Rápida Bodega</span>
+                    </a>
+                    <a class="sidebar-nav-item {% if request.path.startswith('/bodega/clientes') %}active{% endif %}" href="{{ url_for('bodega_bp.clientes') }}">
+                        <div class="sidebar-icon-box">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <span>Clientes Mayoristas</span>
+                    </a>
+                    <a class="sidebar-nav-item {% if request.path.startswith('/bodega/abonos') %}active{% endif %}" href="{{ url_for('bodega_bp.modulo_abonos') }}">
+                        <div class="sidebar-icon-box">
+                            <i class="fa-solid fa-hand-holding-dollar"></i>
+                        </div>
+                        <span>Cartera & Abonos</span>
                     </a>
 
                 {% elif current_user.rol == 'vendedor' %}
-                    <!-- Vistas Estrictamente Operativas (Cajeros) -->
-                    <div class="sidebar-category-label">Caja y Ventas</div>
+                    <!-- Vistas Estrictamente Operativas (Cajeros & Asesores) -->
+                    <div class="sidebar-category-label">Caja, Taller y Ventas</div>
                     
-                    <a class="sidebar-nav-item" href="/sales/caja_visual">
-                        <div class="sidebar-icon-box icon-box-amber">
+                    <a class="sidebar-nav-item {% if request.path.startswith('/sales/caja_visual') or request.path.startswith('/pos') %}active{% endif %}" href="/sales/caja_visual">
+                        <div class="sidebar-icon-box">
                             <i class="fa-solid fa-cash-register"></i>
                         </div>
-                        <span>Caja Registradora</span>
+                        <span>Caja Registradora POS</span>
                     </a>
 
-                    <a class="sidebar-nav-item" href="/sales/catalogo">
-                        <div class="sidebar-icon-box icon-box-teal">
+                    <a class="sidebar-nav-item {% if request.path.startswith('/hojas-trabajo') %}active{% endif %}" href="/hojas-trabajo">
+                        <div class="sidebar-icon-box">
+                            <i class="fa-solid fa-car-side"></i>
+                        </div>
+                        <span>Hojas de Trabajo (Taller)</span>
+                    </a>
+
+                    <a class="sidebar-nav-item {% if request.path.startswith('/vehiculos') %}active{% endif %}" href="/vehiculos">
+                        <div class="sidebar-icon-box">
+                            <i class="fa-solid fa-car-burst"></i>
+                        </div>
+                        <span>Historial de Vehículos</span>
+                    </a>
+
+                    <a class="sidebar-nav-item {% if request.path.startswith('/instalaciones') %}active{% endif %}" href="/instalaciones">
+                        <div class="sidebar-icon-box">
+                            <i class="fa-solid fa-screwdriver-wrench"></i>
+                        </div>
+                        <span>Instalaciones & Técnicos</span>
+                    </a>
+
+                    <a class="sidebar-nav-item {% if request.path.startswith('/clientes') %}active{% endif %}" href="/clientes">
+                        <div class="sidebar-icon-box">
+                            <i class="fa-solid fa-address-book"></i>
+                        </div>
+                        <span>Clientes & Cartera Crédito</span>
+                    </a>
+
+                    <a class="sidebar-nav-item {% if request.path.startswith('/bodega/traslados') %}active{% endif %}" href="/bodega/traslados">
+                        <div class="sidebar-icon-box">
+                            <i class="fa-solid fa-right-left"></i>
+                        </div>
+                        <span>Traslados Bodega → Tienda</span>
+                    </a>
+
+                    <a class="sidebar-nav-item {% if request.path.startswith('/sales/catalogo') %}active{% endif %}" href="/sales/catalogo">
+                        <div class="sidebar-icon-box">
                             <i class="fa-solid fa-book-open"></i>
                         </div>
                         <span>Catálogo Rápido</span>
                     </a>
 
-                    <a class="sidebar-nav-item" href="/sales/ventas_hoy">
-                        <div class="sidebar-icon-box icon-box-indigo">
+                    <a class="sidebar-nav-item {% if request.path.startswith('/sales/ventas_hoy') %}active{% endif %}" href="/sales/ventas_hoy">
+                        <div class="sidebar-icon-box">
                             <i class="fa-solid fa-clipboard-check"></i>
                         </div>
                         <span>Ventas del Día</span>
                     </a>
 
-                    <a class="sidebar-nav-item" href="/gastos">
-                        <div class="sidebar-icon-box icon-box-rose">
+                    <a class="sidebar-nav-item {% if request.path.startswith('/maneos') %}active{% endif %}" href="/maneos">
+                        <div class="sidebar-icon-box">
+                            <i class="fa-solid fa-handshake"></i>
+                        </div>
+                        <span>Maneos / Préstamos</span>
+                    </a>
+
+                    <a class="sidebar-nav-item {% if request.path.startswith('/gastos') %}active{% endif %}" href="/gastos">
+                        <div class="sidebar-icon-box">
                             <i class="fa-solid fa-receipt"></i>
                         </div>
                         <span>Registrar Gasto</span>
@@ -725,24 +1016,35 @@
 
                     <!-- Tarjeta Destacada: Arqueo -->
                     <div class="sidebar-category-label">Cierre de Turno</div>
-                    <a class="sidebar-nav-item sidebar-nav-highlight" href="/arqueo/nuevo">
-                        <div class="sidebar-icon-box icon-box-gold">
+                    <a class="sidebar-nav-item sidebar-nav-highlight {% if request.path.startswith('/arqueo') %}active{% endif %}" href="/arqueo/nuevo">
+                        <div class="sidebar-icon-box">
                             <i class="fa-solid fa-calculator"></i>
                         </div>
                         <div class="d-flex flex-column">
-                            <span class="fw-bold" style="color: #111827;">Arqueo de Caja</span>
-                            <span style="font-size: 0.72rem; color: #926C09; font-weight: 600;">Cierre de turno</span>
+                            <span class="fw-bold text-white">Arqueo de Caja</span>
+                            <span style="font-size: 0.72rem; color: var(--power-blue); font-weight: 600;">Cierre de turno</span>
                         </div>
                     </a>
                 {% endif %}
             </div>
             
-            <!-- Botón Instalar App PWA (Visible en dispositivos compatibles) -->
-            <div class="pt-3 pb-2 d-none" id="pwa-install-container">
+            <!-- Botón Cambiar Tema (Modo Día / Modo Noche) en el Sidebar -->
+            <div class="pt-2 pb-1">
+                <button type="button"
+                        onclick="togglePowerLedTheme()"
+                        class="btn w-100 d-flex align-items-center justify-content-center gap-2 rounded-3 py-2 fw-bold"
+                        style="border: 1.5px solid var(--power-blue); color: var(--power-blue); background: rgba(2, 156, 194, 0.1); font-size: 0.85rem;">
+                    <i class="fa-solid fa-sun" id="iconThemeSidebar"></i>
+                    <span id="labelThemeSidebar">Pasar a Modo Día (Blanco)</span>
+                </button>
+            </div>
+
+            <!-- Botón Instalar App PWA -->
+            <div class="pt-2 pb-2 d-none" id="pwa-install-container">
                 <button class="btn btn-sidebar-pwa w-100 d-flex align-items-center justify-content-center gap-2" 
                         onclick="triggerPWAInstall()">
                     <i class="fa-solid fa-mobile-screen-button fs-5"></i> 
-                    <span>Instalar App PWA</span>
+                    <span>Instalar App POWER LED</span>
                 </button>
             </div>
 
@@ -757,12 +1059,12 @@
     {% endif %}
 
     <!-- App Container -->
-    <main class="container mb-5">
+    <main class="container mb-5 flex-grow-1">
         {% if current_user.is_authenticated and current_user.rol == 'admin' %}
             {% if pago_servidor.estado == 'preventivo' %}
                 <div class="alert alert-warning border-warning border-opacity-50 shadow-sm rounded-3 d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
                     <div class="d-flex align-items-center gap-2">
-                        <i class="fa-solid fa-triangle-exclamation fs-5 text-warning-emphasis"></i>
+                        <i class="fa-solid fa-triangle-exclamation fs-5 text-warning"></i>
                         <span class="fw-semibold">Mensualidad Servidor Zenic: Vence el {{ pago_servidor.dia_vencimiento }} de {{ pago_servidor.mes_nombre }} (faltan {{ pago_servidor.dias_restantes }} días)</span>
                     </div>
                     <button class="btn btn-sm btn-warning text-dark fw-bold rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalPagoServidor">
@@ -782,7 +1084,7 @@
             {% elif pago_servidor.estado == 'gabela' %}
                 <div class="alert alert-warning border-warning border-opacity-50 shadow-sm rounded-3 d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
                     <div class="d-flex align-items-center gap-2">
-                        <i class="fa-solid fa-clock-rotate-left fs-5 text-warning-emphasis"></i>
+                        <i class="fa-solid fa-clock-rotate-left fs-5 text-warning"></i>
                         <span class="fw-semibold">⏳ Periodo de gracia Servidor Zenic (quedan {{ pago_servidor.dias_gabela }} días de gabela). Venció el {{ pago_servidor.dia_vencimiento }} de {{ pago_servidor.mes_nombre }}.</span>
                     </div>
                     <button class="btn btn-sm btn-warning text-dark fw-bold rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalPagoServidor">
@@ -808,7 +1110,7 @@
                 {% for category, message in messages %}
                     <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show border-0 shadow-sm rounded-3" role="alert">
                         {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 {% endfor %}
             {% endif %}
@@ -817,11 +1119,26 @@
         {% block content %}{% endblock %}
     </main>
 
+    <!-- Footer Corporativo Oficial POWER LED -->
+    <footer class="power-footer d-print-none">
+        <div class="container d-flex flex-column flex-md-row align-items-center justify-content-between gap-2 text-center text-md-start">
+            <div class="d-flex align-items-center gap-2">
+                <img src="{{ url_for('static', filename='img/pw-isotipo.png') }}" alt="PW" style="height: 18px; width: auto;">
+                <span class="fw-bold text-white" style="font-family: var(--font-heading); letter-spacing: 1px;">POWER LED</span>
+                <span class="text-muted">—</span>
+                <span style="color: var(--power-blue); font-weight: 600;">Ilumina tu camino.</span>
+            </div>
+            <div class="text-muted small">
+                POWER LED — Ilumina tu camino. Todos los derechos reservados.
+            </div>
+        </div>
+    </footer>
+
     {% if current_user.is_authenticated and current_user.rol == 'admin' %}
     <!-- Modal Pago de Servidor Zenic -->
     <div class="modal fade" id="modalPagoServidor" tabindex="-1" aria-labelledby="modalPagoServidorLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden" style="background-color: #FFFFFF; border: 1px solid var(--brand-border) !important;">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
                 <!-- Modal Header -->
                 <div class="modal-header text-white border-0 py-3" style="background: var(--brand-gradient);">
                     <div class="d-flex align-items-center gap-2">
@@ -832,10 +1149,10 @@
                 </div>
 
                 <!-- Modal Body -->
-                <div class="modal-body p-4 text-dark">
+                <div class="modal-body p-4">
                     <!-- Status Badge & Date -->
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="badge bg-light text-dark border px-3 py-2 rounded-pill fw-semibold">
+                        <span class="badge bg-dark text-white border px-3 py-2 rounded-pill fw-semibold">
                             <i class="fa-solid fa-calendar-day me-1"></i> Vencimiento: {{ pago_servidor.dia_vencimiento }} de {{ pago_servidor.mes_nombre }} {{ pago_servidor.anio }}
                         </span>
                         {% if pago_servidor.estado == 'pagado' %}
@@ -850,9 +1167,9 @@
                     </div>
 
                     <!-- Monto Destacado -->
-                    <div class="card border-0 rounded-4 p-3 text-center mb-4 shadow-sm" style="border: 2px dashed #E53935 !important; background-color: #FFEBEE !important;">
+                    <div class="card border-0 rounded-4 p-3 text-center mb-4 shadow-sm" style="border: 2px dashed var(--power-blue) !important; background-color: rgba(2, 156, 194, 0.08) !important;">
                         <span class="text-uppercase text-muted fw-bold small">Valor de la Mensualidad</span>
-                        <h2 class="fw-extrabold m-0" style="color: #059669; font-size: 2.2rem; font-family: var(--font-heading);">${{ pago_servidor.monto }} COP</h2>
+                        <h2 class="fw-extrabold m-0" style="color: var(--power-green); font-size: 2.2rem; font-family: var(--font-heading);">${{ pago_servidor.monto }} COP</h2>
                     </div>
 
                     <p class="fw-semibold text-muted small mb-2"><i class="fa-solid fa-building-columns me-1"></i> Cuentas de Transferencia Directa:</p>
@@ -861,12 +1178,12 @@
                     <div class="row g-3 mb-4">
                         <!-- Nu Card -->
                         <div class="col-6">
-                            <div class="card border rounded-3 p-3 text-center h-100 position-relative shadow-sm" style="background-color: #F8F9FA;">
-                                <div class="fw-bold mb-1" style="color: #820AD1;">
+                            <div class="card border rounded-3 p-3 text-center h-100 position-relative shadow-sm">
+                                <div class="fw-bold mb-1" style="color: #a855f7;">
                                     <i class="fa-solid fa-credit-card me-1"></i> Nu
                                 </div>
                                 <span class="text-muted small">Llave Transferencia</span>
-                                <div class="fw-extrabold fs-6 text-dark my-1 select-all" id="nuKeyText">{{ pago_servidor.nu_llave }}</div>
+                                <div class="fw-extrabold fs-6 text-white my-1 select-all" id="nuKeyText">{{ pago_servidor.nu_llave }}</div>
                                 <button type="button" 
                                         class="btn btn-sm btn-outline-primary rounded-pill mt-1 py-1 fw-bold"
                                         onclick="copiarTexto('{{ pago_servidor.nu_llave }}', this)">
@@ -877,12 +1194,12 @@
 
                         <!-- Nequi Card -->
                         <div class="col-6">
-                            <div class="card border rounded-3 p-3 text-center h-100 position-relative shadow-sm" style="background-color: #F8F9FA;">
-                                <div class="fw-bold mb-1" style="color: #FF007A;">
+                            <div class="card border rounded-3 p-3 text-center h-100 position-relative shadow-sm">
+                                <div class="fw-bold mb-1" style="color: #ec4899;">
                                     <i class="fa-solid fa-mobile-screen-button me-1"></i> Nequi
                                 </div>
                                 <span class="text-muted small">Número Celular</span>
-                                <div class="fw-extrabold fs-6 text-dark my-1 select-all" id="nequiNumText">{{ pago_servidor.nequi_num }}</div>
+                                <div class="fw-extrabold fs-6 text-white my-1 select-all" id="nequiNumText">{{ pago_servidor.nequi_num }}</div>
                                 <button type="button" 
                                         class="btn btn-sm btn-outline-primary rounded-pill mt-1 py-1 fw-bold"
                                         onclick="copiarTexto('{{ pago_servidor.nequi_num }}', this)">
@@ -941,7 +1258,6 @@
         let adminKnownApprovalIds = new Set();
         let adminSoundPermissionGranted = false;
 
-        // Registrar permiso de interacción para habilitar audio
         document.addEventListener('click', () => { adminSoundPermissionGranted = true; }, { once: true });
         document.addEventListener('keydown', () => { adminSoundPermissionGranted = true; }, { once: true });
 
@@ -952,12 +1268,11 @@
                 const ctx = new AudioCtx();
                 const now = ctx.currentTime;
                 
-                // Oscilador 1 (Tono agudo tecnológico suave)
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(587.33, now); // Re 5
-                osc.frequency.exponentialRampToValueAtTime(880, now + 0.15); // La 5
+                osc.frequency.setValueAtTime(587.33, now);
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
                 
                 gain.gain.setValueAtTime(0.0001, now);
                 gain.gain.linearRampToValueAtTime(0.25, now + 0.04);
@@ -968,9 +1283,7 @@
                 
                 osc.start(now);
                 osc.stop(now + 0.35);
-            } catch (e) {
-                // AudioContext restringido por el navegador
-            }
+            } catch (e) {}
         }
 
         const formatoCOP_Global = (num) => "$" + Math.round(num || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -995,7 +1308,6 @@
                     return;
                 }
 
-                // Actualizar badge superior y lateral
                 if (badgeContainer && badgeCount) {
                     badgeCount.textContent = data.length;
                     badgeContainer.style.display = 'block';
@@ -1005,7 +1317,6 @@
                     sidebarBadge.style.display = 'inline-block';
                 }
 
-                // Detectar si hay nuevas solicitudes para disparar sonido
                 let hayNuevas = false;
                 data.forEach(item => {
                     if (!adminKnownApprovalIds.has(item.id)) {
@@ -1018,21 +1329,20 @@
                     reproducirAlertaSonora();
                 }
 
-                // Renderizar tarjetas si no están en el DOM
                 data.forEach(item => {
                     let card = document.getElementById(`card_aprobacion_${item.id}`);
                     if (!card) {
                         card = document.createElement('div');
                         card.id = `card_aprobacion_${item.id}`;
                         card.className = 'card border-0 shadow-lg mb-3 admin-approval-card';
-                        card.style.cssText = 'pointer-events: auto; border-radius: 16px; overflow: hidden; border-top: 4px solid var(--brand-primary) !important; background: #ffffff; box-shadow: 0 10px 30px rgba(15,23,42,0.18) !important; animation: fadeInSlideUp 0.35s ease-out;';
+                        card.style.cssText = 'pointer-events: auto; border-radius: 16px; overflow: hidden; border-top: 4px solid var(--power-blue) !important; background: #0d1117; box-shadow: 0 15px 35px rgba(0,0,0,0.85) !important; animation: fadeInSlideUp 0.35s ease-out;';
                         
-                        const varianteHtml = item.variante ? `<span class="badge bg-light text-secondary border fw-normal">${item.variante}</span>` : '';
-                        const motivoHtml = item.motivo ? `<div class="mb-2 p-2 rounded-3 text-muted small" style="background: #F1F5F9; font-size: 0.78rem;"><i class="fa-solid fa-comment-dots me-1 text-primary"></i>"${item.motivo}"</div>` : '';
+                        const varianteHtml = item.variante ? `<span class="badge bg-dark text-info border fw-normal">${item.variante}</span>` : '';
+                        const motivoHtml = item.motivo ? `<div class="mb-2 p-2 rounded-3 text-muted small" style="background: #161b22; font-size: 0.78rem;"><i class="fa-solid fa-comment-dots me-1 text-primary"></i>"${item.motivo}"</div>` : '';
 
                         card.innerHTML = `
-                            <div class="card-header bg-white border-0 pb-1 pt-3 px-3 d-flex justify-content-between align-items-center">
-                                <span class="badge rounded-pill px-2 py-1 fw-bold" style="background: rgba(255, 0, 127, 0.12); color: var(--brand-primary); font-size: 0.75rem;">
+                            <div class="card-header border-0 pb-1 pt-3 px-3 d-flex justify-content-between align-items-center" style="background: #0d1117 !important;">
+                                <span class="badge rounded-pill px-2 py-1 fw-bold" style="background: rgba(2, 156, 194, 0.15); color: var(--power-blue); font-size: 0.75rem;">
                                     <i class="fa-solid fa-hand-holding-dollar me-1"></i> Autorización de Precio
                                 </span>
                                 <small class="text-muted" style="font-size: 0.72rem;"><i class="fa-regular fa-clock me-1"></i>${item.fecha}</small>
@@ -1041,20 +1351,20 @@
                                 <div class="d-flex align-items-center gap-2 mb-2">
                                     <i class="fa-solid fa-user-tag text-muted"></i>
                                     <span class="small text-muted">Vendedor:</span>
-                                    <strong class="small text-dark">${item.vendedor}</strong>
+                                    <strong class="small text-white">${item.vendedor}</strong>
                                 </div>
-                                <div class="fw-bold text-brand-black mb-2" style="font-size: 0.92rem;">
+                                <div class="fw-bold text-white mb-2" style="font-size: 0.92rem;">
                                     ${item.producto} ${varianteHtml}
                                 </div>
                                 
-                                <div class="p-2 rounded-3 mb-2" style="background: #F8FAFC; border: 1px solid #E2E8F0; font-size: 0.82rem;">
+                                <div class="p-2 rounded-3 mb-2" style="background: #161b22; border: 1px solid #21262d; font-size: 0.82rem;">
                                     <div class="d-flex justify-content-between text-muted mb-1">
                                         <span>Precio Mínimo Permitido:</span>
-                                        <strong class="text-dark">${formatoCOP_Global(item.precio_original)}</strong>
+                                        <strong class="text-white">${formatoCOP_Global(item.precio_original)}</strong>
                                     </div>
-                                    <div class="d-flex justify-content-between text-brand-pink fw-bold">
-                                        <span>Precio Solicitado:</span>
-                                        <strong class="fs-6" style="color: var(--brand-primary);">${formatoCOP_Global(item.precio_solicitado)}</strong>
+                                    <div class="d-flex justify-content-between fw-bold">
+                                        <span style="color: var(--power-blue);">Precio Solicitado:</span>
+                                        <strong class="fs-6" style="color: var(--power-blue);">${formatoCOP_Global(item.precio_solicitado)}</strong>
                                     </div>
                                 </div>
                                 
@@ -1062,7 +1372,7 @@
                                 
                                 <div class="mt-2">
                                     <div class="input-group input-group-sm mb-2 shadow-sm rounded-3 overflow-hidden">
-                                        <span class="input-group-text bg-white text-muted border-end-0" style="font-size: 0.78rem;">Autorizar: $</span>
+                                        <span class="input-group-text border-end-0" style="font-size: 0.78rem;">Autorizar: $</span>
                                         <input type="number" step="1" class="form-control fw-bold text-end border-start-0" id="input_precio_autorizado_${item.id}" value="${Math.round(item.precio_solicitado)}" title="Puedes ajustar una contraoferta si deseas autorizar un monto diferente">
                                     </div>
                                     
@@ -1071,10 +1381,10 @@
                                     </div>
                                     
                                     <div class="d-flex gap-2 justify-content-end">
-                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-semibold" id="btn_toggle_rechazo_${item.id}" onclick="toggleOpcionRechazo(${item.id})">
-                                            <i class="fa-solid fa-xmark me-1 text-danger"></i> Rechazar
+                                        <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 fw-bold" id="btn_toggle_rechazo_${item.id}" onclick="toggleOpcionRechazo(${item.id})" style="background-color: #E31313 !important;">
+                                            <i class="fa-solid fa-xmark me-1"></i> Rechazar
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-pink rounded-pill px-3 fw-bold shadow-sm" id="btn_aprobar_${item.id}" onclick="resolverAprobacionAdmin(${item.id}, 'aprobar')">
+                                        <button type="button" class="btn btn-sm btn-success rounded-pill px-3 fw-bold shadow-sm" id="btn_aprobar_${item.id}" onclick="resolverAprobacionAdmin(${item.id}, 'aprobar')" style="background-color: #40A435 !important;">
                                             <i class="fa-solid fa-check me-1"></i> Aprobar
                                         </button>
                                     </div>
@@ -1085,7 +1395,6 @@
                     }
                 });
 
-                // Eliminar del DOM aquellas tarjetas que ya no estén pendientes
                 const currentIds = new Set(data.map(d => d.id));
                 const cardsEnDom = container.querySelectorAll('.admin-approval-card');
                 cardsEnDom.forEach(c => {
@@ -1111,7 +1420,6 @@
                 btn.className = 'btn btn-sm btn-danger rounded-pill px-3 fw-bold';
                 btn.innerHTML = '<i class="fa-solid fa-ban me-1"></i> Confirmar Rechazo';
             } else {
-                // Confirmado el rechazo
                 resolverAprobacionAdmin(id, 'rechazar');
             }
         }
@@ -1157,7 +1465,6 @@
                     }
                 }
 
-                // Animación de salida de la tarjeta
                 const card = document.getElementById(`card_aprobacion_${id}`);
                 if (card) {
                     card.style.transition = 'all 0.3s ease';
@@ -1176,7 +1483,6 @@
             }
         }
 
-        // Iniciar Polling del Administrador cada 4.5 segundos
         document.addEventListener('DOMContentLoaded', () => {
             cargarAprobacionesPendientesAdmin();
             setInterval(cargarAprobacionesPendientesAdmin, 4500);
@@ -1188,18 +1494,41 @@
 
 
     <script>
-        // Registro del Service Worker para soporte PWA y Offline
+        function syncThemeUI(theme) {
+            const isLight = theme === 'light';
+            const iconNav = document.getElementById('iconThemeNavbar');
+            const labelNav = document.getElementById('labelThemeNavbar');
+            const iconSide = document.getElementById('iconThemeSidebar');
+            const labelSide = document.getElementById('labelThemeSidebar');
+
+            if (iconNav) iconNav.className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+            if (labelNav) labelNav.textContent = isLight ? 'Modo Noche' : 'Modo Día';
+            if (iconSide) iconSide.className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+            if (labelSide) labelSide.textContent = isLight ? 'Pasar a Modo Noche (Oscuro)' : 'Pasar a Modo Día (Blanco)';
+        }
+
+        function togglePowerLedTheme() {
+            const current = document.documentElement.getAttribute('data-bs-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-bs-theme', next);
+            localStorage.setItem('powerled_theme', next);
+            syncThemeUI(next);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            syncThemeUI(document.documentElement.getAttribute('data-bs-theme') || 'dark');
+        });
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
                     .then(registration => {
-                        console.log('[PWA] Service Worker registrado exitosamente. Scope:', registration.scope);
-                        // Verificar si hay nueva versión disponible
+                        console.log('[PWA] Service Worker POWER LED registrado. Scope:', registration.scope);
                         registration.addEventListener('updatefound', () => {
                             const newWorker = registration.installing;
                             newWorker.addEventListener('statechange', () => {
                                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    console.log('[PWA] Nueva versión disponible en segundo plano.');
+                                    console.log('[PWA] Nueva versión POWER LED disponible.');
                                 }
                             });
                         });
@@ -1210,7 +1539,6 @@
             });
         }
 
-        // Manejador del evento de instalación nativa PWA (Android / Windows / Chrome)
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -1226,7 +1554,7 @@
                 deferredPrompt.prompt();
                 deferredPrompt.userChoice.then((choiceResult) => {
                     if (choiceResult.outcome === 'accepted') {
-                        console.log('[PWA] El usuario aceptó la instalación de Maripocell');
+                        console.log('[PWA] El usuario aceptó la instalación de POWER LED');
                     }
                     deferredPrompt = null;
                     const container = document.getElementById('pwa-install-container');
@@ -1236,7 +1564,7 @@
         }
 
         window.addEventListener('appinstalled', () => {
-            console.log('[PWA] Maripocell fue instalada satisfactoriamente');
+            console.log('[PWA] POWER LED fue instalada satisfactoriamente');
             const container = document.getElementById('pwa-install-container');
             if (container) container.classList.add('d-none');
         });

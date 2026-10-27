@@ -3,34 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ticket de Compra #{{ venta.id }} - Maripocell</title>
+    <title>POWER LED | Ticket de Compra #{{ venta.id }}</title>
     <!-- Open Graph Meta Tags para Previsualización Rica en WhatsApp / Redes Sociales -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Maripocell - Recibo Digital #{{ venta.id }}">
-    <meta property="og:description" content="Comprobante de compra oficial de Maripocell - Accesorios & Tecnología. Total: ${{ (venta.monto_total)|cop }} COP">
+    <meta property="og:title" content="POWER LED - Recibo Digital #{{ venta.id }}">
+    <meta property="og:description" content="Comprobante de compra oficial de POWER LED — Ilumina tu camino. Total: ${{ (venta.monto_total)|cop }} COP">
     <meta property="og:image" content="{{ url_for('static', filename='img/icons/icon-512x512.png', _external=True) }}">
     <meta property="og:url" content="{{ request.url }}">
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}?v=maripocell_v3">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/icons/favicon-32x32.png') }}?v=maripocell_v3">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/icons/favicon-16x16.png') }}?v=maripocell_v3">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/icons/apple-touch-icon.png') }}?v=maripocell_v3">
-    <!-- Google Fonts: Montserrat, Roboto y Roboto Mono -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon-pw.png') }}?v=powerled_v1">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}?v=powerled_v1">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/icons/favicon-32x32.png') }}?v=powerled_v1">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/icons/favicon-16x16.png') }}?v=powerled_v1">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/icons/apple-touch-icon.png') }}?v=powerled_v1">
+    <!-- Google Fonts: Orbitron, Roboto y Roboto Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Roboto+Mono:wght@400;600;700&family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Roboto+Mono:wght@400;600;700&family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- html2canvas para generación de imagen nítida del ticket -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        /* =========================================================
-           TICKET DIGITAL (VISTA PANTALLA / NAVEGADOR / PDF)
-           Paleta Oficial Maripocell: Fondo Blanco #FFFFFF,
-           Texto Negro #111827, Acentos Oro #D4AF37 y Grafito #1F1F1F
-           ========================================================= */
         body {
-            background-color: #F8F9FA;
+            background-color: #000000;
             margin: 0;
             padding: 30px;
             display: flex;
@@ -44,68 +40,97 @@
             width: 100%;
             max-width: 380px; /* Ancho estándar de impresora térmica 80mm */
             padding: 25px 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05), 0 0 20px rgba(212, 175, 55, 0.08);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6), 0 0 25px rgba(2, 156, 194, 0.25);
             border: 1px solid #E5E7EB;
-            border-top: 4px solid #D4AF37;
+            border-top: 5px solid #029CC2;
             border-radius: 12px;
             box-sizing: border-box;
         }
 
         .header {
             text-align: center;
-            border-bottom: 2px dashed #D4AF37;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
+            border-bottom: 2px dashed #029CC2;
+            padding-bottom: 14px;
+            margin-bottom: 16px;
         }
 
         .logo {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 2.1rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.85rem;
             font-weight: 900;
             margin: 0 0 4px 0;
             letter-spacing: 2px;
-            color: #111827;
+            color: #000000;
         }
 
         .subtitle-brand {
-            font-size: 0.75rem;
-            letter-spacing: 1.5px;
-            font-weight: 700;
-            color: #926C09;
-            margin-bottom: 12px;
+            font-size: 0.72rem;
+            letter-spacing: 2px;
+            font-weight: 800;
+            color: #029CC2;
+            margin-bottom: 10px;
             text-transform: uppercase;
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Orbitron', sans-serif;
         }
 
         .info {
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             margin: 3px 0;
             line-height: 1.4;
             color: #1F2937;
             font-family: 'Roboto', sans-serif;
         }
 
+        .meta-box {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 8px 10px;
+            margin-bottom: 14px;
+            text-align: left;
+            font-size: 0.8rem;
+        }
+
+        .meta-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 2px 0;
+        }
+
+        .section-divider {
+            background: #F1F5F9;
+            color: #0F172A;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 5px 8px;
+            margin: 10px 0 6px 0;
+            border-left: 3px solid #029CC2;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
         .table-items {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.85rem;
-            margin-bottom: 20px;
+            font-size: 0.83rem;
+            margin-bottom: 12px;
             font-family: 'Roboto', sans-serif;
         }
 
         .table-items th {
             text-align: left;
-            border-bottom: 2px solid #D4AF37;
-            color: #926C09;
-            padding-bottom: 8px;
+            border-bottom: 2px solid #029CC2;
+            color: #000000;
+            padding-bottom: 6px;
             font-weight: 700;
-            font-size: 0.78rem;
+            font-size: 0.74rem;
             letter-spacing: 0.5px;
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Orbitron', sans-serif;
         }
 
         .table-items td {
-            padding: 10px 0;
+            padding: 8px 0;
             vertical-align: top;
             border-bottom: 1px solid #E5E7EB;
             color: #111827;
@@ -117,31 +142,31 @@
         .col-sub { width: 30%; text-align: right; font-family: 'Roboto Mono', monospace; font-weight: 700; }
 
         .totals {
-            border-top: 2px dashed #D4AF37;
-            padding-top: 20px;
-            margin-bottom: 25px;
+            border-top: 2px dashed #029CC2;
+            padding-top: 16px;
+            margin-bottom: 20px;
         }
 
         .total-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 1.35rem;
+            font-size: 1.3rem;
             font-weight: 900;
-            background: linear-gradient(135deg, #D4AF37 0%, #F3D079 100%);
-            color: #111827;
+            background: #000000;
+            color: #FFFFFF;
             padding: 12px 16px;
             border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);
-            font-family: 'Montserrat', sans-serif;
+            border-left: 4px solid #40A435;
+            font-family: 'Orbitron', sans-serif;
             letter-spacing: 0.5px;
         }
 
         .footer {
             text-align: center;
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: #4D4D4D;
-            margin-top: 25px;
+            margin-top: 20px;
             line-height: 1.5;
             font-family: 'Roboto', sans-serif;
         }
@@ -150,23 +175,24 @@
             display: block;
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #D4AF37 0%, #F3D079 100%);
-            color: #111827;
-            border: 1px solid #D4AF37;
-            font-size: 1rem;
+            background: #029CC2;
+            color: #FFFFFF;
+            border: 1px solid #029CC2;
+            font-size: 0.95rem;
             border-radius: 8px;
             font-weight: 800;
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Orbitron', sans-serif;
             letter-spacing: 1px;
             cursor: pointer;
-            margin-top: 25px;
+            margin-top: 20px;
             transition: all 0.2s;
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);
+            box-shadow: 0 4px 15px rgba(2, 156, 194, 0.35);
         }
 
         .btn-print:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 22px rgba(212, 175, 55, 0.4);
+            background: #03b3de;
+            box-shadow: 0 6px 22px rgba(2, 156, 194, 0.5);
         }
 
         .btn-whatsapp {
@@ -182,19 +208,11 @@
             font-size: 0.92rem;
             border-radius: 8px;
             font-weight: 800;
-            font-family: 'Montserrat', sans-serif;
-            letter-spacing: 0.5px;
             cursor: pointer;
             margin-top: 12px;
             transition: all 0.2s;
             box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
             text-transform: uppercase;
-        }
-
-        .btn-whatsapp:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.45);
-            background: linear-gradient(135deg, #2ae06d 0%, #16a08f 100%);
         }
 
         .btn-download {
@@ -210,18 +228,11 @@
             font-size: 0.88rem;
             border-radius: 8px;
             font-weight: 700;
-            font-family: 'Montserrat', sans-serif;
             cursor: pointer;
             margin-top: 10px;
             transition: all 0.2s;
             box-sizing: border-box;
             text-transform: uppercase;
-        }
-
-        .btn-download:hover {
-            background: #F5F5F5;
-            border-color: #94A3B8;
-            transform: translateY(-1px);
         }
 
         .btn-return {
@@ -234,28 +245,17 @@
             background: #0F172A;
             color: #FFFFFF;
             border: none;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
             border-radius: 8px;
             font-weight: 800;
-            font-family: 'Montserrat', sans-serif;
-            letter-spacing: 0.5px;
             cursor: pointer;
-            margin-top: 25px;
+            margin-top: 20px;
             text-decoration: none;
             box-sizing: border-box;
             transition: all 0.2s;
-            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.2);
             text-transform: uppercase;
         }
 
-        .btn-return:hover {
-            background: #1E293B;
-            color: #FFFFFF;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(15, 23, 42, 0.35);
-        }
-
-        /* Modal Flotante para WhatsApp */
         .whatsapp-modal-overlay {
             position: fixed;
             top: 0;
@@ -279,26 +279,16 @@
             padding: 24px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
             border-top: 5px solid #25D366;
-            animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             box-sizing: border-box;
         }
 
-        @keyframes modalPop {
-            0% { transform: scale(0.92); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        /* =========================================================
-           VERSIÓN MONOCROMÁTICA PARA IMPRESORAS TÉRMICAS (@media print)
-           Blanco y negro puro (monocromo estricto), priorizando tipografía Roboto.
-           ========================================================= */
         @media print {
             body {
                 background-color: #FFFFFF !important;
                 color: #000000 !important;
                 padding: 0 !important;
                 display: block !important;
-                font-family: 'Roboto', -apple-system, BlinkMacSystemFont, Arial, sans-serif !important;
+                font-family: 'Roboto', sans-serif !important;
             }
             .ticket {
                 background-color: #FFFFFF !important;
@@ -310,58 +300,26 @@
                 padding: 0 !important;
                 margin: 0 auto !important;
                 border-radius: 0 !important;
-                font-family: 'Roboto', sans-serif !important;
             }
-            .header {
-                border-bottom: 2px dashed #000000 !important;
-            }
-            .logo {
-                font-family: 'Roboto', sans-serif !important;
-                font-weight: 900 !important;
-            }
-            .logo span {
-                color: #000000 !important;
-                text-shadow: none !important;
-            }
-            .subtitle-brand, .info, .footer {
+            .header { border-bottom: 2px dashed #000000 !important; }
+            .logo, .logo span, .subtitle-brand, .info, .footer, .meta-box, .section-divider {
                 color: #000000 !important;
                 font-family: 'Roboto', sans-serif !important;
             }
-            .table-items {
-                font-family: 'Roboto', sans-serif !important;
-            }
-            .table-items th {
-                border-bottom: 2px solid #000000 !important;
-                color: #000000 !important;
-                font-family: 'Roboto', sans-serif !important;
-                font-weight: 700 !important;
-            }
-            .table-items td {
-                border-bottom: 1px solid #000000 !important;
-                color: #000000 !important;
-                font-family: 'Roboto', sans-serif !important;
-            }
-            .col-sub {
-                font-family: 'Roboto', sans-serif !important;
-                font-weight: 700 !important;
-            }
-            .totals {
-                border-top: 2px dashed #000000 !important;
-            }
+            .meta-box { border: 1px solid #000000 !important; background: transparent !important; }
+            .section-divider { border-left: 3px solid #000000 !important; background: transparent !important; border-bottom: 1px solid #000000 !important; }
+            .table-items th { border-bottom: 2px solid #000000 !important; color: #000000 !important; }
+            .table-items td { border-bottom: 1px solid #000000 !important; color: #000000 !important; }
+            .totals { border-top: 2px dashed #000000 !important; }
             .total-row {
                 background: transparent !important;
                 color: #000000 !important;
                 border: 2px solid #000000 !important;
                 box-shadow: none !important;
                 padding: 8px 10px !important;
-                font-family: 'Roboto', sans-serif !important;
-                font-weight: 900 !important;
             }
-            .total-row * {
-                color: #000000 !important;
-                font-family: 'Roboto', sans-serif !important;
-            }
-            .btn-print, .btn-whatsapp, .btn-download, .btn-return, .whatsapp-modal-overlay {
+            .total-row * { color: #000000 !important; }
+            .btn-print, .btn-whatsapp, .btn-download, .btn-return, .whatsapp-modal-overlay, .d-print-none {
                 display: none !important;
             }
         }
@@ -369,47 +327,100 @@
 </head>
 <body>
 
+{% set items_productos = [] %}
+{% set items_servicios = [] %}
+{% for d in venta.detalles %}
+    {% if d.tipo_item == 'SERVICIO' or d.service_id %}
+        {% set _ = items_servicios.append(d) %}
+    {% else %}
+        {% set _ = items_productos.append(d) %}
+    {% endif %}
+{% endfor %}
+
 <div class="ticket">
     <div class="header">
         <h1 class="logo">
-            <span style="color: #111827; font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 2px;">Maripocell</span>
+            <span style="color: #000000; font-family: 'Orbitron', sans-serif; font-weight: 900; letter-spacing: 2px;">POWER </span><span style="color: #E31313;">L</span><span style="color: #40A435;">E</span><span style="color: #029CC2;">D</span>
         </h1>
-        <div class="subtitle-brand">MARIPOCELL - ACCESORIOS & TECNOLOGÍA</div>
-        
-        <p class="info">Folio / Ticket: #{{ venta.id }}</p>
-        <p class="info">Expedido: {{ venta.fecha_venta.strftime('%d/%m/%Y %H:%M') }}</p>
-        <p class="info">Cajero Asignado: {{ venta.vendedor.nombre }}</p>
-        <p class="info" style="font-weight: bold; text-transform: uppercase;">
-            {% if venta.pagos|length > 1 %}
-                Método de Pago: PAGO DIVIDIDO
-            {% elif venta.pagos|length == 1 %}
-                Método de Pago: {{ venta.pagos[0].metodo_pago|upper }}
-            {% else %}
-                Método de Pago: {{ venta.metodo_pago|upper }}
-            {% endif %}
-        </p>
+        <div class="subtitle-brand">ILUMINA TU CAMINO</div>
+        <div style="font-size: 0.72rem; color: #475569; font-weight: 600; margin-bottom: 6px;">ACCESORIOS AUTOMOTRICES & TALLER DE INSTALACIÓN</div>
+
+        <p class="info"><strong>Ticket / Factura POS:</strong> #{{ venta.id }}</p>
+        {% if venta.orden_trabajo %}
+        <p class="info"><strong>Orden de Taller:</strong> {{ venta.orden_trabajo.numero_orden }}</p>
+        {% endif %}
+        <p class="info"><strong>Fecha:</strong> {{ venta.fecha_venta.strftime('%d/%m/%Y %H:%M') }}</p>
     </div>
 
+    <!-- Ficha Operativa: Asesor, Instalador, Cliente y Vehículo -->
+    <div class="meta-box">
+        <div class="meta-row">
+            <span><strong>Asesor / Cajero:</strong></span>
+            <span>{{ venta.asesor.nombre if venta.asesor else venta.vendedor.nombre }}</span>
+        </div>
+        {% if venta.instalador %}
+        <div class="meta-row">
+            <span><strong>Técnico Instalador:</strong></span>
+            <span>{{ venta.instalador.nombre }}</span>
+        </div>
+        {% endif %}
+        {% if venta.cliente_nombre or venta.cliente %}
+        <div class="meta-row">
+            <span><strong>Cliente:</strong></span>
+            <span>{{ venta.cliente_nombre or venta.cliente.nombre }}</span>
+        </div>
+        {% endif %}
+        {% if venta.cliente_documento or (venta.cliente and venta.cliente.documento) %}
+        <div class="meta-row">
+            <span><strong>CC / NIT:</strong></span>
+            <span>{{ venta.cliente_documento or venta.cliente.documento }}</span>
+        </div>
+        {% endif %}
+        {% if venta.placa_vehiculo %}
+        <div class="meta-row">
+            <span><strong>Vehículo / Placa:</strong></span>
+            <span style="font-family: 'Roboto Mono', monospace; font-weight: 700;">{{ venta.placa_vehiculo }} {% if venta.modelo_vehiculo %}({{ venta.modelo_vehiculo }}){% endif %}</span>
+        </div>
+        {% endif %}
+        <div class="meta-row" style="border-top: 1px dashed #CBD5E1; margin-top: 4px; padding-top: 4px;">
+            <span><strong>Modalidad Pago:</strong></span>
+            <span style="font-weight: 800; text-transform: uppercase;">
+                {% if venta.pagos|length > 1 %}
+                    PAGO DIVIDIDO
+                {% elif venta.pagos|length == 1 %}
+                    {{ venta.pagos[0].metodo_pago|upper }}
+                {% else %}
+                    {{ venta.metodo_pago|upper }}
+                {% endif %}
+            </span>
+        </div>
+    </div>
+
+    <!-- Sección 1: Accesorios / Repuestos -->
+    {% if items_productos|length > 0 %}
+    <div class="section-divider">ACCESORIOS Y REPUESTOS</div>
     <table class="table-items">
         <thead>
             <tr>
                 <th class="col-qty">CANT</th>
-                <th class="col-prod">CONCEPTO</th>
-                <th class="col-sub">IMPORTE</th>
+                <th class="col-prod">DESCRIPCIÓN</th>
+                <th class="col-sub">SUBTOTAL</th>
             </tr>
         </thead>
         <tbody>
-            {% for detalle in venta.detalles %}
+            {% for detalle in items_productos %}
             <tr>
                 <td class="col-qty">{{ detalle.cantidad_vendida }}</td>
                 <td class="col-prod">
                     {% if detalle.nombre_manual %}
-                        {{ detalle.nombre_manual[:40] }}{% if detalle.nombre_manual|length > 40 %}...{% endif %}
-                    {% else %}
-                        {{ detalle.producto.nombre[:40] }}{% if detalle.producto.nombre|length > 40 %}...{% endif %}
+                        {{ detalle.nombre_manual }}
+                    {% elif detalle.producto %}
+                        {{ detalle.producto.nombre }}
                         {% if detalle.variante %}
-                            <br><small style="font-size: 0.75rem; color: #4D4D4D;">{{ detalle.variante.nombre_variante }}</small>
+                            <br><small style="font-size: 0.74rem; color: #4D4D4D;">Ref: {{ detalle.variante.nombre_variante }}</small>
                         {% endif %}
+                    {% else %}
+                        Accesorio Automotriz
                     {% endif %}
                 </td>
                 <td class="col-sub">
@@ -423,6 +434,35 @@
             {% endfor %}
         </tbody>
     </table>
+    {% endif %}
+
+    <!-- Sección 2: Servicios de Mano de Obra / Instalación -->
+    {% if items_servicios|length > 0 %}
+    <div class="section-divider" style="border-left-color: #40A435;">MANO DE OBRA / INSTALACIÓN</div>
+    <table class="table-items">
+        <thead>
+            <tr>
+                <th class="col-qty">CANT</th>
+                <th class="col-prod">SERVICIO TÉCNICO</th>
+                <th class="col-sub">SUBTOTAL</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detalle in items_servicios %}
+            <tr>
+                <td class="col-qty">{{ detalle.cantidad_vendida }}</td>
+                <td class="col-prod">
+                    {{ detalle.nombre_manual or (detalle.servicio.nombre if detalle.servicio else 'Servicio de Instalación') }}
+                    {% if detalle.instalador %}
+                        <br><small style="font-size: 0.72rem; color: #475569;">Técnico: {{ detalle.instalador.nombre }}</small>
+                    {% endif %}
+                </td>
+                <td class="col-sub">${{ (detalle.precio_venta_final * detalle.cantidad_vendida)|cop }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
 
     <div class="totals">
         <div class="total-row">
@@ -430,13 +470,12 @@
             <span>${{ (venta.monto_total)|cop }}</span>
         </div>
         
-        {% if venta.pagos|length > 1 %}
-        <!-- Desglose de pagos mixtos -->
-        <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #CBD5E1;">
-            <p style="font-weight: 700; font-size: 0.85rem; margin-bottom: 8px; text-align: center; color: #4D4D4D; font-family: 'Montserrat', sans-serif;">DESGLOSE DE PAGOS:</p>
+        {% if venta.pagos|length >= 1 %}
+        <div style="margin-top: 12px; padding-top: 8px; border-top: 1px dashed #CBD5E1;">
+            <p style="font-weight: 700; font-size: 0.78rem; margin-bottom: 6px; text-align: center; color: #4D4D4D;">MEDIOS DE PAGO REGISTRADOS:</p>
             {% for pago in venta.pagos %}
-            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; padding: 3px 0;">
-                <span style="text-transform: capitalize; color: #333333;">{{ pago.metodo_pago }}:</span>
+            <div style="display: flex; justify-content: space-between; font-size: 0.82rem; padding: 2px 0;">
+                <span style="text-transform: uppercase; font-weight: 600; color: #333333;">{{ pago.metodo_pago }}:</span>
                 <span style="font-weight: 700; font-family: 'Roboto Mono', monospace; color: #000000;">${{ (pago.monto)|cop }}</span>
             </div>
             {% endfor %}
@@ -445,17 +484,18 @@
     </div>
 
     <div class="footer">
-        <p style="font-size: 0.95rem; font-weight: bold; color: #000000; margin-bottom: 6px; font-family: 'Montserrat', sans-serif;">¡Gracias por tu compra!</p>
-        <p style="margin-bottom: 4px;">Políticas de Tienda: Devoluciones únicamente presentando ticket impreso o digital.</p>
-        <p>Soporte: ventas@maripocell.com</p>
+        <p style="font-size: 0.92rem; font-weight: bold; color: #000000; margin-bottom: 4px; font-family: 'Orbitron', sans-serif;">¡Gracias por tu compra!</p>
+        <p style="margin-bottom: 4px; font-weight: 700; color: #029CC2;">POWER LED — ILUMINA TU CAMINO</p>
+        <p style="margin-bottom: 4px;">Garantía sujeta a revisión técnica presentando este comprobante.</p>
+        <p>Soporte: ventas@powerled.com</p>
     </div>
 
     <a href="javascript:void(0);" onclick="volverACaja();" class="btn-return">
-        <i class="fa-solid fa-arrow-left"></i> Volver a Caja / Registrar Venta
+        <i class="fa-solid fa-arrow-left"></i> Volver a Caja POS
     </a>
 
     <button class="btn-print" type="button" onclick="window.print()">
-        [ IMPRIMIR TICKET ]
+        [ IMPRIMIR TICKET TÉRMICO ]
     </button>
 
     <button class="btn-whatsapp" type="button" onclick="abrirModalWhatsApp()">
@@ -467,35 +507,31 @@
     </button>
 </div>
 
-<!-- Modal Flotante para Enviar por WhatsApp con Imagen -->
+<!-- Modal Flotante para Enviar por WhatsApp -->
 <div id="modalWhatsApp" class="whatsapp-modal-overlay" style="display: none;" onclick="if(event.target === this) cerrarModalWhatsApp();">
     <div class="whatsapp-modal-card">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
             <div style="display: flex; align-items: center; gap: 8px;">
                 <i class="fa-brands fa-whatsapp" style="color: #25D366; font-size: 1.8rem;"></i>
-                <h3 style="margin: 0; font-size: 1.15rem; color: #000000; font-weight: 800; font-family: 'Montserrat', sans-serif;">Enviar Factura a WhatsApp</h3>
+                <h3 style="margin: 0; font-size: 1.15rem; color: #000000; font-weight: 800;">Enviar Factura a WhatsApp</h3>
             </div>
             <button type="button" onclick="cerrarModalWhatsApp()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94A3B8; line-height: 1;">&times;</button>
         </div>
-        
-        <p style="font-size: 0.85rem; color: #4D4D4D; margin: 0 0 16px 0; line-height: 1.45;">
-            Ingresa los datos del cliente para enviarle su <strong>recibo digital interactivo</strong> con enlace directo:
-        </p>
 
-        <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #333333; margin-bottom: 6px; font-family: 'Montserrat', sans-serif;">
-            Nombre del Cliente (Opcional)
+        <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #333333; margin-bottom: 6px;">
+            Nombre del Cliente
         </label>
-        <input type="text" id="waNombreClienteInput" placeholder="Ej. Carlos Mendoza" style="width: 100%; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.95rem; margin-bottom: 14px; box-sizing: border-box; font-family: 'Roboto', sans-serif;">
+        <input type="text" id="waNombreClienteInput" value="{{ venta.cliente_nombre or (venta.cliente.nombre if venta.cliente else '') }}" placeholder="Ej. Carlos Mendoza" style="width: 100%; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 0.95rem; margin-bottom: 14px; box-sizing: border-box;">
 
-        <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #333333; margin-bottom: 6px; font-family: 'Montserrat', sans-serif;">
+        <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #333333; margin-bottom: 6px;">
             Número Celular / WhatsApp
         </label>
         <div style="display: flex; gap: 8px; margin-bottom: 16px;">
             <span style="display: flex; align-items: center; padding: 10px 12px; background: #F1F5F9; border: 1px solid #CBD5E1; border-radius: 8px; font-weight: 700; font-size: 0.9rem; color: #475569;">+57</span>
-            <input type="tel" id="waNumeroInput" placeholder="3001234567" maxlength="10" style="flex: 1; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 1rem; font-weight: 600; letter-spacing: 0.5px; box-sizing: border-box; font-family: 'Roboto Mono', monospace;">
+            <input type="tel" id="waNumeroInput" value="{{ venta.cliente_telefono or (venta.cliente.telefono if venta.cliente else '') }}" placeholder="3001234567" maxlength="10" style="flex: 1; padding: 10px 14px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 1rem; font-weight: 600; box-sizing: border-box;">
         </div>
 
-        <button type="button" onclick="ejecutarEnvioWhatsApp()" style="width: 100%; padding: 13px; background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); color: #FFFFFF; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Montserrat', sans-serif; box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35); text-transform: uppercase;">
+        <button type="button" onclick="ejecutarEnvioWhatsApp()" style="width: 100%; padding: 13px; background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); color: #FFFFFF; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase;">
             <i class="fa-brands fa-whatsapp" style="font-size: 1.2rem;"></i> Enviar Factura Digital
         </button>
 
@@ -507,13 +543,12 @@
     </div>
 </div>
 
-<!-- Lógica de Auto-Impresión Reactiva y Enlace a WhatsApp con Imagen -->
 <script>
     const SALE_ID = "{{ venta.id }}";
 
     async function generarCanvasTicket() {
         const ticket = document.querySelector('.ticket');
-        const botones = ticket.querySelectorAll('.btn-print, .btn-whatsapp, .btn-download');
+        const botones = ticket.querySelectorAll('.btn-print, .btn-whatsapp, .btn-download, .btn-return');
         botones.forEach(b => b.style.display = 'none');
 
         try {
@@ -535,7 +570,7 @@
         try {
             const canvas = await generarCanvasTicket();
             const link = document.createElement('a');
-            link.download = `Factura_Maripocell_${SALE_ID}.png`;
+            link.download = `Factura_POWER_LED_${SALE_ID}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
         } catch (e) {
@@ -556,9 +591,7 @@
 
     function cerrarModalWhatsApp() {
         const modal = document.getElementById('modalWhatsApp');
-        if (modal) {
-            modal.style.display = 'none';
-        }
+        if (modal) modal.style.display = 'none';
     }
 
     function ejecutarEnvioWhatsApp() {
@@ -572,104 +605,59 @@
             alert('Por favor ingresa el número celular del cliente.');
             return;
         }
-
         if (raw.length === 10 && raw.startsWith('3')) {
             raw = '57' + raw;
         }
 
         const enlaceRecibo = `${window.location.origin}/sales/recibo/${SALE_ID}`;
+        let mensaje = nombre
+            ? `Hola ${nombre}! Aquí tienes tu factura digital de POWER LED — Ilumina tu camino: ${enlaceRecibo}`
+            : `Hola! Aquí tienes tu factura digital de POWER LED — Ilumina tu camino: ${enlaceRecibo}`;
 
-        let mensaje;
-        if (nombre) {
-            mensaje = `Hola ${nombre}! Aquí tienes tu factura digital de Maripocell - Accesorios & Tecnología: ${enlaceRecibo}`;
-        } else {
-            mensaje = `Hola! Aquí tienes tu factura digital de Maripocell - Accesorios & Tecnología: ${enlaceRecibo}`;
-        }
-
-        const url = `https://wa.me/${raw}?text=${encodeURIComponent(mensaje)}`;
-        window.open(url, '_blank');
+        window.open(`https://wa.me/${raw}?text=${encodeURIComponent(mensaje)}`, '_blank');
         cerrarModalWhatsApp();
     }
 
-    // Texto limpio garantizado sin caracteres conflictivos
-    const mensajeTextoLimpio = `*MARIPOCELL - ACCESORIOS & TECNOLOGÍA*
-*Folio / Ticket:* #{{ venta.id }}
-*Expedido:* {{ venta.fecha_venta.strftime('%d/%m/%Y %H:%M') }}
-*Cajero:* {{ venta.vendedor.nombre }}
-*Metodo de Pago:* {% if venta.pagos|length > 1 %}PAGO DIVIDIDO{% elif venta.pagos|length == 1 %}{{ venta.pagos[0].metodo_pago|upper }}{% else %}{{ venta.metodo_pago|upper }}{% endif %}
-------------------------------------------
-*DETALLE DE COMPRA:*
-{% for detalle in venta.detalles %}
-- {{ detalle.cantidad_vendida }}x {% if detalle.nombre_manual %}{{ detalle.nombre_manual }}{% else %}{{ detalle.producto.nombre }}{% if detalle.variante %} ({{ detalle.variante.nombre_variante }}){% endif %}{% endif %} : {% if detalle.precio_venta_final == 0 %}OBSEQUIO{% else %}${{ ((detalle.precio_venta_final * detalle.cantidad_vendida)|cop) }}{% endif %}
-{% endfor %}
-------------------------------------------
+    const mensajeTextoLimpio = `*POWER LED — ILUMINA TU CAMINO*
+*Ticket POS:* #{{ venta.id }}
+*Fecha:* {{ venta.fecha_venta.strftime('%d/%m/%Y %H:%M') }}
+*Asesor:* {{ venta.asesor.nombre if venta.asesor else venta.vendedor.nombre }}
+{% if venta.instalador %}*Instalador:* {{ venta.instalador.nombre }}
+{% endif %}{% if venta.placa_vehiculo %}*Vehiculo:* {{ venta.placa_vehiculo }} {{ venta.modelo_vehiculo or '' }}
+{% endif %}------------------------------------------
+*DETALLE:*
+{% for detalle in venta.detalles %}- {{ detalle.cantidad_vendida }}x {{ detalle.nombre_manual or (detalle.producto.nombre if detalle.producto else 'Servicio') }} : ${{ ((detalle.precio_venta_final * detalle.cantidad_vendida)|cop) }}
+{% endfor %}------------------------------------------
 *TOTAL: ${{ (venta.monto_total)|cop }}*
-{% if venta.pagos|length > 1 %}
-_Desglose:_
-{% for pago in venta.pagos %}  * {{ pago.metodo_pago|capitalize }}: ${{ (pago.monto)|cop }}
-{% endfor %}
-{% endif %}
-Gracias por tu compra en Maripocell - Accesorios & Tecnología.
-Politicas: Devoluciones unicamente con ticket impreso o digital.
-Soporte: ventas@maripocell.com`;
+Gracias por preferir a POWER LED — Ilumina tu camino.`;
 
     function enviarWhatsAppSoloTexto() {
         const input = document.getElementById('waNumeroInput');
         let raw = input ? input.value.replace(/\D/g, '') : '';
-        
         if (!raw) {
             alert('Por favor ingresa el número celular del cliente.');
-            if (input) input.focus();
             return;
         }
-
-        if (raw.length === 10 && raw.startsWith('3')) {
-            raw = '57' + raw;
-        }
-
-        const url = `https://wa.me/${raw}?text=${encodeURIComponent(mensajeTextoLimpio)}`;
-        window.open(url, '_blank');
+        if (raw.length === 10 && raw.startsWith('3')) raw = '57' + raw;
+        window.open(`https://wa.me/${raw}?text=${encodeURIComponent(mensajeTextoLimpio)}`, '_blank');
         cerrarModalWhatsApp();
     }
 
     function volverACaja() {
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-        
-        // Si está en la app instalada (PWA standalone) o no tiene ventana padre que la abrió
-        if (isStandalone) {
-            window.location.href = "{{ url_for('sales_bp.caja_visual') }}";
-            return;
-        }
-
-        // Si fue abierta como pestaña nueva emergente desde el navegador
         if (window.opener && !window.opener.closed) {
             window.close();
-            // Si por política del navegador no se pudo cerrar:
-            setTimeout(() => {
-                window.location.href = "{{ url_for('sales_bp.caja_visual') }}";
-            }, 300);
-        } else if (window.history.length > 1) {
-            window.history.back();
+            setTimeout(() => { window.location.href = "{{ url_for('sales_bp.caja_visual') }}"; }, 300);
         } else {
             window.location.href = "{{ url_for('sales_bp.caja_visual') }}";
         }
     }
 </script>
 
-<!-- Barra flotante fija superior para móviles y apps instaladas (PWA) -->
 <div class="d-print-none" style="position: fixed; top: 12px; left: 12px; z-index: 9999;">
-    <button type="button" onclick="volverACaja();" style="display: flex; align-items: center; gap: 6px; background: rgba(15, 23, 42, 0.9); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2); padding: 8px 14px; border-radius: 20px; font-weight: 700; font-size: 0.8rem; box-shadow: 0 4px 12px rgba(0,0,0,0.25); cursor: pointer; font-family: 'Montserrat', sans-serif; backdrop-filter: blur(4px);">
+    <button type="button" onclick="volverACaja();" style="display: flex; align-items: center; gap: 6px; background: rgba(15, 23, 42, 0.9); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2); padding: 8px 14px; border-radius: 20px; font-weight: 700; font-size: 0.8rem; cursor: pointer;">
         <i class="fa-solid fa-arrow-left"></i> Volver a Caja
     </button>
 </div>
-
-<style>
-@media print {
-    .d-print-none {
-        display: none !important;
-    }
-}
-</style>
 
 </body>
 </html>

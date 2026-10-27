@@ -1,41 +1,42 @@
 {% extends "base.html" %}
 
+{% block title %}POWER LED | Caja Registradora POS{% endblock %}
+
 {% block content %}
 <style>
-    /* Estilos dinámicos de Caja Rápida Visual */
+    /* Estilos dinámicos de Caja Rápida Visual — POWER LED */
     .product-card {
         transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
         border-radius: 14px;
         overflow: hidden;
         display: flex;
         flex-direction: column;
-        background-color: #FFFFFF;
-        border: 1px solid #E5E7EB;
+        background-color: #0d1117 !important;
+        border: 1px solid #21262d !important;
         height: 100%;
     }
     .product-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.12), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
-        border-color: rgba(107, 23, 136, 0.45) !important;
+        box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.6), 0 0 14px rgba(2, 156, 194, 0.35) !important;
+        border-color: #029CC2 !important;
     }
     .product-card:active {
         transform: scale(0.97);
     }
     .product-card.out-of-stock {
-        opacity: 0.75;
+        opacity: 0.65;
     }
 
-    /* Contenedor de Imagen de Producto Proporcional y Compacto */
     .product-img-box {
         position: relative;
         width: 100%;
-        height: 140px;
-        background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
+        height: 135px;
+        background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
         display: flex;
         align-items: center;
         justify-content: center;
         overflow: hidden;
-        border-bottom: 1px solid #E2E8F0;
+        border-bottom: 1px solid #21262d;
         flex-shrink: 0;
     }
     .product-img-box img {
@@ -53,7 +54,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        color: #94A3B8;
+        color: #8b949e;
         padding: 10px;
         text-align: center;
         user-select: none;
@@ -61,11 +62,11 @@
     .product-img-placeholder i {
         font-size: 2rem;
         margin-bottom: 4px;
-        color: #CBD5E1;
+        color: #30363d;
         transition: color 0.2s ease;
     }
     .product-card:hover .product-img-placeholder i {
-        color: var(--brand-primary);
+        color: #029CC2;
     }
     .product-img-placeholder span {
         font-size: 0.68rem;
@@ -74,23 +75,17 @@
         text-transform: uppercase;
     }
 
-    .cursor-pointer {
-        cursor: pointer;
-    }
-    .cursor-not-allowed {
-        cursor: not-allowed;
-    }
+    .cursor-pointer { cursor: pointer; }
+    .cursor-not-allowed { cursor: not-allowed; }
 
-    /* Animación de destello al actualizar carrito */
     @keyframes cartFlash {
-        0% { background-color: rgba(107, 23, 136, 0.2); }
+        0% { background-color: rgba(2, 156, 194, 0.25); }
         100% { background-color: transparent; }
     }
     .cart-item-flash {
         animation: cartFlash 0.9s ease-out;
     }
 
-    /* Contenedor flotante de notificaciones Toasts */
     #posToastContainer {
         position: fixed;
         top: 24px;
@@ -105,7 +100,10 @@
     .pos-toast {
         pointer-events: auto;
         border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        background-color: #161b22 !important;
+        border: 1px solid #30363d !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.7);
         animation: slideInRight 0.25s ease-out;
     }
     @keyframes slideInRight {
@@ -113,65 +111,48 @@
         to { transform: translateX(0); opacity: 1; }
     }
 
-    /* Botones de denominaciones rápidas de billetes */
     .btn-billete {
-        background: #fff;
-        border: 1px solid #dee2e6;
+        background: #161b22;
+        border: 1px solid #30363d;
         border-radius: 8px;
         font-weight: 600;
         font-size: 0.78rem;
-        color: #495057;
+        color: #c9d1d9;
         transition: all 0.15s ease;
     }
     .btn-billete:hover {
-        background: #e9ecef;
-        color: #212529;
-        border-color: #ced4da;
+        background: rgba(2, 156, 194, 0.2);
+        color: #FFFFFF;
+        border-color: #029CC2;
     }
-    .btn-billete:active {
-        transform: scale(0.95);
-    }
+    .btn-billete:active { transform: scale(0.95); }
 
-    /* Estilos Premium con Destellos Dorados para el Panel de Balance POS */
     .balance-card-container {
         border-radius: 20px !important;
-        border: 1.5px solid rgba(212, 175, 55, 0.35) !important;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06) !important;
-        background: #FFFFFF !important;
+        border: 1.5px solid #21262d !important;
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7) !important;
+        background: #0d1117 !important;
         position: relative;
         overflow: hidden;
     }
 
     .balance-header-title {
         font-family: var(--font-heading);
-        letter-spacing: 0.3px;
+        letter-spacing: 0.5px;
         font-weight: 800;
-        color: #111827;
+        color: #FFFFFF;
     }
 
-    /* Caja Destacada de Total a Cobrar con Destello Dorado */
     .total-charge-box {
-        background: linear-gradient(135deg, #FFFFFF 0%, #FFFDF7 40%, #FFF8E6 100%) !important;
-        border: 1.5px solid rgba(212, 175, 55, 0.45) !important;
+        background: linear-gradient(135deg, #090d13 0%, #111822 100%) !important;
+        border: 1.5px solid #029CC2 !important;
         border-radius: 16px !important;
-        box-shadow: 0 4px 18px rgba(212, 175, 55, 0.16) !important;
+        box-shadow: 0 0 22px rgba(2, 156, 194, 0.22) !important;
         position: relative;
         overflow: hidden;
         transition: all 0.25s ease;
     }
-    .total-charge-box::before {
-        content: '';
-        position: absolute;
-        top: -30px;
-        right: -30px;
-        width: 100px;
-        height: 100px;
-        background: radial-gradient(circle, rgba(212, 175, 55, 0.3) 0%, rgba(243, 208, 121, 0.05) 50%, transparent 75%);
-        border-radius: 50%;
-        pointer-events: none;
-    }
 
-    /* Destello Shimmer Dorado Animado */
     .gold-shimmer-effect {
         position: relative;
         overflow: hidden;
@@ -183,7 +164,7 @@
         left: -150%;
         width: 75%;
         height: 100%;
-        background: linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.2) 50%, transparent 100%);
+        background: linear-gradient(90deg, transparent 0%, rgba(2, 156, 194, 0.15) 50%, transparent 100%);
         transform: skewX(-25deg);
         animation: posShimmerLoop 5s infinite ease-in-out;
         pointer-events: none;
@@ -195,70 +176,55 @@
         100% { left: 160%; }
     }
 
-    /* Botón de Procesar Cobro con Oro Tech y Shimmer */
+    /* Botón Principal de Cobro en Verde LED #40A435 */
     .btn-process-cobro-gold {
-        background: linear-gradient(135deg, #D4AF37 0%, #F3D079 50%, #E5B842 100%) !important;
-        color: #111827 !important;
+        background: linear-gradient(135deg, #40A435 0%, #348a2b 100%) !important;
+        color: #FFFFFF !important;
         font-weight: 900 !important;
         font-family: var(--font-heading);
-        letter-spacing: 0.5px;
-        border: 1px solid #D4AF37 !important;
-        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4) !important;
+        letter-spacing: 1px;
+        border: 1px solid #40A435 !important;
+        box-shadow: 0 6px 22px rgba(64, 164, 53, 0.45) !important;
         position: relative;
         overflow: hidden;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
-    .btn-process-cobro-gold::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -150%;
-        width: 60%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.45) 50%, transparent 100%);
-        transform: skewX(-25deg);
-        animation: posShimmerLoop 4s infinite ease-in-out;
-        pointer-events: none;
-    }
     .btn-process-cobro-gold:hover {
-        background: linear-gradient(135deg, #E5B842 0%, #FCE8B2 50%, #F3D079 100%) !important;
+        background: linear-gradient(135deg, #4cc040 0%, #40A435 100%) !important;
         transform: translateY(-3px) scale(1.01);
-        box-shadow: 0 10px 28px rgba(212, 175, 55, 0.55) !important;
-        color: #111827 !important;
-    }
-    .btn-process-cobro-gold:active {
-        transform: scale(0.98);
+        box-shadow: 0 10px 30px rgba(64, 164, 53, 0.65) !important;
+        color: #FFFFFF !important;
     }
 
-    /* Selector de Métodos de Pago Estilizado */
     .payment-method-group .btn-check:checked + .btn {
-        background: linear-gradient(135deg, #111827 0%, #1F2937 100%) !important;
-        color: #F9FAFB !important;
-        border-color: #111827 !important;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        background: #029CC2 !important;
+        color: #FFFFFF !important;
+        border-color: #029CC2 !important;
+        box-shadow: 0 0 14px rgba(2, 156, 194, 0.45);
     }
     .payment-method-group .btn {
-        border-color: #E2E8F0;
-        background: #FFFFFF;
-        color: #4B5563;
+        border-color: #30363d;
+        background: #161b22;
+        color: #c9d1d9;
         transition: all 0.18s ease;
     }
     .payment-method-group .btn:hover {
-        border-color: rgba(212, 175, 55, 0.5);
-        background: #FFFDF8;
-        color: #111827;
+        border-color: #029CC2;
+        background: rgba(2, 156, 194, 0.15);
+        color: #FFFFFF;
     }
 
-    /* Botón de limpiar buscador */
-    #btnClearSearch {
-        cursor: pointer;
-        transition: color 0.15s ease;
-    }
-    #btnClearSearch:hover {
-        color: #dc3545 !important;
+    /* Selector 3 Listas de Precio */
+    .price-list-selector .btn-check:checked + .btn {
+        background: #029CC2 !important;
+        color: #FFFFFF !important;
+        border-color: #029CC2 !important;
+        box-shadow: 0 0 12px rgba(2, 156, 194, 0.4);
     }
 
-    /* Barra flotante inferior de cobro rápido para móviles */
+    #btnClearSearch { cursor: pointer; transition: color 0.15s ease; }
+    #btnClearSearch:hover { color: #E31313 !important; }
+
     .mobile-cart-bar {
         display: none;
         position: fixed;
@@ -266,13 +232,12 @@
         left: 0;
         right: 0;
         z-index: 1050;
-        background: #FFFFFF;
-        border-top: 2px solid #E5E7EB;
-        box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.12);
+        background: #0d1117;
+        border-top: 2px solid #029CC2;
+        box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.85);
         padding: 12px 16px;
         transition: transform 0.25s ease-in-out;
     }
-
     @media (max-width: 991.98px) {
         .mobile-cart-bar.active {
             display: flex !important;
@@ -280,25 +245,63 @@
             justify-content: space-between;
             gap: 12px;
         }
-        /* Espacio para que el contenido no quede oculto detrás de la barra fija en móvil */
-        body {
-            padding-bottom: 85px !important;
-        }
+        body { padding-bottom: 85px !important; }
     }
 </style>
 
 <!-- Contenedor Toasts POS -->
 <div id="posToastContainer"></div>
 
+{% if orden_trabajo %}
+<div class="alert border rounded-4 mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2" style="background: rgba(2, 156, 194, 0.12); border-color: #029CC2 !important;">
+    <div class="d-flex align-items-center gap-3">
+        <span class="badge px-3 py-2 fw-bold" style="background: #facc15; color: #000; border: 2px solid #000; font-family: monospace; font-size: 0.95rem;">
+            <i class="fa-solid fa-car me-1"></i>{{ orden_trabajo.placa_vehiculo }}
+        </span>
+        <div>
+            <strong class="text-white d-block">Cobrando Hoja de Trabajo {{ orden_trabajo.numero_orden }}</strong>
+            <small class="text-muted">Vehículo: {{ orden_trabajo.modelo_vehiculo or 'N/A' }} | Técnico: {{ orden_trabajo.instalador.nombre if orden_trabajo.instalador else 'Sin asignar' }}</small>
+        </div>
+    </div>
+    <a href="{{ url_for('sales_bp.caja_visual') }}" class="btn btn-sm btn-outline-secondary rounded-pill">
+        <i class="fa-solid fa-xmark me-1"></i> Desvincular Orden
+    </a>
+</div>
+{% endif %}
+
 <div class="row h-100 g-4">
-    <!-- Panel Izquierdo: Catálogo de Productos -->
+    <!-- Panel Izquierdo: Catálogo de Productos + Acciones de Taller -->
     <div class="col-lg-8 d-flex flex-column h-100" id="catalogo_productos_panel">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <!-- Cabecera con Selector de 3 Listas de Precios y Botón Agregar Instalación -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
             <div>
-                <h2 class="fw-bold text-brand-black m-0"><i class="fa-solid fa-store text-brand-pink me-2"></i> Caja Rápida Visual</h2>
-                <small class="text-muted">Selección rápida por catálogo táctil y visual</small>
+                <h2 class="fw-bold text-white m-0"><i class="fa-solid fa-cash-register me-2" style="color: #029CC2;"></i> POS Automotriz POWER LED</h2>
+                <small class="text-muted">3 Listas de Precio • Accesorios & Servicios de Instalación</small>
             </div>
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <!-- Selector de Lista de Precio Activa -->
+                <div class="btn-group price-list-selector shadow-sm" role="group" aria-label="Lista de Precios">
+                    <input type="radio" class="btn-check" name="lista_precio_pos" id="lp_final" value="cliente_final" checked onchange="cambiarListaPrecioActiva(this.value)">
+                    <label class="btn btn-sm btn-outline-secondary fw-bold" for="lp_final" title="Precio Cliente Final (Público)">
+                        <i class="fa-solid fa-user me-1"></i>Cliente Final
+                    </label>
+
+                    <input type="radio" class="btn-check" name="lista_precio_pos" id="lp_local" value="local" onchange="cambiarListaPrecioActiva(this.value)">
+                    <label class="btn btn-sm btn-outline-secondary fw-bold" for="lp_local" title="Precio Local / Taller Aliado">
+                        <i class="fa-solid fa-store me-1"></i>Local
+                    </label>
+
+                    <input type="radio" class="btn-check" name="lista_precio_pos" id="lp_distribuidor" value="distribuidor" onchange="cambiarListaPrecioActiva(this.value)">
+                    <label class="btn btn-sm btn-outline-secondary fw-bold" for="lp_distribuidor" title="Precio Distribuidor / Mayorista">
+                        <i class="fa-solid fa-truck-fast me-1"></i>Distribuidor
+                    </label>
+                </div>
+
+                <!-- Botón + Agregar Instalación -->
+                <button type="button" class="btn btn-sm fw-bold rounded-pill px-3 py-2 shadow-sm" style="background: rgba(64,164,53,0.18); color: #40A435; border: 1.5px solid #40A435;" data-bs-toggle="modal" data-bs-target="#modalAgregarInstalacion">
+                    <i class="fa-solid fa-screwdriver-wrench me-1"></i> + Agregar Instalación
+                </button>
+
                 <span class="badge bg-light text-muted border px-3 py-2 rounded-pill fw-semibold" id="searchMatchCount">
                     <i class="fa-solid fa-boxes-stacked me-1"></i> {{ productos|length }} productos
                 </span>
@@ -306,19 +309,18 @@
         </div>
 
         <!-- Buscador Dinámico de productos -->
-        <div class="mb-4">
+        <div class="mb-3">
             <div class="input-group input-group-lg shadow-sm rounded-pill border bg-white position-relative">
                 <span class="input-group-text bg-transparent border-0 ps-4 text-muted">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </span>
-                <input type="text" 
-                       id="productSearch" 
-                       class="form-control border-0 bg-transparent shadow-none ps-2 pe-5" 
-                       placeholder="Buscar por nombre, SKU o variantes... (F2)" 
+                <input type="text"
+                       id="productSearch"
+                       class="form-control border-0 bg-transparent shadow-none ps-2 pe-5"
+                       placeholder="Buscar accesorio, luz LED, alarma, código de barras o SKU... (F2)"
                        autocomplete="off"
-                       style="border-radius: 0 50px 50px 0; font-size: 1.05rem;">
-                
-                <!-- Atajo visual y botón de limpiar -->
+                       style="border-radius: 0 50px 50px 0; font-size: 1.02rem;">
+
                 <div class="position-absolute end-0 top-50 translate-middle-y pe-3 d-flex align-items-center gap-2" style="z-index: 5;">
                     <span id="btnClearSearch" class="text-muted d-none" title="Limpiar búsqueda (Esc)">
                         <i class="fa-solid fa-circle-xmark fs-5"></i>
@@ -331,71 +333,106 @@
         <!-- Grilla de productos -->
         <div class="row g-3 overflow-auto pb-4" id="productsGrid" style="max-height: calc(100vh - 250px);">
             {% for p in productos %}
-            {% set total_stock = p.cantidad_stock %}
+            {% set total_stock = p.stock_tienda if p.stock_tienda is not none else p.cantidad_stock %}
+            {% set p_final = (p.precio_final or p.precio_sugerido or 0)|float %}
+            {% set p_local = (p.precio_local or p_final or 0)|float %}
+            {% set p_dist = (p.precio_distribuidor or p.precio_minimo or 0)|float %}
             {% set vars_data = [] %}
             {% if p.variantes %}
                 {% set total_stock = p.variantes | sum(attribute='cantidad_stock') %}
                 {% for v in p.variantes %}
-                    {% set _ = vars_data.append({"id": v.id, "nombre": v.nombre_variante, "stock": v.cantidad_stock, "precio_sugerido": v.precio_sugerido or p.precio_sugerido or 0, "precio_minimo": v.precio_minimo or p.precio_minimo or 0}) %}
+                    {% set v_fin = (v.precio_final or v.precio_sugerido or p_final)|float %}
+                    {% set v_loc = (v.precio_local or p_local or v_fin)|float %}
+                    {% set v_dis = (v.precio_distribuidor or v.precio_minimo or p_dist)|float %}
+                    {% set _ = vars_data.append({
+                        "id": v.id,
+                        "nombre": v.nombre_variante,
+                        "stock": v.cantidad_stock,
+                        "precio_final": v_fin,
+                        "precio_local": v_loc,
+                        "precio_distribuidor": v_dis,
+                        "precio_sugerido": v_fin,
+                        "precio_minimo": v_dis
+                    }) %}
                 {% endfor %}
             {% endif %}
-            <div class="col-6 col-md-4 col-xl-3 product-card-container" 
-                 data-name="{{ p.nombre }}" 
-                 data-sku="{{ p.sku }}"
+            <div class="col-6 col-md-4 col-xl-3 product-card-container"
+                 data-name="{{ p.nombre }}"
+                 data-sku="{{ p.codigo_barras or p.sku }}"
                  data-variants='{{ vars_data|tojson|safe }}'>
-                <div class="card h-100 border shadow-sm product-card {{ 'out-of-stock cursor-not-allowed' if total_stock <= 0 else 'cursor-pointer' }}" 
-                     data-product='{{ {"id": p.id, "nombre": p.nombre, "sku": p.sku, "precio_sugerido": p.precio_sugerido or 0, "precio_minimo": p.precio_minimo or 0, "cantidad_stock": total_stock, "tipo_inventario": p.tipo_inventario}|tojson|safe }}'
+                <div class="card h-100 border shadow-sm product-card {{ 'out-of-stock cursor-not-allowed' if total_stock <= 0 else 'cursor-pointer' }}"
+                     data-product='{{ {
+                        "id": p.id,
+                        "nombre": p.nombre,
+                        "sku": p.codigo_barras or p.sku,
+                        "precio_final": p_final,
+                        "precio_local": p_local,
+                        "precio_distribuidor": p_dist,
+                        "precio_sugerido": p_final,
+                        "precio_minimo": p_dist,
+                        "cantidad_stock": total_stock,
+                        "tipo_inventario": p.tipo_inventario
+                     }|tojson|safe }}'
                      data-variants='{{ vars_data|tojson|safe }}'
                      onclick="handleProductClick(this)">
-                    
+
                     <div class="product-img-box">
                         {% if p.imagen %}
-                            <img src="{{ url_for('static', filename='uploads/' + p.imagen) }}" 
-                                 alt="{{ p.nombre }}" 
-                                 loading="lazy" 
+                            <img src="{{ url_for('static', filename='uploads/' + p.imagen) }}"
+                                 alt="{{ p.nombre }}"
+                                 loading="lazy"
                                  onerror="this.style.display='none'; this.nextElementSibling.classList.remove('d-none');">
                             <div class="product-img-placeholder d-none">
-                                <i class="fa-solid fa-mobile-screen-button"></i>
+                                <i class="fa-solid fa-lightbulb"></i>
                                 <span>Sin Foto</span>
                             </div>
                         {% else %}
                             <div class="product-img-placeholder">
-                                <i class="fa-solid fa-mobile-screen-button"></i>
+                                <i class="fa-solid fa-lightbulb"></i>
                                 <span>Sin Foto</span>
                             </div>
                         {% endif %}
 
-                        <!-- Indicadores sutiles de stock -->
+                        <!-- Indicadores de stock y alerta #E31313 -->
                         {% if total_stock <= 0 %}
-                            <span class="badge position-absolute top-0 end-0 m-2 px-2 py-1 text-danger bg-white border border-danger-subtle shadow-sm rounded-pill" style="font-size: 0.65rem; font-weight: 600; z-index: 3;">
-                                <i class="fa-solid fa-circle text-danger me-1" style="font-size: 0.4rem;"></i>Agotado
+                            <span class="badge position-absolute top-0 end-0 m-2 px-2 py-1 text-white rounded-pill" style="background-color: #E31313; font-size: 0.65rem; font-weight: 700; z-index: 3;">
+                                Agotado
                             </span>
-                        {% elif total_stock <= 3 %}
-                            <span class="badge position-absolute top-0 end-0 m-2 px-2 py-1 text-warning-emphasis bg-white border border-warning-subtle shadow-sm rounded-pill" style="font-size: 0.65rem; font-weight: 600; z-index: 3;">
-                                <i class="fa-solid fa-circle text-warning me-1" style="font-size: 0.4rem;"></i>Últimas {{ total_stock }}
+                        {% elif p.alerta_stock_activa %}
+                            <span class="badge position-absolute top-0 end-0 m-2 px-2 py-1 text-white rounded-pill" style="background-color: #E31313; font-size: 0.65rem; font-weight: 700; z-index: 3;">
+                                Stock Bajo ({{ total_stock }})
                             </span>
                         {% endif %}
 
                         {% if vars_data|length > 0 %}
                             <span class="badge position-absolute bottom-0 start-0 m-2 px-2 py-1 text-dark bg-white border shadow-sm rounded-pill" style="font-size: 0.65rem; font-weight: 600; z-index: 3;">
-                                <i class="fa-solid fa-layer-group text-primary me-1"></i>{{ vars_data|length }} var.
+                                <i class="fa-solid fa-layer-group text-primary me-1"></i>{{ vars_data|length }} ref.
                             </span>
                         {% endif %}
                     </div>
-                    <div class="card-body p-2.5 p-md-3 text-center d-flex flex-column justify-content-between flex-grow-1" style="min-height: 105px;">
+                    <div class="card-body p-2.5 p-md-3 text-center d-flex flex-column justify-content-between flex-grow-1" style="min-height: 108px;">
                         <div class="mb-2">
-                            <h6 class="card-title fw-bold text-dark mb-1" 
-                                title="{{ p.nombre }}" 
-                                style="font-size: 0.88rem; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 2.5em;">
+                            <h6 class="card-title fw-bold text-dark mb-1"
+                                title="{{ p.nombre }}"
+                                style="font-size: 0.86rem; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 2.5em;">
                                 {{ p.nombre }}
                             </h6>
-                            <small class="text-muted d-block font-monospace" style="font-size: 0.72rem;">{{ p.sku }}</small>
+                            <small class="text-muted d-block font-monospace" style="font-size: 0.7rem;">{{ p.codigo_barras or p.sku }}</small>
                         </div>
                         <div class="pt-1 border-top border-light-subtle">
-                            <h5 class="fw-bolder mb-1" style="color: var(--brand-pink); font-size: 1.08rem;">${{ p.precio_sugerido|cop }}</h5>
-                            <small class="d-flex align-items-center justify-content-center gap-1" style="font-size: 0.76rem;">
-                                <i class="fa-solid fa-box text-secondary"></i>
-                                <span class="{{ 'text-danger fw-bold' if total_stock <= 0 else 'text-muted' }}">{{ total_stock }} en stock</span>
+                            <h5 class="fw-bolder mb-1 card-price-display"
+                                data-p-final="{{ p_final }}"
+                                data-p-local="{{ p_local }}"
+                                data-p-dist="{{ p_dist }}"
+                                style="color: #029CC2; font-size: 1.05rem;">
+                                ${{ p_final|cop }}
+                            </h5>
+                            <small class="d-flex align-items-center justify-content-center gap-1" style="font-size: 0.74rem;">
+                                <i class="fa-solid fa-store text-secondary"></i>
+                                <span class="{{ 'text-danger fw-bold' if total_stock <= 0 else 'text-muted' }}">{{ total_stock }} tienda</span>
+                                {% if (p.stock_bodega or 0) > 0 %}
+                                <span class="text-muted">• {{ p.stock_bodega }} bod.</span>
+                                {% endif %}
                             </small>
                         </div>
                     </div>
@@ -404,11 +441,10 @@
             {% else %}
             <div class="col-12 text-center py-5">
                 <i class="fa-solid fa-box-open fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">No hay productos en tienda.</h5>
+                <h5 class="text-muted">No hay productos registrados en el catálogo.</h5>
             </div>
             {% endfor %}
 
-            <!-- Mensaje amigable cuando la búsqueda no arroja coincidencias -->
             <div id="noProductsFound" class="col-12 text-center py-5 d-none">
                 <i class="fa-solid fa-filter-circle-xmark fa-3x text-muted mb-3 opacity-50"></i>
                 <h5 class="text-muted fw-bold">Sin coincidencias</h5>
@@ -420,41 +456,112 @@
         </div>
     </div>
 
-    <!-- Panel Derecho: Carrito y Balance con Destellos Dorados -->
+    <!-- Panel Derecho: Carrito, Cliente/Vehículo y Balance POWER LED -->
     <div class="col-lg-4" id="panel_caja_cierre">
         <div class="card card-custom balance-card-container p-4 position-sticky" style="top: 90px; height: auto;">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="d-flex align-items-center gap-2">
-                    <div class="rounded-3 d-flex align-items-center justify-content-center text-dark fw-bold" style="width: 36px; height: 36px; background: linear-gradient(135deg, #D4AF37 0%, #F3D079 100%); box-shadow: 0 2px 8px rgba(212,175,55,0.3);">
+                    <div class="rounded-3 d-flex align-items-center justify-content-center text-white fw-bold" style="width: 36px; height: 36px; background: #029CC2; box-shadow: 0 0 12px rgba(2,156,194,0.4);">
                         <i class="fa-solid fa-cart-shopping"></i>
                     </div>
-                    <h5 class="balance-header-title m-0">Balance & Cobro</h5>
+                    <div>
+                        <h5 class="balance-header-title m-0">Balance & Cobro</h5>
+                        <small id="badge_lista_activa" class="text-info fw-bold" style="font-size: 0.7rem;">Lista: Cliente Final</small>
+                    </div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
                     <button type="button" class="btn btn-outline-primary btn-sm rounded-pill fw-bold d-lg-none" onclick="volverAlCatalogo()">
-                        <i class="fa-solid fa-plus me-1"></i> Agregar más
+                        <i class="fa-solid fa-plus me-1"></i> Catálogo
                     </button>
-                    <span class="badge rounded-pill px-3 py-2 fw-bold" id="total_items" style="background: #111827; color: #D4AF37; border: 1px solid rgba(212,175,55,0.4);">0 items</span>
+                    <span class="badge rounded-pill px-3 py-2 fw-bold" id="total_items" style="background: #161b22; color: #029CC2; border: 1px solid #029CC2;">0 items</span>
                 </div>
             </div>
-            
-            <div class="card-body p-0 overflow-auto mb-3" style="max-height: 35vh;" id="cartContainer">
+
+            <!-- Switch: Registrar Datos de Cliente / Vehículo / Asesor -->
+            <div class="mb-3 p-2.5 rounded-3 border" style="background: #161b22; border-color: #30363d !important;">
+                <div class="d-flex align-items-center justify-content-between px-2 py-1">
+                    <label class="form-check-label small fw-bold text-white d-flex align-items-center gap-2" for="toggleRegistrarCliente" style="cursor: pointer;">
+                        <i class="fa-solid fa-id-card" style="color: #029CC2;"></i> Registrar Datos de Cliente / Vehículo
+                    </label>
+                    <div class="form-check form-switch m-0">
+                        <input class="form-check-input" type="checkbox" role="switch" id="toggleRegistrarCliente" onchange="togglePanelCliente()" style="cursor: pointer;">
+                    </div>
+                </div>
+
+                <div id="panelDatosCliente" style="display: none;" class="px-2 pt-2 mt-2 border-top border-secondary border-opacity-25">
+                    <div class="mb-2">
+                        <label class="form-label text-muted small mb-1" style="font-size: 0.72rem;">Seleccionar Cliente Registrado (Opcional)</label>
+                        <select id="pos_cliente_id" class="form-select form-select-sm" onchange="autocompletarClientePOS(this)">
+                            <option value="">-- Nuevo / Consumidor Final --</option>
+                            {% for c in clientes %}
+                            <option value="{{ c.id }}"
+                                    data-nombre="{{ c.nombre }}"
+                                    data-doc="{{ c.documento or '' }}"
+                                    data-tel="{{ c.telefono or '' }}"
+                                    data-placa="{{ c.placa_frecuente or '' }}"
+                                    data-lista="{{ c.lista_precio_default or 'cliente_final' }}">
+                                {{ c.nombre }} ({{ c.documento or 'S/D' }}) {% if c.placa_frecuente %}[{{ c.placa_frecuente }}]{% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <input type="text" id="pos_cliente_documento" class="form-control form-control-sm" placeholder="Cédula / NIT">
+                        </div>
+                        <div class="col-6">
+                            <input type="text" id="pos_cliente_telefono" class="form-control form-control-sm" placeholder="Teléfono / WhatsApp">
+                        </div>
+                        <div class="col-12">
+                            <input type="text" id="pos_cliente_nombre" class="form-control form-control-sm" placeholder="Nombre completo del cliente">
+                        </div>
+                        <div class="col-6">
+                            <input type="text" id="pos_placa_vehiculo" class="form-control form-control-sm text-uppercase fw-bold" placeholder="Placa (Ej: ABC123)" onchange="autocompletarVehiculoPorPlacaPOS(this.value)" onblur="autocompletarVehiculoPorPlacaPOS(this.value)">
+                        </div>
+                        <div class="col-6">
+                            <input type="text" id="pos_modelo_vehiculo" class="form-control form-control-sm" placeholder="Modelo (Ej: Mazda 3)">
+                        </div>
+                    </div>
+                    <div class="row g-2 pb-1">
+                        <div class="col-6">
+                            <label class="form-label text-muted mb-0" style="font-size: 0.68rem;">Asesor de Venta</label>
+                            <select id="pos_asesor_id" class="form-select form-select-sm">
+                                {% for u in asesores %}
+                                <option value="{{ u.id }}" {% if u.id == current_user.id %}selected{% endif %}>{{ u.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-muted mb-0" style="font-size: 0.68rem;">Técnico Instalador</label>
+                            <select id="pos_instalador_id" class="form-select form-select-sm">
+                                <option value="">-- Sin instalador --</option>
+                                {% for inst in instaladores %}
+                                <option value="{{ inst.id }}">{{ inst.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Ítems del Carrito -->
+            <div class="card-body p-0 overflow-auto mb-3" style="max-height: 32vh;" id="cartContainer">
                 <ul class="list-group list-group-flush" id="cart_body">
                     <li class="list-group-item text-center py-5 text-muted border-0" id="empty_cart_msg">
-                        <i class="fa-solid fa-basket-shopping fa-3x mb-3 text-black-50"></i><br>Tu carrito está vacío.
+                        <i class="fa-solid fa-basket-shopping fa-3x mb-3 text-muted"></i><br>Tu carrito está vacío.
                     </li>
                 </ul>
             </div>
 
-            <!-- Total a Cobrar con Destello Shimmer Dorado -->
+            <!-- Total a Cobrar con Alto Contraste Blanco Brillante -->
             <div class="total-charge-box gold-shimmer-effect d-flex justify-content-between align-items-center py-3 px-3 mb-3">
                 <div>
                     <span class="text-muted fw-bold text-uppercase d-block" style="font-size: 0.75rem; letter-spacing: 0.8px;">Total a Cobrar:</span>
-                    <small class="badge rounded-pill fw-bold" style="font-size: 0.65rem; background: rgba(212,175,55,0.18); color: #926C09; border: 1px solid rgba(212,175,55,0.35);">
-                        <i class="fa-solid fa-sparkles me-1"></i>Venta Directa
+                    <small class="badge rounded-pill fw-bold" style="font-size: 0.65rem; background: rgba(2,156,194,0.18); color: #029CC2; border: 1px solid rgba(2,156,194,0.4);">
+                        <i class="fa-solid fa-bolt me-1"></i>POWER LED POS
                     </small>
                 </div>
-                <span class="fw-bolder fs-1 text-dark" id="total_amount" style="font-family: var(--font-heading); letter-spacing: -0.5px;">$0</span>
+                <span class="fw-bolder fs-1" id="total_amount" style="color: #FFFFFF !important; font-family: var(--font-heading); letter-spacing: -0.5px;">$0</span>
             </div>
 
             {% if current_user.rol == 'admin' %}
@@ -476,7 +583,7 @@
 
                 <!-- Sección: Pago Único -->
                 <div id="seccion_pago_unico">
-                    <div class="btn-group payment-method-group w-100 mb-3 shadow-sm" role="group" aria-label="Metodo de pago">
+                    <div class="btn-group payment-method-group w-100 mb-2 shadow-sm flex-wrap" role="group" aria-label="Metodo de pago">
                         <input type="radio" class="btn-check" name="metodo_pago" id="mp_efectivo" value="efectivo" checked autocomplete="off">
                         <label class="btn btn-sm fw-semibold" for="mp_efectivo">💵 Efectivo</label>
 
@@ -490,7 +597,10 @@
                         <label class="btn btn-sm fw-semibold" for="mp_daviplata">📱 Daviplata</label>
 
                         <input type="radio" class="btn-check" name="metodo_pago" id="mp_bolt" value="bolt" autocomplete="off">
-                        <label class="btn btn-sm fw-semibold" for="mp_bolt">⚡ Bolt</label>
+                        <label class="btn btn-sm fw-semibold" for="mp_bolt">⚡ Datáfono</label>
+
+                        <input type="radio" class="btn-check" name="metodo_pago" id="mp_credito" value="credito" autocomplete="off">
+                        <label class="btn btn-sm fw-semibold" for="mp_credito" style="border-color: #E31313;">💳 Crédito</label>
                     </div>
 
                     <!-- Calculadora de Cambio en Efectivo -->
@@ -501,7 +611,6 @@
                             <input type="number" id="cashReceived" class="form-control fw-bold fs-6" placeholder="0" min="0" step="1000">
                         </div>
 
-                        <!-- Botones de billetes rápidos colombianos -->
                         <div class="d-flex flex-wrap gap-1 mb-2">
                             <button type="button" class="btn btn-billete py-1 px-2" onclick="sumarEfectivo(2000)">+2k</button>
                             <button type="button" class="btn btn-billete py-1 px-2" onclick="sumarEfectivo(5000)">+5k</button>
@@ -514,36 +623,30 @@
 
                         <div class="d-flex justify-content-between align-items-center pt-2 border-top">
                             <span class="text-muted small fw-bold">Cambio / Vueltas:</span>
-                            <span class="fw-bolder fs-5" id="cashChange" style="color: #059669;">$0</span>
+                            <span class="fw-bolder fs-5" id="cashChange" style="color: #40A435;">$0</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Sección: Pago Dividido (Múltiples métodos) -->
+                <!-- Sección: Pago Dividido -->
                 <div id="seccion_pago_dividido" style="display: none;" class="p-3 bg-light rounded-3 border mb-3">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="text-muted small fw-bold text-uppercase">Desglose de Pago</span>
                         <small id="indicador_balance_dividido" class="fw-bold text-danger">Faltan: $0</small>
                     </div>
-
-                    <!-- Contenedor dinámico de filas de pago -->
-                    <div id="contenedor_filas_pago" class="d-flex flex-column gap-2 mb-2">
-                        <!-- Las filas se renderizan dinámicamente -->
-                    </div>
-
+                    <div id="contenedor_filas_pago" class="d-flex flex-column gap-2 mb-2"></div>
                     <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill fw-bold w-100" id="btn_agregar_pago">
                         <i class="fa-solid fa-plus me-1"></i> Agregar otro método de pago
                     </button>
                 </div>
 
-                <!-- Botón de Cobro Masivo y Limpieza con Destellos Dorados -->
-                <div class="d-grid gap-2 mt-auto pt-3">
-                    <!-- Botón para regresar al catálogo desde el celular si se bajó por error -->
+                <!-- Botón de Cobro Masivo en Verde LED #40A435 -->
+                <div class="d-grid gap-2 mt-auto pt-2">
                     <button type="button" class="btn btn-outline-primary btn-lg rounded-3 py-2 fw-bold d-lg-none" onclick="volverAlCatalogo()">
                         <i class="fa-solid fa-arrow-up me-2"></i> Subir / Agregar más productos
                     </button>
                     <button type="button" class="btn btn-process-cobro-gold btn-lg rounded-3 py-3 shadow text-uppercase fw-bold" id="btn_process_sale">
-                        <i class="fa-solid fa-credit-card me-2"></i> Procesar Cobro <span class="badge bg-dark text-warning ms-1 fw-bold d-none d-md-inline" style="font-size: 0.7rem;">F4</span>
+                        <i class="fa-solid fa-credit-card me-2"></i> COBRAR / FINALIZAR VENTA <span class="badge bg-dark text-white ms-1 fw-bold d-none d-md-inline" style="font-size: 0.7rem;">F4</span>
                     </button>
                     <button type="button" class="btn btn-light fw-bold text-muted border-0 py-2" id="btn_clear_cart">
                         <i class="fa-solid fa-trash-can me-1 text-danger"></i> Limpiar Venta
@@ -554,12 +657,66 @@
     </div>
 </div>
 
-<!-- Botón flotante para subir rápidamente al catálogo en móvil cuando se está abajo -->
-<button type="button" 
-        id="btnSubirCatalogoFlotante" 
-        class="btn btn-primary rounded-circle shadow-lg position-fixed d-lg-none d-flex align-items-center justify-content-center" 
-        style="bottom: 85px; right: 18px; width: 48px; height: 48px; z-index: 1040; display: none !important;" 
-        onclick="volverAlCatalogo()" 
+<!-- Modal + Agregar Instalación Directa en POS -->
+<div class="modal fade" id="modalAgregarInstalacion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold text-white">
+                    <i class="fa-solid fa-screwdriver-wrench me-2" style="color: #40A435;"></i>Agregar Servicio de Instalación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Servicio de Mano de Obra *</label>
+                    <select id="modal_service_id" class="form-select" onchange="actualizarPrecioServicioModal(this)">
+                        <option value="">-- Seleccionar servicio --</option>
+                        {% for s in servicios %}
+                        <option value="{{ s.id }}" data-nombre="{{ s.nombre }}" data-precio="{{ s.precio_estandar }}">
+                            {{ s.nombre }} — Sugerido: ${{ s.precio_estandar|cop }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-7">
+                        <label class="form-label small fw-bold">Valor a Cobrar (COP)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="modal_service_precio" class="form-control fw-bold" min="0" step="1000" value="0">
+                        </div>
+                    </div>
+                    <div class="col-5">
+                        <label class="form-label small fw-bold">Cantidad</label>
+                        <input type="number" id="modal_service_cantidad" class="form-control text-center fw-bold" min="1" value="1">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Técnico Instalador Asignado *</label>
+                    <select id="modal_service_installer_id" class="form-select">
+                        {% for inst in instaladores %}
+                        <option value="{{ inst.id }}">{{ inst.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer border-top">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success rounded-pill px-4 fw-bold" onclick="agregarServicioAlCarrito()">
+                    <i class="fa-solid fa-plus me-1"></i> Agregar al Carrito
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Botón flotante para subir rápidamente al catálogo en móvil -->
+<button type="button"
+        id="btnSubirCatalogoFlotante"
+        class="btn btn-primary rounded-circle shadow-lg position-fixed d-lg-none d-flex align-items-center justify-content-center"
+        style="bottom: 85px; right: 18px; width: 48px; height: 48px; z-index: 1040; display: none !important;"
+        onclick="volverAlCatalogo()"
         title="Subir al catálogo">
     <i class="fa-solid fa-arrow-up fs-5"></i>
 </button>
@@ -591,13 +748,12 @@
         <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
             <div class="modal-header border-0 bg-light rounded-top">
                 <div>
-                    <h5 class="modal-title fw-bold text-primary m-0"><i class="fa-solid fa-list-ul me-2"></i>Selecciona Variante</h5>
+                    <h5 class="modal-title fw-bold text-primary m-0"><i class="fa-solid fa-list-ul me-2"></i>Selecciona Referencia</h5>
                     <small class="text-muted" id="modalVariantesSubtitle">Elige la versión a facturar</small>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-4" id="modalVariantesBody">
-            </div>
+            <div class="modal-body p-4" id="modalVariantesBody"></div>
         </div>
     </div>
 </div>
@@ -612,29 +768,25 @@
                 </h5>
             </div>
             <div class="modal-body p-4 bg-white">
-                <!-- Estado 1: Formulario / Resumen de Solicitud -->
                 <div id="aprobacion_estado_inicial">
                     <p class="text-muted small mb-3">
                         El precio que deseas cobrar está por debajo del límite autorizado para este producto. Requiere autorización remota de un administrador.
                     </p>
-
-                    <div class="p-3 rounded-3 mb-3" style="background-color: #F8FAFC; border: 1px solid #E2E8F0;">
-                        <div class="fw-bold text-brand-black mb-2" id="aprob_producto_nombre">Nombre Producto</div>
+                    <div class="p-3 rounded-3 mb-3" style="background-color: #161b22; border: 1px solid #30363d;">
+                        <div class="fw-bold text-white mb-2" id="aprob_producto_nombre">Nombre Producto</div>
                         <div class="d-flex justify-content-between text-muted small py-1 border-bottom">
                             <span>Precio Mínimo Permitido:</span>
-                            <span class="fw-bold text-dark" id="aprob_precio_original">$0</span>
+                            <span class="fw-bold text-white" id="aprob_precio_original">$0</span>
                         </div>
                         <div class="d-flex justify-content-between small py-1 mt-1">
                             <span class="fw-bold" style="color: var(--brand-primary);">Precio Solicitado (Oferta):</span>
                             <span class="fw-bolder fs-5" style="color: var(--brand-primary);" id="aprob_precio_solicitado">$0</span>
                         </div>
                     </div>
-
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-secondary mb-1">Motivo / Justificación:</label>
                         <input type="text" class="form-control form-control-sm border shadow-sm rounded-3" id="aprob_motivo_input" placeholder="Ej: Cliente frecuente, lleva varias unidades...">
                     </div>
-
                     <div class="d-flex gap-2 justify-content-end">
                         <button type="button" class="btn btn-outline-secondary rounded-pill px-3 fw-bold" onclick="cancelarYRestaurarPrecio()">
                             Cancelar
@@ -645,15 +797,12 @@
                     </div>
                 </div>
 
-                <!-- Estado 2: Esperando al Administrador (Polling Activo) -->
                 <div id="aprobacion_estado_espera" style="display: none;" class="text-center py-3">
                     <div class="spinner-border text-primary mb-3" style="width: 3.5rem; height: 3.5rem; color: var(--brand-primary) !important;" role="status">
                         <span class="visually-hidden">Cargando...</span>
                     </div>
-                    <h5 class="fw-bold text-brand-black mb-1">Esperando Respuesta del Administrador</h5>
-                    <p class="text-muted small mb-3">
-                        La solicitud fue enviada al panel del administrador en tiempo real.
-                    </p>
+                    <h5 class="fw-bold text-white mb-1">Esperando Respuesta del Administrador</h5>
+                    <p class="text-muted small mb-3">La solicitud fue enviada al panel del administrador en tiempo real.</p>
                     <div class="badge bg-light text-primary border rounded-pill px-3 py-2 mb-3">
                         <i class="fa-solid fa-arrows-rotate fa-spin me-1"></i> Comprobando cada 3 segundos...
                     </div>
@@ -664,15 +813,10 @@
                     </div>
                 </div>
 
-                <!-- Estado 3: Solicitud Rechazada -->
                 <div id="aprobacion_estado_rechazo" style="display: none;" class="text-center py-3">
-                    <div class="mb-3 text-danger fs-1">
-                        <i class="fa-solid fa-circle-xmark"></i>
-                    </div>
+                    <div class="mb-3 text-danger fs-1"><i class="fa-solid fa-circle-xmark"></i></div>
                     <h5 class="fw-bold text-danger mb-1">Solicitud Rechazada</h5>
-                    <p class="text-muted small mb-3" id="aprob_motivo_rechazo">
-                        El administrador denegó la rebaja de precio.
-                    </p>
+                    <p class="text-muted small mb-3" id="aprob_motivo_rechazo">El administrador denegó la rebaja de precio.</p>
                     <button type="button" class="btn btn-dark rounded-pill px-4 fw-bold" onclick="cancelarYRestaurarPrecio()">
                         Aceptar y volver al precio original
                     </button>
@@ -685,6 +829,10 @@
 <script>
     const IS_ADMIN = {{ 'true' if current_user.rol == 'admin' else 'false' }};
     const csrf_token = "{{ csrf_token() }}";
+    const ORDEN_PRELOAD = {{ (orden_preload | tojson | safe) if orden_preload else 'null' }};
+    let workOrderIdActiva = ORDEN_PRELOAD ? ORDEN_PRELOAD.id : null;
+
+    let listaPrecioActiva = 'cliente_final'; // 'cliente_final', 'local', 'distribuidor'
     let carrito = [];
     let activeProductData = null;
     let activeVariantsData = null;
@@ -695,16 +843,14 @@
         { value: 'nequi', label: '📱 Nequi' },
         { value: 'bancolombia', label: '🏦 Bancolombia' },
         { value: 'daviplata', label: '📱 Daviplata' },
-        { value: 'bolt', label: '⚡ Bolt (Datáfono)' }
+        { value: 'bolt', label: '⚡ Datáfono' },
+        { value: 'credito', label: '💳 Crédito' }
     ];
 
     let modalAprobacionBs = null;
     let pollingAprobacionInterval = null;
-    let contextoAprobacion = null; // { index, item, nuevoPrecio, solicitudId }
+    let contextoAprobacion = null;
 
-    // ==========================================
-    // NOTIFICACIONES TOAST POS MODERNAS
-    // ==========================================
     function showToast(mensaje, tipo = 'info', duracion = 3200) {
         const container = document.getElementById('posToastContainer');
         if (!container) return;
@@ -723,13 +869,10 @@
             <div class="flex-grow-1">
                 <div class="small fw-semibold text-dark">${mensaje}</div>
             </div>
-            <button type="button" class="btn-close btn-close-sm ms-auto" aria-label="Close"></button>
+            <button type="button" class="btn-close btn-close-white btn-close-sm ms-auto" aria-label="Close"></button>
         `;
 
-        toast.querySelector('.btn-close').addEventListener('click', () => {
-            toast.remove();
-        });
-
+        toast.querySelector('.btn-close').addEventListener('click', () => toast.remove());
         container.appendChild(toast);
 
         setTimeout(() => {
@@ -740,9 +883,6 @@
         }, duracion);
     }
 
-    // ==========================================
-    // NORMALIZADOR DE TEXTO (Ignora tildes, mayúsculas, diacríticos)
-    // ==========================================
     function normalizarTexto(str) {
         if (!str) return '';
         return str.toString()
@@ -757,6 +897,162 @@
     }
 
     // ==========================================
+    // SELECTOR DINÁMICO DE 3 LISTAS DE PRECIOS
+    // ==========================================
+    function obtenerPrecioSegunLista(obj, lista = listaPrecioActiva) {
+        if (lista === 'distribuidor') {
+            return parseFloat(obj.precio_distribuidor ?? obj.precio_minimo ?? obj.precio_final ?? 0);
+        } else if (lista === 'local') {
+            return parseFloat(obj.precio_local ?? obj.precio_final ?? obj.precio_sugerido ?? 0);
+        }
+        return parseFloat(obj.precio_cliente_final ?? obj.precio_final ?? obj.precio_sugerido ?? 0);
+    }
+
+    function cambiarListaPrecioActiva(nuevaLista) {
+        listaPrecioActiva = nuevaLista;
+        const nombres = {
+            'cliente_final': 'Cliente Final',
+            'local': 'Local / Taller',
+            'distribuidor': 'Distribuidor'
+        };
+        const badgeEl = document.getElementById('badge_lista_activa');
+        if (badgeEl) badgeEl.textContent = `Lista: ${nombres[nuevaLista] || 'Cliente Final'}`;
+
+        // Actualizar precios mostrados en las tarjetas del catálogo
+        document.querySelectorAll('.card-price-display').forEach(el => {
+            let p = parseFloat(el.dataset.pFinal || 0);
+            if (nuevaLista === 'local') p = parseFloat(el.dataset.pLocal || p);
+            if (nuevaLista === 'distribuidor') p = parseFloat(el.dataset.pDist || p);
+            el.textContent = formatoCOP(p);
+        });
+
+        // Recalcular automáticamente precios de productos en el carrito
+        let actualizados = 0;
+        carrito.forEach(item => {
+            if (item.tipo_item !== 'SERVICIO' && !item.es_obsequio) {
+                item.precio_final = obtenerPrecioSegunLista(item, nuevaLista);
+                actualizados++;
+            }
+        });
+        renderCart();
+        if (actualizados > 0) {
+            showToast(`Precios del carrito actualizados a lista: ${nombres[nuevaLista]}`, 'info', 2200);
+        }
+    }
+
+    // ==========================================
+    // PANEL DE DATOS DE CLIENTE Y VEHÍCULO
+    // ==========================================
+    function togglePanelCliente(forzarEstado = null) {
+        const chk = document.getElementById('toggleRegistrarCliente');
+        const panel = document.getElementById('panelDatosCliente');
+        if (!chk || !panel) return;
+        if (forzarEstado !== null) chk.checked = forzarEstado;
+        panel.style.display = chk.checked ? 'block' : 'none';
+    }
+
+    function autocompletarClientePOS(selectEl) {
+        const opt = selectEl.options[selectEl.selectedIndex];
+        if (!opt || !opt.value) return;
+        document.getElementById('pos_cliente_nombre').value = opt.dataset.nombre || '';
+        document.getElementById('pos_cliente_documento').value = opt.dataset.doc || '';
+        document.getElementById('pos_cliente_telefono').value = opt.dataset.tel || '';
+        if (opt.dataset.placa) {
+            document.getElementById('pos_placa_vehiculo').value = opt.dataset.placa;
+        }
+        const listaDef = opt.dataset.lista;
+        if (listaDef) {
+            const radio = document.querySelector(`input[name="lista_precio_pos"][value="${listaDef}"]`);
+            if (radio) {
+                radio.checked = true;
+                cambiarListaPrecioActiva(listaDef);
+            }
+        }
+    }
+
+    async function autocompletarVehiculoPorPlacaPOS(placa) {
+        const p = (placa || '').trim().toUpperCase();
+        if (p.length < 5) return;
+        try {
+            const res = await fetch(`/vehiculos/api/buscar/${encodeURIComponent(p)}`);
+            if (!res.ok) return;
+            const data = await res.json();
+            if (data.found) {
+                const modEl = document.getElementById('pos_modelo_vehiculo');
+                if (modEl && !modEl.value && (data.descripcion_completa || data.modelo)) {
+                    modEl.value = data.descripcion_completa || data.modelo;
+                }
+                if (data.cliente_id) {
+                    const cliSel = document.getElementById('pos_cliente_id');
+                    if (cliSel && !cliSel.value) {
+                        cliSel.value = data.cliente_id;
+                        autocompletarClientePOS(cliSel);
+                    }
+                }
+                showToast(`🚗 Vehículo [${data.placa}] encontrado en el historial (${data.descripcion_completa || 'Registrado'})`, 'info', 2500);
+            }
+        } catch (e) {}
+    }
+
+    // ==========================================
+    // MODAL + AGREGAR INSTALACIÓN DIRECTA EN POS
+    // ==========================================
+    function actualizarPrecioServicioModal(sel) {
+        const opt = sel.options[sel.selectedIndex];
+        if (opt && opt.dataset.precio) {
+            document.getElementById('modal_service_precio').value = Math.round(parseFloat(opt.dataset.precio) || 0);
+        }
+    }
+
+    function agregarServicioAlCarrito() {
+        const sel = document.getElementById('modal_service_id');
+        const opt = sel.options[sel.selectedIndex];
+        if (!opt || !opt.value) {
+            showToast('Selecciona un servicio de instalación.', 'warning');
+            return;
+        }
+        const serviceId = parseInt(opt.value);
+        const nombreSrv = opt.dataset.nombre || 'Servicio de Instalación';
+        const precio = parseFloat(document.getElementById('modal_service_precio').value) || 0;
+        const cantidad = parseInt(document.getElementById('modal_service_cantidad').value) || 1;
+        const installerSel = document.getElementById('modal_service_installer_id');
+        const installerId = installerSel && installerSel.value ? parseInt(installerSel.value) : null;
+        const installerNombre = installerSel && installerSel.selectedIndex >= 0 ? installerSel.options[installerSel.selectedIndex].text : '';
+
+        // Sincronizar técnico en el panel de cliente si no estaba seleccionado
+        const posInst = document.getElementById('pos_instalador_id');
+        if (posInst && installerId && !posInst.value) {
+            posInst.value = installerId;
+        }
+
+        carrito.push({
+            tipo_item: 'SERVICIO',
+            service_id: serviceId,
+            installer_id: installerId,
+            product_id: null,
+            variant_id: null,
+            nombre: `🔧 ${nombreSrv}${installerNombre ? ' (' + installerNombre + ')' : ''}`,
+            nombre_manual: nombreSrv,
+            sku: 'MANO DE OBRA',
+            precio_final: precio,
+            precio_cliente_final: precio,
+            precio_local: precio,
+            precio_distribuidor: precio,
+            precio_minimo: 0,
+            cantidad: cantidad,
+            max_stock: 999,
+            es_obsequio: false
+        });
+
+        renderCart(carrito.length - 1);
+        showToast(`Servicio "${nombreSrv}" agregado al carrito`, 'success');
+
+        const modalEl = document.getElementById('modalAgregarInstalacion');
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (modalInstance) modalInstance.hide();
+    }
+
+    // ==========================================
     // INDEXACIÓN Y FILTRADO DINÁMICO EN TIEMPO REAL
     // ==========================================
     const searchInput = document.getElementById('productSearch');
@@ -766,7 +1062,6 @@
     const searchMatchCount = document.getElementById('searchMatchCount');
     const cardContainers = Array.from(document.querySelectorAll('.product-card-container'));
 
-    // Precomputar índice de búsqueda para cada tarjeta
     cardContainers.forEach(card => {
         const rawName = card.dataset.name || '';
         const rawSku = card.dataset.sku || '';
@@ -776,7 +1071,6 @@
             varsText = vars.map(v => v.nombre).join(' ');
         } catch (e) {}
 
-        // Índice normalizado completo (nombre + sku + variantes)
         card._searchIndex = normalizarTexto(`${rawName} ${rawSku} ${varsText}`);
         card._rawSkuNormalized = normalizarTexto(rawSku);
     });
@@ -799,7 +1093,6 @@
             if (tokens.length > 0) {
                 match = tokens.every(token => card._searchIndex.includes(token));
             }
-
             if (match) {
                 card.style.display = '';
                 visibles++;
@@ -822,14 +1115,12 @@
 
     searchInput.addEventListener('input', filtrarTarjetas);
 
-    // Enter en el buscador: si coincide exactamente con SKU o solo hay 1 producto visible, seleccionarlo
     searchInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
             const queryNorm = normalizarTexto(this.value);
             if (!queryNorm) return;
 
-            // 1. Buscar coincidencia exacta de SKU
             const exactSkuCard = cardContainers.find(c => c._rawSkuNormalized === queryNorm && c.style.display !== 'none');
             if (exactSkuCard) {
                 exactSkuCard.querySelector('.product-card').click();
@@ -837,7 +1128,6 @@
                 return;
             }
 
-            // 2. Si solo hay 1 tarjeta visible
             const visibleCards = cardContainers.filter(c => c.style.display !== 'none');
             if (visibleCards.length === 1) {
                 visibleCards[0].querySelector('.product-card').click();
@@ -854,34 +1144,24 @@
 
     btnClearSearch.addEventListener('click', limpiarBuscador);
 
-    // ==========================================
-    // ATAJOS DE TECLADO GLOBALES
-    // ==========================================
     document.addEventListener('keydown', function(e) {
-        // F2: Enfocar barra de búsqueda
         if (e.key === 'F2') {
             e.preventDefault();
             searchInput.focus();
             searchInput.select();
             return;
         }
-
-        // F4: Procesar cobro rápido
         if (e.key === 'F4') {
             e.preventDefault();
             document.getElementById('btn_process_sale').click();
             return;
         }
-
-        // Escape: Si el buscador tiene foco o texto, limpiarlo
         if (e.key === 'Escape') {
             if (document.activeElement === searchInput || searchInput.value) {
                 limpiarBuscador();
             }
             return;
         }
-
-        // Ctrl + Enter: Procesar cobro
         if (e.ctrlKey && e.key === 'Enter') {
             e.preventDefault();
             document.getElementById('btn_process_sale').click();
@@ -898,59 +1178,53 @@
         if (vData && vData.length > 0) {
             activeProductData = pData;
             activeVariantsData = vData;
-            
+
             document.getElementById('modalVariantesSubtitle').textContent = `${pData.nombre} (Stock Total: ${pData.cantidad_stock})`;
             let html = `<div class="list-group gap-2">`;
             vData.forEach(v => {
-                let badge = v.stock > 0 
-                    ? `<span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 fw-bold">${v.stock} disp</span>` 
+                let precioVar = obtenerPrecioSegunLista(v);
+                let badge = v.stock > 0
+                    ? `<span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 fw-bold">${v.stock} disp</span>`
                     : `<span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-2 fw-bold">0 disp</span>`;
                 let btnState = v.stock > 0 ? '' : 'disabled';
                 let opacityStyle = v.stock > 0 ? '' : 'opacity: 0.6; cursor: not-allowed;';
-                
+
                 html += `
-                <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center rounded-3 border py-3 px-3 shadow-2xs" 
-                        style="${opacityStyle}" 
+                <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center rounded-3 border py-3 px-3 shadow-2xs"
+                        style="${opacityStyle}"
                         onclick="addVariantToCart(${v.id})" ${btnState}>
                     <div>
                         <strong class="fs-6 text-dark d-block mb-1">${v.nombre}</strong>
-                        <span class="text-brand-pink fw-bold">${formatoCOP(v.precio_sugerido)}</span>
+                        <span class="text-brand-pink fw-bold">${formatoCOP(precioVar)}</span>
                     </div>
                     ${badge}
                 </button>
                 `;
             });
             html += `</div>`;
-            
+
             document.getElementById('modalVariantesBody').innerHTML = html;
             const modalEl = document.getElementById('modalVariantes');
-            let modalInstance = bootstrap.Modal.getInstance(modalEl);
-            if (!modalInstance) {
-                modalInstance = new bootstrap.Modal(modalEl);
-            }
+            let modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
             modalInstance.show();
         } else {
             if (pData.cantidad_stock <= 0) {
                 showToast(`⚠️ "${pData.nombre}" no tiene stock disponible en tienda.`, 'warning');
                 return;
             }
-            addToCart(pData.id, null, pData.nombre, pData.sku, pData.precio_sugerido, pData.cantidad_stock, null, pData.precio_minimo || 0);
+            addToCart(pData, null);
         }
     }
 
     window.addVariantToCart = function(variantId) {
         const vData = activeVariantsData.find(v => v.id === variantId);
         if (!vData) return;
-        addToCart(activeProductData.id, vData.id, activeProductData.nombre, activeProductData.sku, vData.precio_sugerido, vData.stock, vData.nombre, vData.precio_minimo || activeProductData.precio_minimo || 0);
-        
-        // Cerrar modal de subcategorías inmediatamente de forma garantizada
+        addToCart(activeProductData, vData);
+
         const modalEl = document.getElementById('modalVariantes');
         if (modalEl) {
             const modalInstance = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
-            if (modalInstance) {
-                modalInstance.hide();
-            }
-            // Fallback para celulares por si el backdrop o clases de Bootstrap se quedan pegadas
+            if (modalInstance) modalInstance.hide();
             setTimeout(() => {
                 modalEl.classList.remove('show');
                 modalEl.style.display = 'none';
@@ -962,10 +1236,25 @@
         }
     };
 
-    function addToCart(productId, variantId, nombre, sku, precio, maxStock, variantName = null, precioMinimo = 0) {
-        let existingIndex = carrito.findIndex(i => i.product_id === productId && i.variant_id === variantId);
-        let nombreMostrar = variantName ? `${nombre} - ${variantName}` : nombre;
-        
+    function addToCart(pData, vData = null) {
+        const productId = pData.id;
+        const variantId = vData ? vData.id : null;
+        const maxStock = vData ? vData.stock : pData.cantidad_stock;
+        const nombreMostrar = vData ? `${pData.nombre} - ${vData.nombre}` : pData.nombre;
+
+        const pClienteFinal = parseFloat((vData && vData.precio_final) ? vData.precio_final : pData.precio_final) || 0;
+        const pLocal = parseFloat((vData && vData.precio_local) ? vData.precio_local : pData.precio_local) || pClienteFinal;
+        const pDistribuidor = parseFloat((vData && vData.precio_distribuidor) ? vData.precio_distribuidor : pData.precio_distribuidor) || 0;
+
+        const itemPrecios = {
+            precio_cliente_final: pClienteFinal,
+            precio_local: pLocal,
+            precio_distribuidor: pDistribuidor
+        };
+        const precioActivo = obtenerPrecioSegunLista(itemPrecios, listaPrecioActiva);
+
+        let existingIndex = carrito.findIndex(i => i.tipo_item === 'PRODUCTO' && i.product_id === productId && i.variant_id === variantId);
+
         if (existingIndex > -1) {
             if (carrito[existingIndex].cantidad + 1 > maxStock) {
                 showToast(`Stock máximo alcanzado para "${nombreMostrar}" (${maxStock} disponibles).`, 'warning');
@@ -980,13 +1269,19 @@
                 return;
             }
             carrito.push({
+                tipo_item: 'PRODUCTO',
+                service_id: null,
+                installer_id: null,
                 product_id: productId,
                 variant_id: variantId,
                 nombre: nombreMostrar,
-                sku: sku,
-                precio_final: precio,
-                precio_sugerido: precio,
-                precio_minimo: precioMinimo,
+                sku: pData.sku,
+                precio_final: precioActivo,
+                precio_cliente_final: pClienteFinal,
+                precio_local: pLocal,
+                precio_distribuidor: pDistribuidor,
+                precio_sugerido: pClienteFinal,
+                precio_minimo: pDistribuidor,
                 cantidad: 1,
                 max_stock: maxStock,
                 es_obsequio: false,
@@ -1024,9 +1319,6 @@
         renderCart(index);
     }
 
-    // ==========================================
-    // GESTIÓN DE PRECIOS Y AUTORIZACIÓN REMOTA
-    // ==========================================
     function updateCartItemPrice(index, newPrice) {
         let val = parseFloat(newPrice);
         if (isNaN(val) || val < 0) {
@@ -1038,20 +1330,16 @@
         const item = carrito[index];
         if (!item) return;
 
-        // Si es obsequio o admin, se autoriza directamente
-        if (item.es_obsequio || IS_ADMIN) {
+        if (item.tipo_item === 'SERVICIO' || item.es_obsequio || IS_ADMIN) {
             item.precio_final = val;
         } else if (item.precio_minimo && val < item.precio_minimo) {
-            // Si ya tiene una aprobación autorizada que cubra este precio
             if (item.aprobado && item.precio_aprobado !== undefined && val >= item.precio_aprobado) {
                 item.precio_final = val;
             } else {
-                // Abrir modal de solicitud de aprobación remota al administrador
                 abrirModalAprobacion(index, item, val);
                 return;
             }
         } else {
-            // Precio dentro del rango autorizado
             item.precio_final = val;
         }
         renderCart();
@@ -1068,13 +1356,7 @@
     }
 
     function abrirModalAprobacion(index, item, nuevoPrecio) {
-        contextoAprobacion = {
-            index: index,
-            item: item,
-            nuevoPrecio: nuevoPrecio,
-            solicitudId: null
-        };
-
+        contextoAprobacion = { index, item, nuevoPrecio, solicitudId: null };
         document.getElementById('aprob_producto_nombre').textContent = item.nombre;
         document.getElementById('aprob_precio_original').textContent = formatoCOP(item.precio_minimo || item.precio_sugerido);
         document.getElementById('aprob_precio_solicitado').textContent = formatoCOP(nuevoPrecio);
@@ -1109,10 +1391,7 @@
         try {
             const resp = await fetch('/api/precio/solicitar', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrf_token
-                },
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf_token },
                 body: JSON.stringify({
                     product_id: contextoAprobacion.item.product_id,
                     variant_id: contextoAprobacion.item.variant_id || null,
@@ -1124,23 +1403,14 @@
             const data = await resp.json();
             if (!resp.ok) {
                 showToast(data.error || 'Error al enviar solicitud', 'danger');
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fa-solid fa-paper-plane me-1"></i> Solicitar Autorización';
-                }
                 return;
             }
 
             contextoAprobacion.solicitudId = data.approval_id;
-
-            // Cambiar a vista de espera con spinner
             document.getElementById('aprobacion_estado_inicial').style.display = 'none';
             document.getElementById('aprobacion_estado_espera').style.display = 'block';
-
             iniciarPollingAprobacion(data.approval_id);
-
         } catch (err) {
-            console.error(err);
             showToast('Error de red al conectar con el servidor', 'danger');
         } finally {
             if (btn) {
@@ -1157,7 +1427,6 @@
                 detenerPollingAprobacion();
                 return;
             }
-
             try {
                 const res = await fetch(`/api/precio/estado/${approvalId}`);
                 if (!res.ok) return;
@@ -1174,15 +1443,9 @@
                     const modal = getModalAprobacion();
                     if (modal) modal.hide();
 
-                    if (info.precio_aprobado > contextoAprobacion.nuevoPrecio) {
-                        showToast(`Aprobado con contraoferta: ${formatoCOP(info.precio_aprobado)}`, 'info');
-                    } else {
-                        showToast(`¡Precio de ${formatoCOP(info.precio_aprobado)} autorizado por Administrador!`, 'success');
-                    }
-
+                    showToast(`¡Precio de ${formatoCOP(info.precio_aprobado)} autorizado!`, 'success');
                     contextoAprobacion = null;
                     renderCart();
-
                 } else if (info.estado === 'rechazado') {
                     detenerPollingAprobacion();
                     document.getElementById('aprobacion_estado_espera').style.display = 'none';
@@ -1192,9 +1455,7 @@
                     detenerPollingAprobacion();
                     cancelarYRestaurarPrecio();
                 }
-            } catch (e) {
-                console.error('Error polling aprobacion:', e);
-            }
+            } catch (e) {}
         }, 3000);
     }
 
@@ -1206,20 +1467,13 @@
     }
 
     async function cancelarSolicitudEnEspera() {
-        if (!contextoAprobacion || !contextoAprobacion.solicitudId) {
-            cancelarYRestaurarPrecio();
-            return;
-        }
-        try {
-            await fetch(`/api/precio/cancelar/${contextoAprobacion.solicitudId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrf_token
-                }
-            });
-        } catch (e) {
-            console.error(e);
+        if (contextoAprobacion && contextoAprobacion.solicitudId) {
+            try {
+                await fetch(`/api/precio/cancelar/${contextoAprobacion.solicitudId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf_token }
+                });
+            } catch (e) {}
         }
         cancelarYRestaurarPrecio();
     }
@@ -1228,7 +1482,7 @@
         let item = carrito[index];
         if (item.es_obsequio) {
             item.es_obsequio = false;
-            item.precio_final = item.precio_sugerido || 0;
+            item.precio_final = obtenerPrecioSegunLista(item, listaPrecioActiva);
         } else {
             item.es_obsequio = true;
             item.precio_final = 0;
@@ -1249,7 +1503,7 @@
         const tbody = document.getElementById('cart_body');
         const totalAmountEl = document.getElementById('total_amount');
         const totalItemsEl = document.getElementById('total_items');
-        
+
         tbody.innerHTML = '';
         let granTotal = 0;
         let totalItems = 0;
@@ -1261,17 +1515,13 @@
             </li>`;
             totalAmountEl.innerText = '$0';
             totalItemsEl.innerText = '0 items';
-            
-            // Actualizar barra móvil
+
             const mobileBar = document.getElementById('mobileCartBar');
             if (mobileBar) {
                 mobileBar.classList.remove('active');
-                const mTotal = document.getElementById('mobile_total_amount');
-                const mItems = document.getElementById('mobile_total_items');
-                if (mTotal) mTotal.innerText = '$0';
-                if (mItems) mItems.innerText = '0 items';
+                document.getElementById('mobile_total_amount').innerText = '$0';
+                document.getElementById('mobile_total_items').innerText = '0 items';
             }
-
             calcularCambio();
             return;
         }
@@ -1282,15 +1532,18 @@
             totalItems += item.cantidad;
 
             const li = document.createElement('li');
-            li.className = `list-group-item px-3 py-3 rounded-3 mb-2 border ${highlightIndex === index ? 'cart-item-flash' : ''}`;
+            li.className = `list-group-item px-3 py-2.5 rounded-3 mb-2 border ${highlightIndex === index ? 'cart-item-flash' : ''}`;
             let precioInputState = item.es_obsequio ? 'disabled' : '';
             let isObsequioClass = item.es_obsequio ? 'text-success' : 'text-muted';
-            
+            let badgeTipo = item.tipo_item === 'SERVICIO'
+                ? `<span class="badge rounded-pill px-2 py-0" style="background: rgba(64,164,53,0.18); color: #40A435; font-size: 0.65rem;">MANO DE OBRA</span>`
+                : `<small class="text-muted d-block fw-normal font-monospace" style="font-size: 0.72rem;">${item.sku || ''}</small>`;
+
             li.innerHTML = `
                 <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div class="fw-bold text-dark text-truncate pe-2" style="max-width: 80%;">
+                    <div class="fw-bold text-dark text-truncate pe-2" style="max-width: 82%;">
                         ${item.nombre}
-                        <small class="text-muted d-block fw-normal font-monospace" style="font-size: 0.75rem;">${item.sku}</small>
+                        <div>${badgeTipo}</div>
                         ${item.es_obsequio ? '<span class="badge bg-success bg-opacity-10 text-success mt-1"><i class="fa-solid fa-gift me-1"></i>Obsequio ($0)</span>' : ''}
                     </div>
                     <div class="d-flex align-items-center">
@@ -1305,19 +1558,17 @@
                     </div>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mt-2">
-                    <!-- Control rápido de cantidad - / + -->
-                    <div class="input-group input-group-sm" style="max-width: 120px;">
-                        <button class="btn btn-outline-secondary px-2 border bg-light" type="button" onclick="cambiarCantidad(${index}, -1)" title="Reducir 1">
+                    <div class="input-group input-group-sm" style="max-width: 115px;">
+                        <button class="btn btn-outline-secondary px-2 border bg-light" type="button" onclick="cambiarCantidad(${index}, -1)">
                             <i class="fa-solid fa-minus" style="font-size: 0.7rem;"></i>
                         </button>
                         <input type="number" min="1" max="${item.max_stock}" class="form-control text-center fw-bold border bg-white px-1" value="${item.cantidad}" onchange="updateCartItem(${index}, this.value)">
-                        <button class="btn btn-outline-secondary px-2 border bg-light" type="button" onclick="cambiarCantidad(${index}, 1)" title="Aumentar 1">
+                        <button class="btn btn-outline-secondary px-2 border bg-light" type="button" onclick="cambiarCantidad(${index}, 1)">
                             <i class="fa-solid fa-plus" style="font-size: 0.7rem;"></i>
                         </button>
                     </div>
 
-                    <!-- Input de Precio Editable -->
-                    <div class="input-group input-group-sm ms-2" style="max-width: 135px;">
+                    <div class="input-group input-group-sm ms-2" style="max-width: 140px;">
                         <span class="input-group-text bg-light text-muted border px-2">$</span>
                         <input type="number" class="form-control text-end fw-bold border bg-light px-2 text-brand-black" value="${Math.round(item.precio_final)}" onchange="updateCartItemPrice(${index}, this.value)" ${precioInputState}>
                     </div>
@@ -1329,45 +1580,31 @@
         totalAmountEl.innerText = formatoCOP(granTotal);
         totalItemsEl.innerText = `${totalItems} items`;
 
-        // Actualizar datos de la barra flotante inferior en móvil
         const mobileBar = document.getElementById('mobileCartBar');
         if (mobileBar) {
             mobileBar.classList.add('active');
-            const mTotal = document.getElementById('mobile_total_amount');
-            const mItems = document.getElementById('mobile_total_items');
-            if (mTotal) mTotal.innerText = formatoCOP(granTotal);
-            if (mItems) mItems.innerText = `${totalItems} items`;
+            document.getElementById('mobile_total_amount').innerText = formatoCOP(granTotal);
+            document.getElementById('mobile_total_items').innerText = `${totalItems} items`;
         }
 
-        if (document.getElementById('toggle_pago_mixto').checked) {
+        const toggleDiv = document.getElementById('togglePagoDividido');
+        if (toggleDiv && toggleDiv.checked) {
             actualizarSaldoRestante();
         } else {
             calcularCambio();
         }
     }
 
-    // Funciones de navegación rápida para móvil
     function desplazarACaja() {
         const panel = document.getElementById('panel_caja_cierre');
-        if (panel) {
-            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function volverAlCatalogo() {
         const catalogo = document.getElementById('catalogo_productos_panel');
-        if (catalogo) {
-            catalogo.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-        const searchInput = document.getElementById('productSearch');
-        if (searchInput && window.innerWidth < 992) {
-            setTimeout(() => searchInput.focus(), 350);
-        }
+        if (catalogo) catalogo.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // Monitorear scroll en móviles para mostrar/ocultar el botón flotante de "Subir"
     window.addEventListener('scroll', function() {
         const btnSubir = document.getElementById('btnSubirCatalogoFlotante');
         if (!btnSubir) return;
@@ -1393,9 +1630,6 @@
         return carrito.reduce((sum, item) => sum + (item.cantidad * item.precio_final), 0);
     }
 
-    // ==========================================
-    // CALCULADORA DE VUELTAS / CAMBIO Y MÉTODOS DE PAGO
-    // ==========================================
     function obtenerMetodoPagoSeleccionado() {
         const checkedRadio = document.querySelector('input[name="metodo_pago"]:checked');
         return checkedRadio ? checkedRadio.value : 'efectivo';
@@ -1412,9 +1646,13 @@
                 calcSection.style.display = 'none';
             }
         }
+        // Si selecciona Crédito, abrir automáticamente el panel de datos de cliente
+        if (metodo === 'credito') {
+            togglePanelCliente(true);
+            showToast('Venta a Crédito: selecciona o ingresa los datos del cliente.', 'info', 2800);
+        }
     }
 
-    // Escuchar cambio en los radios de método de pago único
     document.querySelectorAll('input[name="metodo_pago"]').forEach(radio => {
         radio.addEventListener('change', handleMetodoPagoChange);
     });
@@ -1446,20 +1684,19 @@
         if (!inputRecibido || !cambioEl) return;
 
         const recibido = parseFloat(inputRecibido.value) || 0;
-
         if (recibido <= 0 && total <= 0) {
             cambioEl.innerText = '$0';
-            cambioEl.style.color = '#059669';
+            cambioEl.style.color = '#40A435';
             return;
         }
 
         const dif = recibido - total;
         if (dif >= 0) {
             cambioEl.innerText = formatoCOP(dif);
-            cambioEl.style.color = '#059669';
+            cambioEl.style.color = '#40A435';
         } else {
             cambioEl.innerText = '-' + formatoCOP(Math.abs(dif));
-            cambioEl.style.color = '#dc2626';
+            cambioEl.style.color = '#E31313';
         }
     }
 
@@ -1469,21 +1706,16 @@
         cashReceivedInput.addEventListener('keyup', calcularCambio);
     }
 
-    // ==========================================
-    // PAGO MIXTO / DIVIDIDO
-    // ==========================================
     const togglePagoDividido = document.getElementById('togglePagoDividido');
     if (togglePagoDividido) {
         togglePagoDividido.addEventListener('change', function() {
             const unicoSec = document.getElementById('seccion_pago_unico');
             const mixtoSec = document.getElementById('seccion_pago_dividido');
-            
+
             if (this.checked) {
                 if (unicoSec) unicoSec.style.display = 'none';
                 if (mixtoSec) mixtoSec.style.display = 'block';
-                if (pagosMixtos.length === 0) {
-                    agregarPagoParcial();
-                }
+                if (pagosMixtos.length === 0) agregarPagoParcial();
                 actualizarSaldoRestante();
             } else {
                 if (unicoSec) unicoSec.style.display = 'block';
@@ -1494,9 +1726,7 @@
     }
 
     const btnAgregarPago = document.getElementById('btn_agregar_pago');
-    if (btnAgregarPago) {
-        btnAgregarPago.addEventListener('click', agregarPagoParcial);
-    }
+    if (btnAgregarPago) btnAgregarPago.addEventListener('click', agregarPagoParcial);
 
     function agregarPagoParcial() {
         pagosMixtos.push({ metodo_pago: 'efectivo', monto: 0 });
@@ -1505,7 +1735,7 @@
 
     function eliminarPagoParcial(index) {
         if (pagosMixtos.length <= 1) {
-            showToast('Debe existir al menos un método de pago en el cobro.', 'warning');
+            showToast('Debe existir al menos un método de pago.', 'warning');
             return;
         }
         pagosMixtos.splice(index, 1);
@@ -1515,6 +1745,7 @@
     function actualizarPagoParcial(index, campo, valor) {
         if (campo === 'metodo_pago') {
             pagosMixtos[index].metodo_pago = valor;
+            if (valor === 'credito') togglePanelCliente(true);
         }
         if (campo === 'monto') {
             pagosMixtos[index].monto = parseFloat(valor) || 0;
@@ -1525,9 +1756,7 @@
     function resetPagosMixtos() {
         pagosMixtos = [];
         const toggle = document.getElementById('togglePagoDividido');
-        if (toggle && toggle.checked) {
-            agregarPagoParcial();
-        }
+        if (toggle && toggle.checked) agregarPagoParcial();
         renderizarPagosMixtos();
         actualizarSaldoRestante();
     }
@@ -1536,10 +1765,10 @@
         const granTotal = obtenerGranTotal();
         const sumaPagos = pagosMixtos.reduce((sum, p) => sum + (p.monto || 0), 0);
         const saldo = granTotal - sumaPagos;
-        
+
         const balanceEl = document.getElementById('indicador_balance_dividido');
         if (!balanceEl) return;
-        
+
         if (saldo === 0 && granTotal > 0) {
             balanceEl.className = 'fw-bold text-success';
             balanceEl.innerHTML = '<i class="fa-solid fa-circle-check me-1"></i> ¡Completo!';
@@ -1560,8 +1789,8 @@
         pagosMixtos.forEach((pago, index) => {
             const div = document.createElement('div');
             div.className = 'pago-item d-flex gap-2 align-items-center';
-            
-            let optionsHtml = METODOS_DISPONIBLES.map(m => 
+
+            let optionsHtml = METODOS_DISPONIBLES.map(m =>
                 `<option value="${m.value}" ${m.value === pago.metodo_pago ? 'selected' : ''}>${m.label}</option>`
             ).join('');
 
@@ -1573,7 +1802,7 @@
                     <span class="input-group-text bg-white border text-muted">$</span>
                     <input type="number" class="form-control border fw-bold text-end" value="${pago.monto || ''}" placeholder="0" onchange="actualizarPagoParcial(${index}, 'monto', this.value)" onkeyup="actualizarPagoParcial(${index}, 'monto', this.value)">
                 </div>
-                <button type="button" class="btn btn-sm text-danger border-0 bg-transparent p-1" title="Quitar pago" onclick="eliminarPagoParcial(${index})">
+                <button type="button" class="btn btn-sm text-danger border-0 bg-transparent p-1" onclick="eliminarPagoParcial(${index})">
                     <i class="fa-solid fa-circle-xmark fs-5"></i>
                 </button>
             `;
@@ -1581,7 +1810,6 @@
         });
     }
 
-    // Limpiar carrito
     const btnClearCart = document.getElementById('btn_clear_cart');
     if (btnClearCart) {
         btnClearCart.addEventListener('click', () => {
@@ -1599,23 +1827,22 @@
     }
 
     // ==========================================
-    // PROCESAR COBRO
+    // PROCESAR COBRO EN SERVIDOR
     // ==========================================
     const btnProcessSale = document.getElementById('btn_process_sale');
     if (btnProcessSale) {
         btnProcessSale.addEventListener('click', async function() {
             if (carrito.length === 0) {
-                showToast('El carrito está vacío. Selecciona productos para cobrar.', 'warning');
+                showToast('El carrito está vacío. Selecciona productos o servicios para cobrar.', 'warning');
                 return;
             }
 
-            // Validación estricta para vendedores: si algún producto está rebajado sin aprobación previa
             if (!IS_ADMIN) {
                 for (let i = 0; i < carrito.length; i++) {
                     const it = carrito[i];
-                    if (!it.es_obsequio && it.precio_minimo && it.precio_final < it.precio_minimo) {
+                    if (it.tipo_item !== 'SERVICIO' && !it.es_obsequio && it.precio_minimo && it.precio_final < it.precio_minimo) {
                         if (!it.aprobado || (it.precio_aprobado !== undefined && it.precio_final < it.precio_aprobado)) {
-                            showToast(`"${it.nombre}" tiene un precio (${formatoCOP(it.precio_final)}) por debajo del mínimo permitido (${formatoCOP(it.precio_minimo)}) sin aprobación.`, 'danger');
+                            showToast(`"${it.nombre}" tiene un precio (${formatoCOP(it.precio_final)}) por debajo del mínimo (${formatoCOP(it.precio_minimo)}) sin aprobación.`, 'danger');
                             abrirModalAprobacion(i, it, it.precio_final);
                             return;
                         }
@@ -1654,17 +1881,48 @@
                 });
             }
 
+            const registrarCli = document.getElementById('toggleRegistrarCliente')?.checked || false;
+            const clienteIdVal = document.getElementById('pos_cliente_id')?.value || null;
+            const clienteNombreVal = document.getElementById('pos_cliente_nombre')?.value.trim() || '';
+            const clienteDocVal = document.getElementById('pos_cliente_documento')?.value.trim() || '';
+            const clienteTelVal = document.getElementById('pos_cliente_telefono')?.value.trim() || '';
+            const placaVal = document.getElementById('pos_placa_vehiculo')?.value.trim().toUpperCase() || '';
+            const modeloVal = document.getElementById('pos_modelo_vehiculo')?.value.trim() || '';
+            const asesorIdVal = document.getElementById('pos_asesor_id')?.value || null;
+            const instaladorIdVal = document.getElementById('pos_instalador_id')?.value || null;
+
+            const hayCredito = pagosPayload.some(p => p.metodo_pago === 'credito');
+            if (hayCredito && !clienteIdVal && !clienteNombreVal) {
+                togglePanelCliente(true);
+                showToast('⚠️ Para ventas a CRÉDITO es obligatorio seleccionar o ingresar el nombre y cédula del cliente.', 'danger', 4000);
+                document.getElementById('pos_cliente_nombre')?.focus();
+                return;
+            }
+
             const payload = {
                 items: carrito.map(item => ({
-                    product_id: item.product_id,
-                    variant_id: item.variant_id,
+                    tipo_item: item.tipo_item || 'PRODUCTO',
+                    service_id: item.service_id || null,
+                    installer_id: item.installer_id || instaladorIdVal || null,
+                    product_id: item.product_id || null,
+                    variant_id: item.variant_id || null,
+                    nombre_manual: item.nombre_manual || null,
                     cantidad: item.cantidad,
                     precio_final: item.precio_final,
-                    es_obsequio: item.es_obsequio
+                    es_obsequio: item.es_obsequio || false
                 })),
                 pagos: pagosPayload,
-                fecha_venta: document.getElementById('fecha_venta_input') ? document.getElementById('fecha_venta_input').value : null,
-                cliente: null
+                lista_precio: listaPrecioActiva,
+                work_order_id: workOrderIdActiva,
+                asesor_id: asesorIdVal,
+                instalador_id: instaladorIdVal,
+                cliente_id: (registrarCli || hayCredito || workOrderIdActiva) ? clienteIdVal : null,
+                cliente_nombre: (registrarCli || hayCredito || workOrderIdActiva) ? clienteNombreVal : null,
+                cliente_documento: (registrarCli || hayCredito || workOrderIdActiva) ? clienteDocVal : null,
+                cliente_telefono: (registrarCli || hayCredito || workOrderIdActiva) ? clienteTelVal : null,
+                placa_vehiculo: (registrarCli || workOrderIdActiva) ? placaVal : null,
+                modelo_vehiculo: (registrarCli || workOrderIdActiva) ? modeloVal : null,
+                fecha_venta: document.getElementById('fecha_venta_input') ? document.getElementById('fecha_venta_input').value : null
             };
 
             const originalHtml = this.innerHTML;
@@ -1688,19 +1946,18 @@
                     if (!reciboWindow) {
                         showToast('⚠️ El navegador bloqueó la pestaña del recibo.', 'warning');
                     }
-                    
-                    showToast(`✅ ¡Cobro Procesado con Éxito! Venta #${data.sale_id}`, 'success', 4000);
-                    
+
+                    showToast(`✅ ¡Cobro Procesado con Éxito! Ticket #${data.sale_id}`, 'success', 4000);
+
                     carrito = [];
                     pagosMixtos = [];
                     resetPagosMixtos();
                     const cashInput = document.getElementById('cashReceived');
                     if (cashInput) cashInput.value = '';
                     renderCart();
-                    
-                    // Recargar en 1.2 segundos para reflejar los nuevos stocks
+
                     setTimeout(() => {
-                        window.location.reload();
+                        window.location.href = '/sales/caja_visual';
                     }, 1200);
                 } else {
                     showToast(`Error: ${data.error || 'No se pudo procesar la venta'}`, 'danger', 4500);
@@ -1716,11 +1973,34 @@
         });
     }
 
-    // Inicializar estado de calculadora de cambio al cargar de forma segura
+    // Precargar datos si viene desde una Hoja de Trabajo (?hoja_id=...)
     document.addEventListener('DOMContentLoaded', () => {
         handleMetodoPagoChange();
+
+        if (ORDEN_PRELOAD) {
+            togglePanelCliente(true);
+            if (ORDEN_PRELOAD.cliente_id) {
+                const selCli = document.getElementById('pos_cliente_id');
+                if (selCli) selCli.value = ORDEN_PRELOAD.cliente_id;
+            }
+            if (ORDEN_PRELOAD.cliente_nombre) document.getElementById('pos_cliente_nombre').value = ORDEN_PRELOAD.cliente_nombre;
+            if (ORDEN_PRELOAD.cliente_documento) document.getElementById('pos_cliente_documento').value = ORDEN_PRELOAD.cliente_documento;
+            if (ORDEN_PRELOAD.cliente_telefono) document.getElementById('pos_cliente_telefono').value = ORDEN_PRELOAD.cliente_telefono;
+            if (ORDEN_PRELOAD.placa_vehiculo) document.getElementById('pos_placa_vehiculo').value = ORDEN_PRELOAD.placa_vehiculo;
+            if (ORDEN_PRELOAD.modelo_vehiculo) document.getElementById('pos_modelo_vehiculo').value = ORDEN_PRELOAD.modelo_vehiculo;
+            if (ORDEN_PRELOAD.asesor_id) document.getElementById('pos_asesor_id').value = ORDEN_PRELOAD.asesor_id;
+            if (ORDEN_PRELOAD.instalador_id) document.getElementById('pos_instalador_id').value = ORDEN_PRELOAD.instalador_id;
+
+            if (Array.isArray(ORDEN_PRELOAD.items) && ORDEN_PRELOAD.items.length > 0) {
+                carrito = ORDEN_PRELOAD.items.map(it => ({
+                    ...it,
+                    es_obsequio: false,
+                    aprobado: true
+                }));
+                renderCart();
+                showToast(`Hoja de Trabajo ${ORDEN_PRELOAD.numero_orden} cargada en caja`, 'info', 3500);
+            }
+        }
     });
-    // Fallback directo por si el DOM ya estaba listo
-    handleMetodoPagoChange();
 </script>
 {% endblock %}

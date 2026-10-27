@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 
+{% block title %}POWER LED | Maneos & Préstamos{% endblock %}
+
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="fw-bold text-brand-black mb-0"><i class="fa-solid fa-handshake me-2" style="color: var(--brand-blue);"></i>Maneos (Préstamos)</h2>
+        <h2 class="fw-bold text-brand-black mb-0"><i class="fa-solid fa-handshake me-2" style="color: var(--power-blue);"></i>Maneos (Préstamos)</h2>
         <p class="text-muted mb-0">Gestión de mercancía prestada a locales vecinos.</p>
     </div>
     <button type="button" class="btn btn-blue rounded-pill fw-bold shadow-sm px-4" data-bs-toggle="modal" data-bs-target="#modalNuevoManeo">
@@ -14,11 +16,11 @@
 <!-- Tarjetas Rápidas -->
 <div class="row mb-4">
     <div class="col-md-4">
-        <div class="card card-custom border-0 shadow-sm" style="border-left: 5px solid #ffc107 !important;">
+        <div class="card card-custom border-0 shadow-sm" style="border-left: 5px solid #E31313 !important;">
             <div class="card-body">
-                <h6 class="text-muted text-uppercase fw-bold mb-1"><i class="fa-solid fa-clock me-1 text-warning"></i> Pendientes</h6>
-                <h3 class="fw-bolder m-0 text-warning">{{ activos|length }}</h3>
-                <small class="text-muted">Préstamos sin resolver</small>
+                <h6 class="text-muted text-uppercase fw-bold mb-1"><i class="fa-solid fa-clock me-1" style="color: #E31313;"></i> Pendientes por Cobrar</h6>
+                <h3 class="fw-bolder m-0" style="color: #E31313;">{{ activos|length }}</h3>
+                <small class="text-muted">Préstamos activos sin resolver</small>
             </div>
         </div>
     </div>
@@ -164,9 +166,9 @@
                             </td>
                             <td class="text-center pe-4">
                                 {% if maneo.estado == 'FACTURADO' %}
-                                    <span class="badge bg-success bg-opacity-10 text-success border border-success rounded-pill px-3 py-2"><i class="fa-solid fa-check me-1"></i> Facturado</span>
+                                    <span class="badge rounded-pill px-3 py-2 fw-bold" style="background-color: rgba(64, 164, 53, 0.18); color: #40A435; border: 1px solid #40A435;"><i class="fa-solid fa-check me-1"></i> Facturado</span>
                                 {% else %}
-                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary rounded-pill px-3 py-2"><i class="fa-solid fa-rotate-left me-1"></i> Devuelto</span>
+                                    <span class="badge rounded-pill px-3 py-2 fw-bold" style="background-color: rgba(2, 156, 194, 0.15); color: #029CC2; border: 1px solid #029CC2;"><i class="fa-solid fa-rotate-left me-1"></i> Devuelto</span>
                                 {% endif %}
                             </td>
                         </tr>

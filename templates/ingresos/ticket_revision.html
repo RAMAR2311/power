@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POWER LED | Ticket de Revisión de Mercancía {{ ingreso.numero_ingreso }}</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon-pw.png') }}?v=powerled_v1">
+    <!-- Google Fonts: Orbitron, Roboto y Roboto Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Roboto+Mono:wght@400;600;700&family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- html2canvas para descarga de imagen del ticket -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #000000;
+            margin: 0;
+            padding: 25px 15px 60px 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #111827;
+        }
+
+        /* Barra Superior de Acciones Interactivas (No se imprime) */
+        .control-panel {
+            width: 100%;
+            max-width: 720px;
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-top: 3px solid #029CC2;
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin-bottom: 24px;
+            color: #FFFFFF;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.65);
+        }
+
+        .control-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #21262d;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 15px;
+            border-radius: 9px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-cyan {
+            background: #029CC2;
+            color: #FFFFFF;
+            box-shadow: 0 0 14px rgba(2, 156, 194, 0.35);
+        }
+        .btn-cyan:hover { background: #03b3df; }
+
+        .btn-green {
+            background: #40A435;
+            color: #FFFFFF;
+            box-shadow: 0 0 14px rgba(64, 164, 53, 0.35);
+        }
+        .btn-green:hover { background: #4bb93f; }
+
+        .btn-dark-outline {
+            background: #161b22;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+        }
+        .btn-dark-outline:hover {
+            border-color: #029CC2;
+            color: #FFFFFF;
+        }
+
+        .review-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.5fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+        @media (max-width: 680px) {
+            .review-form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-label-dark {
+            display: block;
+            font-size: 0.72rem;
+            font-family: 'Orbitron', sans-serif;
+            color: #8b949e;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-dark {
+            width: 100%;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 8px 11px;
+            color: #FFFFFF;
+            font-size: 0.85rem;
+        }
+        .input-dark:focus {
+            outline: none;
+            border-color: #029CC2;
+        }
+
+        /* TICKET TÉRMICO 80MM DE REVISIÓN */
+        .ticket {
+            background-color: #FFFFFF;
+            width: 100%;
+            max-width: 390px; /* Formato Impresora Térmica 80mm */
+            padding: 22px 18px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.7), 0 0 25px rgba(2, 156, 194, 0.25);
+            border: 1px solid #E5E7EB;
+            border-top: 6px solid #029CC2;
+            border-radius: 12px;
+            color: #000000;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px dashed #111827;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 900;
+            margin: 0;
+            letter-spacing: 1.5px;
+            color: #000000;
+        }
+
+        .subtitle-brand {
+            font-size: 0.68rem;
+            letter-spacing: 2px;
+            font-weight: 800;
+            color: #029CC2;
+            margin: 3px 0 8px 0;
+            text-transform: uppercase;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .doc-badge {
+            display: inline-block;
+            background: #000000;
+            color: #FFFFFF;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.76rem;
+            font-weight: 800;
+            padding: 5px 12px;
+            border-radius: 6px;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        .status-stamp {
+            margin-top: 8px;
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 900;
+            font-family: 'Roboto Mono', monospace;
+            text-transform: uppercase;
+            border: 1.5px solid #000;
+        }
+        .stamp-verificado {
+            background: #dcfce7;
+            border-color: #166534;
+            color: #14532d;
+        }
+        .stamp-pendiente {
+            background: #fef9c3;
+            border-color: #854d0e;
+            color: #713f12;
+        }
+        .stamp-novedad {
+            background: #fee2e2;
+            border-color: #991b1b;
+            color: #7f1d1d;
+        }
+
+        .meta-box {
+            background: #F8FAFC;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            padding: 9px 11px;
+            margin-bottom: 12px;
+            font-size: 0.78rem;
+        }
+
+        .meta-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+            gap: 8px;
+        }
+        .meta-label {
+            color: #475569;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .meta-val {
+            color: #0F172A;
+            font-weight: 800;
+            text-align: right;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        .section-divider {
+            background: #0F172A;
+            color: #FFFFFF;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 5px 8px;
+            margin: 10px 0 8px 0;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .checklist-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+            margin-bottom: 12px;
+        }
+
+        .checklist-table th {
+            border-bottom: 2px solid #000000;
+            padding: 5px 3px;
+            text-align: left;
+            font-size: 0.68rem;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+        }
+
+        .checklist-table td {
+            border-bottom: 1px dashed #CBD5E1;
+            padding: 7px 3px;
+            vertical-align: top;
+        }
+
+        .check-square {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #000000;
+            border-radius: 3px;
+            text-align: center;
+            line-height: 13px;
+            font-weight: 900;
+            font-size: 0.72rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .trace-pill {
+            display: inline-block;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.68rem;
+            background: #F1F5F9;
+            border: 1px solid #94A3B8;
+            padding: 1px 5px;
+            border-radius: 4px;
+            margin-top: 3px;
+            font-weight: 700;
+        }
+
+        .totals-box {
+            border-top: 2px solid #000000;
+            border-bottom: 2px solid #000000;
+            padding: 8px 0;
+            margin: 10px 0 14px 0;
+            font-size: 0.82rem;
+        }
+
+        .signature-section {
+            margin-top: 22px;
+            padding-top: 8px;
+        }
+
+        .sig-block {
+            margin-top: 28px;
+            text-align: center;
+        }
+
+        .sig-line {
+            border-top: 1.5px solid #000000;
+            width: 85%;
+            margin: 0 auto 4px auto;
+        }
+
+        .sig-label {
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #1E293B;
+        }
+
+        .footer-ticket {
+            text-align: center;
+            margin-top: 16px;
+            padding-top: 10px;
+            border-top: 1px dashed #64748B;
+            font-size: 0.72rem;
+            color: #334155;
+        }
+
+        @media print {
+            body {
+                background: #FFFFFF !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .ticket {
+                box-shadow: none !important;
+                border: none !important;
+                max-width: 100% !important;
+                width: 80mm !important;
+                padding: 4mm 3mm !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PANEL INTERACTIVO EN PANTALLA (Oculto al imprimir) -->
+    <div class="control-panel no-print">
+        <div class="control-header">
+            <div>
+                <div style="font-family:'Orbitron',sans-serif; font-weight:800; font-size:1rem; color:#FFFFFF;">
+                    <i class="fa-solid fa-clipboard-check" style="color:#029CC2;"></i>
+                    CONTROL Y TICKET DE REVISIÓN — {{ ingreso.numero_ingreso }}
+                </div>
+                <div style="font-size:0.78rem; color:#8b949e; margin-top:2px;">
+                    Imprime este ticket térmico de 80mm para conteo físico en recepción o valida el ingreso directamente.
+                </div>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <a href="{{ url_for('ingresos_bp.index') }}" class="btn-action btn-dark-outline">
+                    <i class="fa-solid fa-arrow-left"></i> Volver a Ingresos
+                </a>
+                <button type="button" onclick="descargarImagenTicket()" class="btn-action btn-dark-outline">
+                    <i class="fa-solid fa-camera"></i> Guardar PNG
+                </button>
+                <button type="button" onclick="window.print()" class="btn-action btn-cyan">
+                    <i class="fa-solid fa-print"></i> Imprimir Ticket Revisión
+                </button>
+            </div>
+        </div>
+
+        <!-- Formulario rápido para cambiar Estado de Revisión / Firmar digitalmente -->
+        <form action="{{ url_for('ingresos_bp.aprobar_revision', id=ingreso.id) }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="review-form-grid">
+                <div>
+                    <label class="form-label-dark">Dictamen de Revisión</label>
+                    <select name="estado_revision" class="input-dark">
+                        <option value="VERIFICADO" {% if ingreso.estado_revision == 'VERIFICADO' %}selected{% endif %}>✔ VERIFICADO (Conforme)</option>
+                        <option value="PENDIENTE_REVISION" {% if ingreso.estado_revision == 'PENDIENTE_REVISION' %}selected{% endif %}>⏳ PENDIENTE DE REVISIÓN</option>
+                        <option value="CON_NOVEDAD" {% if ingreso.estado_revision == 'CON_NOVEDAD' %}selected{% endif %}>⚠ CON NOVEDAD / DIFERENCIA</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label-dark">Revisado / Auditado Por</label>
+                    <input type="text" name="revisado_por" class="input-dark" value="{{ ingreso.revisado_por or current_user.nombre }}" placeholder="Nombre del auditor">
+                </div>
+                <div>
+                    <label class="form-label-dark">Nota de Revisión (Opcional)</label>
+                    <input type="text" name="observaciones" class="input-dark" placeholder="Ej: Cajas selladas completas OK">
+                </div>
+                <div>
+                    <button type="submit" class="btn-action btn-green" style="width:100%; justify-content:center;">
+                        <i class="fa-solid fa-check-double"></i> Guardar Revisión
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- TICKET TÉRMICO 80MM PARA REVISIÓN Y TRAZABILIDAD FÍSICA -->
+    <div class="ticket" id="ticketRevision">
+        <div class="header">
+            <h1 class="logo">
+                POWER <span style="color:#E31313;">L</span><span style="color:#40A435;">E</span><span style="color:#029CC2;">D</span>
+            </h1>
+            <div class="subtitle-brand">ILUMINA TU CAMINO</div>
+            <div class="doc-badge">ACTA / TICKET DE REVISIÓN</div>
+            <div style="font-family:'Roboto Mono',monospace; font-size:0.95rem; font-weight:900; margin-top:6px;">
+                {{ ingreso.numero_ingreso }}
+            </div>
+
+            {% if ingreso.estado_revision == 'VERIFICADO' %}
+                <div class="status-stamp stamp-verificado">✔ VERIFICADO Y AUDITADO</div>
+            {% elif ingreso.estado_revision == 'CON_NOVEDAD' %}
+                <div class="status-stamp stamp-novedad">⚠ CON NOVEDAD EN RECEPCIÓN</div>
+            {% else %}
+                <div class="status-stamp stamp-pendiente">⏳ PENDIENTE DE CONTEO FÍSICO</div>
+            {% endif %}
+        </div>
+
+        <!-- METADATOS DE TRAZABILIDAD -->
+        <div class="meta-box">
+            <div class="meta-row">
+                <span class="meta-label">FECHA INGRESO:</span>
+                <span class="meta-val">{{ ingreso.fecha_ingreso.strftime('%d/%m/%Y %H:%M') if ingreso.fecha_ingreso else 'N/A' }}</span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">DESTINO STOCK:</span>
+                <span class="meta-val">{{ ingreso.destino }}</span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">PROVEEDOR:</span>
+                <span class="meta-val">{{ ingreso.nombre_proveedor_display }}</span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">FACTURA / REM.:</span>
+                <span class="meta-val">{{ ingreso.numero_factura_proveedor or 'S/N' }}</span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">RECIBIDO POR:</span>
+                <span class="meta-val">{{ ingreso.usuario.nombre if ingreso.usuario else 'ADMIN' }}</span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">REVISADO POR:</span>
+                <span class="meta-val">{{ ingreso.revisado_por or 'PENDIENTE FIRMA' }}</span>
+            </div>
+            {% if ingreso.fecha_revision %}
+            <div class="meta-row">
+                <span class="meta-label">FECHA REVISIÓN:</span>
+                <span class="meta-val">{{ ingreso.fecha_revision.strftime('%d/%m/%Y %H:%M') }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="section-divider">
+            <span>CHECKLIST DE CONTEO FÍSICO</span>
+            <span>[✓]</span>
+        </div>
+
+        <!-- TABLA DE ÍTEMS CON CASILLAS DE VERIFICACIÓN Y TRAZABILIDAD DE STOCK -->
+        <table class="checklist-table">
+            <thead>
+                <tr>
+                    <th style="width:24px;">OK</th>
+                    <th>PRODUCTO / TRAZABILIDAD</th>
+                    <th style="text-align:center;">ESP.</th>
+                    <th style="text-align:right;">REC.</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in ingreso.items %}
+                <tr>
+                    <td style="padding-top:9px;">
+                        <span class="check-square" onclick="this.textContent = this.textContent.trim() ? '' : '✓'" title="Clic para marcar revisado">{% if ingreso.estado_revision == 'VERIFICADO' %}✓{% endif %}</span>
+                    </td>
+                    <td>
+                        <div style="font-weight:800; color:#000000; line-height:1.25;">
+                            {{ item.producto.nombre if item.producto else 'Producto #' ~ item.product_id }}
+                        </div>
+                        <div style="font-size:0.68rem; color:#475569; font-family:'Roboto Mono',monospace;">
+                            SKU: {{ item.producto.codigo_barras if item.producto and item.producto.codigo_barras else 'S/C' }}
+                        </div>
+                        <div class="trace-pill">
+                            Stock {{ ingreso.destino }}: {{ item.stock_anterior }} → {{ item.stock_nuevo }}
+                        </div>
+                        {% if item.conformidad != 'OK' or item.nota_revision %}
+                        <div style="font-size:0.68rem; color:#B91C1C; font-weight:700; margin-top:2px;">
+                            * {{ item.conformidad }}{% if item.nota_revision %}: {{ item.nota_revision }}{% endif %}
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:center; font-family:'Roboto Mono',monospace; font-weight:700; padding-top:9px;">
+                        {{ item.cantidad_esperada }}
+                    </td>
+                    <td style="text-align:right; font-family:'Roboto Mono',monospace; font-weight:900; font-size:0.88rem; padding-top:9px;">
+                        +{{ item.cantidad_recibida }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- RESUMEN DE UNIDADES Y COSTO -->
+        <div class="totals-box">
+            <div class="meta-row" style="font-size:0.84rem;">
+                <span class="meta-label" style="color:#000;">REFERENCIAS REVISADAS:</span>
+                <span class="meta-val">{{ ingreso.total_referencias }} ÍTEMS</span>
+            </div>
+            <div class="meta-row" style="font-size:0.9rem;">
+                <span class="meta-label" style="color:#000;">TOTAL UNIDADES INGRESADAS:</span>
+                <span class="meta-val">+{{ ingreso.total_unidades }} UND</span>
+            </div>
+            <div class="meta-row" style="font-size:0.86rem; margin-top:4px; padding-top:4px; border-top:1px dashed #CBD5E1;">
+                <span class="meta-label" style="color:#000;">VALOR FACTURA ASIGNADA:</span>
+                <span class="meta-val">${{ (ingreso.costo_total_ingreso or 0)|cop }}</span>
+            </div>
+            {% if ingreso.provider_invoice_id %}
+            <div class="meta-row" style="font-size:0.74rem; color:#15803d;">
+                <span class="meta-label" style="color:#15803d;">ESTADO CUENTA PROVEEDOR:</span>
+                <span class="meta-val" style="color:#15803d;">CARGADA A CARTERA (#{{ ingreso.provider_invoice_id }})</span>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if ingreso.observaciones %}
+        <div style="background:#F8FAFC; border:1px dashed #64748B; border-radius:6px; padding:7px 9px; font-size:0.74rem; margin-bottom:12px;">
+            <strong style="display:block; text-transform:uppercase; font-size:0.68rem;">Observaciones / Novedades:</strong>
+            {{ ingreso.observaciones }}
+        </div>
+        {% endif %}
+
+        <!-- BLOQUES DE FIRMA FÍSICA -->
+        <div class="signature-section">
+            <div class="sig-block">
+                <div class="sig-line"></div>
+                <div class="sig-label">ENTREGADO / RECIBIDO POR</div>
+                <div style="font-size:0.68rem; color:#475569;">{{ ingreso.usuario.nombre if ingreso.usuario else '' }}</div>
+            </div>
+
+            <div class="sig-block">
+                <div class="sig-line"></div>
+                <div class="sig-label">REVISADO Y CONTEO FÍSICO POR</div>
+                <div style="font-size:0.68rem; color:#475569;">{{ ingreso.revisado_por or 'Firma y C.C. Auditor / Bodega' }}</div>
+            </div>
+        </div>
+
+        <div class="footer-ticket">
+            <div style="font-weight:800; font-family:'Orbitron',sans-serif; font-size:0.7rem;">POWER LED — ILUMINA TU CAMINO</div>
+            <div>Documento de Control Interno y Trazabilidad de Inventario</div>
+            <div style="margin-top:3px; font-family:'Roboto Mono',monospace; font-size:0.65rem;">
+                Impreso: {{ ingreso.fecha_ingreso.strftime('%d/%m/%Y %H:%M:%S') if ingreso.fecha_ingreso else '' }}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function descargarImagenTicket() {
+            const ticketEl = document.getElementById('ticketRevision');
+            html2canvas(ticketEl, {
+                scale: 2,
+                backgroundColor: '#FFFFFF'
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Ticket_Revision_{{ ingreso.numero_ingreso }}.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>

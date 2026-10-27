@@ -4,64 +4,78 @@ import time
 from werkzeug.utils import secure_filename
 from flask import current_app, Blueprint, render_template, request, redirect, url_for, flash, abort, send_file, jsonify
 from flask_login import login_required, current_user
-from models import db, Product, StockAdjustment, ProductVariant
+from models import db, Product, StockAdjustment, ProductVariant, Category, Subcategory
 from decorators import admin_required, admin_or_bodega_required
 import pandas as pd
 from io import BytesIO
+from sqlalchemy import or_
 
 inventory_bp = Blueprint('inventory_bp', __name__)
 
 @inventory_bp.route('/', methods=['GET'])
 @login_required
-@admin_required
+@admin_or_bodega_required
 def index():
-    tipo = 'tienda'
     page = request.args.get('page', 1, type=int)
     q = request.args.get('q', '').strip()
-    per_page = 20
+    categoria_id = request.args.get('categoria_id', type=int)
+    subcategory_id = request.args.get('subcategory_id', type=int)
+    filtro_alerta = request.args.get('alerta', '').strip()
+    per_page = 25
 
-    base_query = Product.query.filter_by(tipo_inventario=tipo, activo=True)
+    base_query = Product.query.filter(Product.activo.is_(True))
     if q:
-        from sqlalchemy import or_
         base_query = base_query.filter(
             or_(
                 Product.sku.ilike(f'%{q}%'),
+                Product.codigo_barras.ilike(f'%{q}%'),
                 Product.nombre.ilike(f'%{q}%'),
                 Product.observacion.ilike(f'%{q}%'),
                 Product.variantes.any(ProductVariant.nombre_variante.ilike(f'%{q}%'))
             )
         )
 
-    # Paginación del listado principal
-    paginacion = base_query.order_by(Product.nombre).paginate(
-        page=page, per_page=per_page, error_out=False
-    )
-    productos = paginacion.items
+    if categoria_id:
+        base_query = base_query.filter(Product.categoria_id == categoria_id)
+    if subcategory_id:
+        base_query = base_query.filter(Product.subcategory_id == subcategory_id)
+
+    # Si se activa el filtro rápido de alertas de stock crítico
+    if filtro_alerta == 'critico':
+        todos_filtrados = [p for p in base_query.order_by(Product.nombre).all() if p.alerta_stock_activa]
+        paginacion = None
+        productos = todos_filtrados
+    else:
+        paginacion = base_query.order_by(Product.nombre).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        productos = paginacion.items
 
     # --- KPIs de Inventario ---
-    # Se calcula sobre TODO el inventario activo (no solo la página actual)
-    todos = Product.query.filter_by(tipo_inventario=tipo, activo=True).all()
+    todos = Product.query.filter(Product.activo.is_(True)).all()
     total_productos = len(todos)
 
     valor_costo = 0.0
     valor_sugerido = 0.0
     total_unidades_fisicas = 0
+    total_unidades_bodega = 0
+    productos_alerta_count = 0
+
     for p in todos:
-        if p.variantes:
-            for v in p.variantes:
-                costo = float(v.precio_costo or p.precio_costo or 0)
-                sugerido = float(v.precio_sugerido or p.precio_sugerido or 0)
-                stock = v.cantidad_stock or 0
-                valor_costo += costo * stock
-                valor_sugerido += sugerido * stock
-                total_unidades_fisicas += stock
-        else:
-            costo = float(p.precio_costo or 0)
-            sugerido = float(p.precio_sugerido or 0)
-            stock = p.cantidad_stock or 0
-            valor_costo += costo * stock
-            valor_sugerido += sugerido * stock
-            total_unidades_fisicas += stock
+        if p.alerta_stock_activa:
+            productos_alerta_count += 1
+        costo_u = float(p.costo or p.precio_costo or 0)
+        final_u = float(p.precio_final or p.precio_sugerido or 0)
+        st_tienda = int(p.stock_tienda if p.stock_tienda is not None else (p.cantidad_stock or 0))
+        st_bodega = int(p.stock_bodega or 0)
+        total_u = st_tienda + st_bodega
+        valor_costo += costo_u * total_u
+        valor_sugerido += final_u * total_u
+        total_unidades_fisicas += st_tienda
+        total_unidades_bodega += st_bodega
+
+    categorias = Category.query.order_by(Category.nombre).all()
+    subcategorias = Subcategory.query.filter_by(categoria_id=categoria_id).order_by(Subcategory.nombre).all() if categoria_id else Subcategory.query.order_by(Subcategory.nombre).all()
 
     return render_template(
         'inventory/index.html',
@@ -71,15 +85,98 @@ def index():
         valor_costo=valor_costo,
         valor_sugerido=valor_sugerido,
         total_unidades_fisicas=total_unidades_fisicas,
+        total_unidades_bodega=total_unidades_bodega,
+        productos_alerta_count=productos_alerta_count,
+        categorias=categorias,
+        subcategorias=subcategorias,
+        categoria_id=categoria_id,
+        subcategory_id=subcategory_id,
+        filtro_alerta=filtro_alerta,
         q=q
     )
+
+@inventory_bp.route('/api/subcategorias/<int:categoria_id>', methods=['GET'])
+@login_required
+def api_subcategorias(categoria_id):
+    subs = Subcategory.query.filter_by(categoria_id=categoria_id).order_by(Subcategory.nombre).all()
+    return jsonify([{
+        'id': s.id,
+        'nombre': s.nombre,
+        'stock_minimo_alerta': s.stock_minimo_alerta
+    } for s in subs])
+
+@inventory_bp.route('/categorias/crear', methods=['POST'])
+@login_required
+@admin_or_bodega_required
+def crear_categoria():
+    nombre = (request.form.get('nombre') or '').strip()
+    stock_min = int(request.form.get('stock_minimo_alerta') or 5)
+    if not nombre:
+        flash('El nombre de la categoría es obligatorio.', 'warning')
+        return redirect(url_for('inventory_bp.index'))
+
+    if Category.query.filter(Category.nombre.ilike(nombre)).first():
+        flash(f'La categoría "{nombre}" ya existe.', 'warning')
+        return redirect(url_for('inventory_bp.index'))
+
+    cat = Category(nombre=nombre, stock_minimo_alerta=stock_min)
+    db.session.add(cat)
+    db.session.commit()
+    flash(f'Categoría "{nombre}" creada exitosamente.', 'success')
+    return redirect(request.referrer or url_for('inventory_bp.index'))
+
+@inventory_bp.route('/subcategorias/crear', methods=['POST'])
+@login_required
+@admin_or_bodega_required
+def crear_subcategoria():
+    categoria_id = request.form.get('categoria_id', type=int)
+    nombre = (request.form.get('nombre') or '').strip()
+    stock_min_raw = request.form.get('stock_minimo_alerta', '').strip()
+    stock_min = int(stock_min_raw) if stock_min_raw else None
+
+    if not categoria_id or not nombre:
+        flash('Debes seleccionar una categoría padre y escribir el nombre de la subcategoría.', 'warning')
+        return redirect(url_for('inventory_bp.index'))
+
+    sub = Subcategory(nombre=nombre, categoria_id=categoria_id, stock_minimo_alerta=stock_min)
+    db.session.add(sub)
+    db.session.commit()
+    flash(f'Subcategoría "{nombre}" creada correctamente.', 'success')
+    return redirect(request.referrer or url_for('inventory_bp.index'))
+
+@inventory_bp.route('/categorias/<int:id>/eliminar', methods=['POST'])
+@login_required
+@admin_or_bodega_required
+def eliminar_categoria(id):
+    cat = Category.query.get_or_404(id)
+    for p in cat.productos:
+        p.categoria_id = None
+        p.subcategory_id = None
+    db.session.delete(cat)
+    db.session.commit()
+    flash(f'Categoría "{cat.nombre}" eliminada.', 'info')
+    return redirect(request.referrer or url_for('inventory_bp.index'))
+
+@inventory_bp.route('/subcategorias/<int:id>/eliminar', methods=['POST'])
+@login_required
+@admin_or_bodega_required
+def eliminar_subcategoria(id):
+    sub = Subcategory.query.get_or_404(id)
+    for p in sub.productos:
+        p.subcategory_id = None
+    db.session.delete(sub)
+    db.session.commit()
+    flash(f'Subcategoría "{sub.nombre}" eliminada.', 'info')
+    return redirect(request.referrer or url_for('inventory_bp.index'))
 
 @inventory_bp.route('/nuevo', methods=['GET', 'POST'])
 @login_required
 @admin_or_bodega_required
 def nuevo():
+    categorias = Category.query.order_by(Category.nombre).all()
+    subcategorias = Subcategory.query.order_by(Subcategory.nombre).all()
+
     if request.method == 'POST':
-        # --- Manejo de Imagen ---
         imagen_filename = None
         if 'imagen' in request.files:
             file = request.files['imagen']
@@ -92,100 +189,91 @@ def nuevo():
                     file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
                     imagen_filename = filename
                 except OSError as e:
-                    flash(f'Error al guardar la imagen (Revisa permisos o la ruta en el VPS): {str(e)}', 'danger')
+                    flash(f'Error al guardar la imagen: {str(e)}', 'danger')
                     return redirect(url_for('inventory_bp.nuevo'))
 
-        # La instanciación agrupa todos los parámetros del nuevo producto
-        tipo = 'bodega' if current_user.rol == 'bodega' else 'tienda'
-        
-        # Recibir variantes
-        v_nombres = request.form.getlist('v_nombre[]')
-        v_stocks = request.form.getlist('v_stock[]')
-        v_costos = request.form.getlist('v_costo[]')
-        v_mins = request.form.getlist('v_min[]')
-        v_sugs = request.form.getlist('v_sug[]')
-
-        # Si hay variantes, el stock base del producto maestro se ignora o se pone en 0
-        stock_base = 0 if v_nombres else int(request.form.get('cantidad_stock') or 0)
-
-        # Validar unicidad del SKU antes de guardar
-        sku_candidato = request.form.get('sku', '').strip()
+        sku_candidato = (request.form.get('codigo_barras') or request.form.get('sku') or '').strip()
         if not sku_candidato:
-            flash('Debes ingresar un código SKU para el producto.', 'warning')
-            return render_template('inventory/form.html')
+            flash('Debes ingresar un Código de Barras / SKU para el producto.', 'warning')
+            return render_template('inventory/form.html', categorias=categorias, subcategorias=subcategorias)
 
-        prod_existente = Product.query.filter_by(sku=sku_candidato, activo=True).first()
+        prod_existente = Product.query.filter(
+            or_(Product.sku == sku_candidato, Product.codigo_barras == sku_candidato),
+            Product.activo.is_(True)
+        ).first()
         if prod_existente:
-            flash(f'El código SKU "{sku_candidato}" ya existe en el inventario (pertenece a "{prod_existente.nombre}"). Cada producto debe tener un SKU único.', 'warning')
-            return render_template('inventory/form.html')
+            flash(f'El código "{sku_candidato}" ya existe en el inventario (pertenece a "{prod_existente.nombre}").', 'warning')
+            return render_template('inventory/form.html', categorias=categorias, subcategorias=subcategorias)
+
+        costo_val = float(request.form.get('costo') or request.form.get('precio_costo') or 0.0)
+        p_distribuidor = float(request.form.get('precio_distribuidor') or request.form.get('precio_minimo') or 0.0)
+        p_local = float(request.form.get('precio_local') or 0.0)
+        p_final = float(request.form.get('precio_final') or request.form.get('precio_sugerido') or 0.0)
+        if p_local <= 0 and p_final > 0:
+            p_local = p_final
+
+        stock_tienda_val = int(request.form.get('stock_tienda') if request.form.get('stock_tienda') is not None else (request.form.get('cantidad_stock') or 0))
+        stock_bodega_val = int(request.form.get('stock_bodega') or 0)
+        stock_minimo_val = int(request.form.get('stock_minimo') or 5)
+
+        categoria_id = request.form.get('categoria_id', type=int) or None
+        subcategory_id = request.form.get('subcategory_id', type=int) or None
 
         nuevo_prod = Product(
             sku=sku_candidato,
-            nombre=request.form.get('nombre').strip(),
-            tipo_inventario=tipo,
-            cantidad_stock=stock_base,
-            precio_costo=float(request.form.get('precio_costo') or 0.0),
-            precio_minimo=float(request.form.get('precio_minimo') or 0.0),
-            precio_sugerido=float(request.form.get('precio_sugerido') or 0.0),
+            codigo_barras=sku_candidato,
+            nombre=request.form.get('nombre', '').strip(),
+            categoria_id=categoria_id,
+            subcategory_id=subcategory_id,
+            costo=costo_val,
+            precio_distribuidor=p_distribuidor,
+            precio_local=p_local,
+            precio_final=p_final,
+            precio_costo=costo_val,
+            precio_minimo=p_distribuidor,
+            precio_sugerido=p_final,
+            stock_tienda=stock_tienda_val,
+            stock_bodega=stock_bodega_val,
+            stock_minimo=stock_minimo_val,
+            cantidad_stock=stock_tienda_val,
+            tipo_inventario='tienda',
             imagen=imagen_filename,
             observacion=request.form.get('observacion')
         )
-        
+
         try:
             db.session.add(nuevo_prod)
-            db.session.flush() # Para obtener el ID del producto
-            
-            # Crear variantes si existen
-            for i in range(len(v_nombres)):
-                if not v_nombres[i]: continue
-                nueva_v = ProductVariant(
-                    product_id=nuevo_prod.id,
-                    nombre_variante=v_nombres[i],
-                    cantidad_stock=int(v_stocks[i] or 0),
-                    precio_costo=float(v_costos[i]) if v_costos[i] else nuevo_prod.precio_costo,
-                    precio_minimo=float(v_mins[i]) if v_mins[i] else nuevo_prod.precio_minimo,
-                    precio_sugerido=float(v_sugs[i]) if v_sugs[i] else nuevo_prod.precio_sugerido
-                )
-                db.session.add(nueva_v)
+            db.session.flush()
 
-            db.session.commit()
-            
-            # Crear ajuste inicial automáticamente en el Kardex
             ajuste_inicial = StockAdjustment(
                 product_id=nuevo_prod.id,
                 admin_id=current_user.id,
-                tipo_movimiento='Creación Inicial' + (' (con Variantes)' if v_nombres else ''),
+                tipo_movimiento=f'Creación Inicial (Tienda: {stock_tienda_val} / Bodega: {stock_bodega_val})',
                 stock_anterior=0,
-                stock_nuevo=nuevo_prod.total_stock
+                stock_nuevo=stock_tienda_val
             )
             db.session.add(ajuste_inicial)
             db.session.commit()
 
-            flash('Producto Maestro y sus subcategorías creados exitosamente.', 'success')
+            flash('Producto registrado exitosamente con sus 3 listas de precios y stock dual.', 'success')
             return redirect(url_for('inventory_bp.index'))
         except Exception as e:
             db.session.rollback()
-            if 'unique' in str(e).lower() and 'sku' in str(e).lower():
-                flash(f'El SKU "{sku_candidato}" ya se encuentra registrado. Utiliza un código diferente.', 'danger')
-            else:
-                flash(f'Error al intentar guardar el producto: {str(e)}', 'danger')
-            
-    return render_template('inventory/form.html')
+            flash(f'Error al guardar el producto: {str(e)}', 'danger')
+
+    return render_template('inventory/form.html', producto=None, categorias=categorias, subcategorias=subcategorias)
 
 @inventory_bp.route('/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 @admin_or_bodega_required
 def editar_producto(id):
-    # get_or_404 protege la ruta en caso de que se envíe un ID inexistente en la URL
     producto = Product.query.get_or_404(id)
-    tipo = 'bodega' if current_user.rol in ['bodega', 'vendedor_bodega'] else 'tienda'
-    if current_user.rol != 'admin' and producto.tipo_inventario != tipo:
-        abort(403)
-    
+    categorias = Category.query.order_by(Category.nombre).all()
+    subcategorias = Subcategory.query.order_by(Subcategory.nombre).all()
+
     if request.method == 'POST':
-        stock_total_anterior = producto.total_stock
-        
-        # Actualizar Imagen si se sube una nueva
+        stock_anterior = producto.stock_tienda or 0
+
         if 'imagen' in request.files:
             file = request.files['imagen']
             if file and file.filename != '':
@@ -197,118 +285,77 @@ def editar_producto(id):
                     file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
                     producto.imagen = filename
                 except OSError as e:
-                    flash(f'Error al guardar la imagen (Revisa permisos o la ruta en el VPS): {str(e)}', 'danger')
+                    flash(f'Error al guardar la imagen: {str(e)}', 'danger')
                     return redirect(url_for('inventory_bp.editar_producto', id=id))
-                
-                
-        # Datos básicos con validación de SKU único
-        nuevo_sku = request.form.get('sku', '').strip()
+
+        nuevo_sku = (request.form.get('codigo_barras') or request.form.get('sku') or '').strip()
         if not nuevo_sku:
-            flash('El código SKU no puede estar vacío.', 'warning')
+            flash('El Código de Barras / SKU no puede estar vacío.', 'warning')
             return redirect(url_for('inventory_bp.editar_producto', id=id))
 
-        otro_con_sku = Product.query.filter(Product.sku == nuevo_sku, Product.id != id).first()
+        otro_con_sku = Product.query.filter(
+            or_(Product.sku == nuevo_sku, Product.codigo_barras == nuevo_sku),
+            Product.id != id
+        ).first()
         if otro_con_sku:
-            flash(f'El SKU "{nuevo_sku}" ya pertenece a otro producto ("{otro_con_sku.nombre}"). Los códigos SKU deben ser únicos.', 'warning')
+            flash(f'El código "{nuevo_sku}" ya pertenece a "{otro_con_sku.nombre}".', 'warning')
             return redirect(url_for('inventory_bp.editar_producto', id=id))
+
+        costo_val = float(request.form.get('costo') or request.form.get('precio_costo') or 0.0)
+        p_distribuidor = float(request.form.get('precio_distribuidor') or request.form.get('precio_minimo') or 0.0)
+        p_local = float(request.form.get('precio_local') or 0.0)
+        p_final = float(request.form.get('precio_final') or request.form.get('precio_sugerido') or 0.0)
+        if p_local <= 0 and p_final > 0:
+            p_local = p_final
+
+        stock_tienda_val = int(request.form.get('stock_tienda') if request.form.get('stock_tienda') is not None else (request.form.get('cantidad_stock') or 0))
+        stock_bodega_val = int(request.form.get('stock_bodega') or 0)
+        stock_minimo_val = int(request.form.get('stock_minimo') or 5)
 
         producto.sku = nuevo_sku
-        producto.nombre = request.form.get('nombre').strip()
-        producto.precio_costo = float(request.form.get('precio_costo') or 0.0)
-        producto.precio_minimo = float(request.form.get('precio_minimo') or 0.0)
-        producto.precio_sugerido = float(request.form.get('precio_sugerido') or 0.0)
+        producto.codigo_barras = nuevo_sku
+        producto.nombre = request.form.get('nombre', '').strip()
+        producto.categoria_id = request.form.get('categoria_id', type=int) or None
+        producto.subcategory_id = request.form.get('subcategory_id', type=int) or None
+        producto.costo = costo_val
+        producto.precio_distribuidor = p_distribuidor
+        producto.precio_local = p_local
+        producto.precio_final = p_final
+        producto.precio_costo = costo_val
+        producto.precio_minimo = p_distribuidor
+        producto.precio_sugerido = p_final
+        producto.stock_tienda = stock_tienda_val
+        producto.stock_bodega = stock_bodega_val
+        producto.stock_minimo = stock_minimo_val
+        producto.cantidad_stock = stock_tienda_val
         producto.observacion = request.form.get('observacion')
-        
-        # Sincronización de Variantes
-        v_ids = request.form.getlist('variant_id[]')
-        v_nombres = request.form.getlist('v_nombre[]')
-        v_stocks = request.form.getlist('v_stock[]')
-        v_costos = request.form.getlist('v_costo[]')
-        v_mins = request.form.getlist('v_min[]')
-        v_sugs = request.form.getlist('v_sug[]')
-
-        ids_en_formulario = [int(vid) for vid in v_ids if vid]
-        
-        # 1. Eliminar las que ya no están en el formulario
-        for v_existente in producto.variantes[:]:
-            if v_existente.id not in ids_en_formulario:
-                db.session.delete(v_existente)
-        
-        # 2. Actualizar o crear
-        if not v_nombres:
-            # Si no hay variantes, el stock es el base
-            producto.cantidad_stock = int(request.form.get('cantidad_stock') or 0)
-        else:
-            # Si hay variantes, el stock base es 0
-            producto.cantidad_stock = 0
-            for i in range(len(v_nombres)):
-                nombre_v = v_nombres[i]
-                if not nombre_v: continue
-                
-                vid = v_ids[i] if i < len(v_ids) else None
-                stock_v = int(v_stocks[i] or 0)
-                costo_v = float(v_costos[i]) if v_costos[i] else producto.precio_costo
-                min_v = float(v_mins[i]) if v_mins[i] else producto.precio_minimo
-                sug_v = float(v_sugs[i]) if v_sugs[i] else producto.precio_sugerido
-
-                if vid:
-                    # Actualizar existente
-                    v_obj = ProductVariant.query.get(int(vid))
-                    if v_obj:
-                        v_obj.nombre_variante = nombre_v
-                        v_obj.cantidad_stock = stock_v
-                        v_obj.precio_costo = costo_v
-                        v_obj.precio_minimo = min_v
-                        v_obj.precio_sugerido = sug_v
-                else:
-                    # Crear nueva
-                    nueva_v = ProductVariant(
-                        product_id=producto.id,
-                        nombre_variante=nombre_v,
-                        cantidad_stock=stock_v,
-                        precio_costo=costo_v,
-                        precio_minimo=min_v,
-                        precio_sugerido=sug_v
-                    )
-                    db.session.add(nueva_v)
 
         try:
-            print("DEBUG: Attempting db.session.commit()")
             db.session.commit()
-            print("DEBUG: db.session.commit() successful")
-            
-            # Registrar ajuste de stock si el TOTAL cambió
-            stock_total_nuevo = producto.total_stock
-            if stock_total_anterior != stock_total_nuevo:
+            if stock_anterior != stock_tienda_val:
                 ajuste = StockAdjustment(
                     product_id=producto.id,
                     admin_id=current_user.id,
-                    tipo_movimiento='Ajuste en Edición Maestro',
-                    stock_anterior=stock_total_anterior,
-                    stock_nuevo=stock_total_nuevo
+                    tipo_movimiento='Ajuste de Inventario en Edición',
+                    stock_anterior=stock_anterior,
+                    stock_nuevo=stock_tienda_val
                 )
                 db.session.add(ajuste)
                 db.session.commit()
-                
-            flash('Producto Maestro actualizado correctamente.', 'success')
+
+            flash('Producto actualizado correctamente.', 'success')
             return redirect(url_for('inventory_bp.index'))
         except Exception as e:
-            print("DEBUG: Exception during commit! Exception:", str(e))
             db.session.rollback()
-            if 'unique' in str(e).lower() and 'sku' in str(e).lower():
-                flash('No se pudo actualizar: El código SKU ya pertenece a otro producto. Cada producto debe tener un SKU único.', 'danger')
-            else:
-                flash(f'Error en la base de datos: {str(e)}', 'danger')
+            flash(f'Error al actualizar el producto: {str(e)}', 'danger')
 
-    # El objeto producto se pasa a Jinja para auto-poblar (pre-llenar) el formulario en modo edición
-    return render_template('inventory/form.html', producto=producto)
+    return render_template('inventory/form.html', producto=producto, categorias=categorias, subcategorias=subcategorias)
 
 @inventory_bp.route('/historial-ajustes')
 @login_required
 @admin_or_bodega_required
 def historial_ajustes():
-    tipo = 'bodega' if current_user.rol == 'bodega' else 'tienda'
-    ajustes = StockAdjustment.query.join(Product).filter(Product.tipo_inventario == tipo).order_by(StockAdjustment.fecha_ajuste.desc()).all()
+    ajustes = StockAdjustment.query.order_by(StockAdjustment.fecha_ajuste.desc()).limit(250).all()
     return render_template('inventory/historial_ajustes.html', ajustes=ajustes)
 
 @inventory_bp.route('/ver/<int:id>', methods=['GET'])
@@ -316,9 +363,6 @@ def historial_ajustes():
 @admin_or_bodega_required
 def ver_producto(id):
     producto = Product.query.get_or_404(id)
-    tipo = 'bodega' if current_user.rol == 'bodega' else 'tienda'
-    if producto.tipo_inventario != tipo:
-        abort(403)
     ajustes = StockAdjustment.query.filter_by(product_id=id).order_by(StockAdjustment.fecha_ajuste.desc()).all()
     return render_template('inventory/ver.html', producto=producto, ajustes=ajustes)
 
@@ -327,240 +371,36 @@ def ver_producto(id):
 @admin_or_bodega_required
 def eliminar_producto(id):
     producto = Product.query.get_or_404(id)
-    tipo = 'bodega' if current_user.rol == 'bodega' else 'tienda'
-    
-    if producto.tipo_inventario != tipo:
-        abort(403)
-        
     nombre = producto.nombre
     try:
-        # 1. Liberar el código SKU agregando sufijo para que el cliente pueda volver a usarlo en otro producto
-        if not producto.sku.endswith(f"_arch_{producto.id}"):
+        if producto.sku and not producto.sku.endswith(f"_arch_{producto.id}"):
             producto.sku = f"{producto.sku}_arch_{producto.id}"
-            
-        # 2. Borrado Lógico: Marcar como inactivo
-        # El producto desaparece del inventario visible y de la caja POS, pero todas sus ventas pasadas,
-        # facturas, arqueos y reportes anteriores quedan 100% íntegros y legibles.
+        if producto.codigo_barras and not producto.codigo_barras.endswith(f"_arch_{producto.id}"):
+            producto.codigo_barras = f"{producto.codigo_barras}_arch_{producto.id}"
         producto.activo = False
         db.session.commit()
-        flash(f'Producto "{nombre}" fue eliminado del catálogo. Las ventas pasadas y reportes se conservan intactos.', 'success')
+        flash(f'Producto "{nombre}" fue retirado del catálogo activo.', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'Ocurrió un error al eliminar el producto: {str(e)}', 'danger')
-        
-    return redirect(url_for('inventory_bp.index'))
-
-@inventory_bp.route('/producto/<int:id>/agregar_variante', methods=['POST'])
-@login_required
-@admin_or_bodega_required
-def agregar_variante(id):
-    producto = Product.query.get_or_404(id)
-    nombre_variante = request.form.get('nombre_variante')
-    cantidad_stock = int(request.form.get('cantidad_stock', 0))
-    
-    precio_costo_req = request.form.get('precio_costo')
-    precio_minimo_req = request.form.get('precio_minimo')
-    precio_sugerido_req = request.form.get('precio_sugerido')
-
-    if not nombre_variante:
-        flash('El nombre de la variante es obligatorio.', 'danger')
-        return redirect(url_for('inventory_bp.index'))
-
-    nueva_variante = ProductVariant(
-        product_id=producto.id,
-        nombre_variante=nombre_variante,
-        cantidad_stock=cantidad_stock,
-        precio_costo=float(precio_costo_req) if precio_costo_req else producto.precio_costo,
-        precio_minimo=float(precio_minimo_req) if precio_minimo_req else producto.precio_minimo,
-        precio_sugerido=float(precio_sugerido_req) if precio_sugerido_req else producto.precio_sugerido
-    )
-    try:
-        db.session.add(nueva_variante)
-        
-        # Forzar el stock base a 0 para que el sistema calcule el valor usando solo las variantes
-        producto.cantidad_stock = 0
-        
-        if cantidad_stock > 0:
-            ajuste = StockAdjustment(
-                product_id=producto.id,
-                admin_id=current_user.id,
-                tipo_movimiento=f'Creación de Subcategoría: {nombre_variante}',
-                stock_anterior=0,
-                stock_nuevo=cantidad_stock
-            )
-            db.session.add(ajuste)
-            
-        db.session.commit()
-        flash(f'Variante "{nombre_variante}" agregada con éxito.', 'success')
-    except Exception as e:
-        db.session.rollback()
-        flash('Error al agregar la variante.', 'danger')
-
-    return redirect(url_for('inventory_bp.index'))
-
-@inventory_bp.route('/variante/<int:id>/editar', methods=['POST'])
-@login_required
-@admin_or_bodega_required
-def editar_variante(id):
-    variante = ProductVariant.query.get_or_404(id)
-    
-    variante.nombre_variante = request.form.get('nombre_variante')
-    stock_anterior = variante.cantidad_stock
-    
-    cantidad_stock_req = request.form.get('cantidad_stock')
-    cantidad_sumar = request.form.get('cantidad_sumar')
-    
-    if cantidad_sumar and int(cantidad_sumar) != 0:
-        variante.cantidad_stock += int(cantidad_sumar)
-    elif cantidad_stock_req is not None:
-        variante.cantidad_stock = int(cantidad_stock_req)
-    
-    precio_costo_req = request.form.get('precio_costo')
-    precio_minimo_req = request.form.get('precio_minimo')
-    precio_sugerido_req = request.form.get('precio_sugerido')
-    
-    if precio_costo_req: variante.precio_costo = float(precio_costo_req)
-    if precio_minimo_req: variante.precio_minimo = float(precio_minimo_req)
-    if precio_sugerido_req: variante.precio_sugerido = float(precio_sugerido_req)
-    
-    try:
-        if stock_anterior != variante.cantidad_stock:
-            ajuste = StockAdjustment(
-                product_id=variante.product_id,
-                admin_id=current_user.id,
-                tipo_movimiento=f'Edición de stock Subcategoría: {variante.nombre_variante}',
-                stock_anterior=stock_anterior,
-                stock_nuevo=variante.cantidad_stock
-            )
-            db.session.add(ajuste)
-
-        db.session.commit()
-        flash('Variante editada con éxito.', 'success')
-    except Exception as e:
-        db.session.rollback()
-        flash('Error al editar la variante.', 'danger')
-        
-    return redirect(url_for('inventory_bp.index'))
-
-@inventory_bp.route('/variantes_masivo/<int:producto_id>', methods=['POST'])
-@login_required
-@admin_or_bodega_required
-def editar_variantes_masivo(producto_id):
-    v_ids = request.form.getlist('v_id[]')
-    nombres = request.form.getlist('nombre_variante[]')
-    sumas = request.form.getlist('cantidad_sumar[]')
-    costos = request.form.getlist('precio_costo[]')
-    minimos = request.form.getlist('precio_minimo[]')
-    sugs = request.form.getlist('precio_sugerido[]')
-    
-    cambios_realizados = 0
-
-    for i, vid_str in enumerate(v_ids):
-        try:
-            vid = int(vid_str)
-            variante = ProductVariant.query.get(vid)
-            if not variante or variante.product_id != producto_id:
-                continue
-                
-            # Actualizar nombres si cambiaron
-            if nombres[i].strip() and variante.nombre_variante != nombres[i].strip():
-                variante.nombre_variante = nombres[i].strip()
-                cambios_realizados += 1
-            
-            # Sumar stock
-            stock_anterior = variante.cantidad_stock
-            if sumas[i] and int(sumas[i]) != 0:
-                variante.cantidad_stock += int(sumas[i])
-                ajuste = StockAdjustment(
-                    product_id=variante.product_id,
-                    admin_id=current_user.id,
-                    tipo_movimiento=f'Edición masiva de stock Subcategoría: {variante.nombre_variante}',
-                    stock_anterior=stock_anterior,
-                    stock_nuevo=variante.cantidad_stock
-                )
-                db.session.add(ajuste)
-                cambios_realizados += 1
-                
-            # Precios
-            if costos[i] and float(costos[i]) != variante.precio_costo:
-                variante.precio_costo = float(costos[i])
-                cambios_realizados += 1
-            if minimos[i] and float(minimos[i]) != variante.precio_minimo:
-                variante.precio_minimo = float(minimos[i])
-                cambios_realizados += 1
-            if sugs[i] and float(sugs[i]) != variante.precio_sugerido:
-                variante.precio_sugerido = float(sugs[i])
-                cambios_realizados += 1
-
-        except Exception as e:
-            continue
-            
-    if cambios_realizados > 0:
-        try:
-            db.session.commit()
-            flash('Subcategorías actualizadas masivamente con éxito.', 'success')
-        except Exception as e:
-            db.session.rollback()
-            flash('Error al guardar los cambios masivos.', 'danger')
-    else:
-        flash('No se detectaron cambios en las subcategorías.', 'info')
-        
-    return redirect(url_for('inventory_bp.index'))
-
-@inventory_bp.route('/variante/<int:id>/eliminar', methods=['POST'])
-@login_required
-@admin_or_bodega_required
-def eliminar_variante(id):
-    variante = ProductVariant.query.get_or_404(id)
-    
-    from models import SaleDetail
-    # Validar si ya hay ventas facturadas con esta variante para evitar conflictos en el Balance Financiero
-    if SaleDetail.query.filter_by(variant_id=variante.id).first():
-        flash('Acción denegada: No se puede eliminar una variante que tiene ventas facturadas (por integridad financiera). Sugerencia: Actualiza su stock a 0.', 'warning')
-        return redirect(url_for('inventory_bp.index'))
-        
-    try:
-        nombre = variante.nombre_variante
-        product_id = variante.product_id
-        stock_anterior = variante.cantidad_stock
-        
-        db.session.delete(variante)
-        
-        if stock_anterior > 0:
-            ajuste = StockAdjustment(
-                product_id=product_id,
-                admin_id=current_user.id,
-                tipo_movimiento=f'Eliminación de Subcategoría: {nombre}',
-                stock_anterior=stock_anterior,
-                stock_nuevo=0
-            )
-            db.session.add(ajuste)
-            
-        db.session.commit()
-        flash(f'La subcategoría "{nombre}" fue borrada exitosamente.', 'success')
-    except Exception as e:
-        db.session.rollback()
-        flash(f'Error grave en servidor al eliminar la variante: {str(e)}', 'danger')
-        
     return redirect(url_for('inventory_bp.index'))
 
 @inventory_bp.route('/plantilla-importacion')
 @login_required
 @admin_or_bodega_required
 def descargar_plantilla():
-    # Crear un DataFrame de estructura requerida
-    df = pd.DataFrame(columns=['sku', 'nombre', 'subcategoria', 'cantidad_stock', 'precio_costo', 'precio_minimo', 'precio_sugerido', 'observacion'])
-    
-    # Filas de ejemplo para guiar al usuario
-    df.loc[0] = ['SKU-EJEMPLO-01', 'Audífonos Bluetooth Inalambricos', '', 50, 10000, 14000, 20000, 'Producto sencillo sin variantes']
-    df.loc[1] = ['SKU-EJEMPLO-02', 'Cargador Original Carga Rápida', 'Color Negro', 100, 5000, 7500, 12000, 'Ejemplo de Variante/Subcategoría']
-    df.loc[2] = ['SKU-EJEMPLO-02', 'Cargador Original Carga Rápida', 'Color Blanco', 30, 5000, 7500, 12000, 'Se agrupará al mismo SKU']
-    
+    df = pd.DataFrame(columns=[
+        'codigo_barras', 'nombre', 'categoria', 'subcategoria',
+        'stock_tienda', 'stock_bodega', 'stock_minimo',
+        'costo', 'precio_distribuidor', 'precio_local', 'precio_final', 'observacion'
+    ])
+    df.loc[0] = ['LED-H4-PRO', 'Kit Bombillos LED H4 Turbo 24000LM', 'Iluminación LED Automotriz', 'Bombillería LED Principal (H4/H7/H11/9005)', 15, 40, 5, 45000, 65000, 75000, 90000, 'Luz blanca 6500K Canbus']
+    df.loc[1] = ['EXP-MINI-3P', 'Exploradoras LED Lupa Mini Driving Bicolor', 'Iluminación LED Automotriz', 'Exploradoras y Barras LED', 10, 25, 5, 38000, 55000, 65000, 80000, 'Blanco + Ámbar']
+
     output = BytesIO()
     df.to_excel(output, index=False, engine='openpyxl')
     output.seek(0)
-    
-    return send_file(output, download_name="plantilla_importacion.xlsx", as_attachment=True)
+    return send_file(output, download_name="plantilla_importacion_power_led.xlsx", as_attachment=True)
 
 @inventory_bp.route('/importar', methods=['POST'])
 @login_required
@@ -569,221 +409,142 @@ def importar_inventario():
     if 'archivo' not in request.files:
         flash('No se seleccionó ningún archivo.', 'danger')
         return redirect(url_for('inventory_bp.index'))
-        
+
     archivo = request.files['archivo']
     if archivo.filename == '':
         flash('Ningún archivo seleccionado.', 'danger')
         return redirect(url_for('inventory_bp.index'))
-        
+
     if not (archivo.filename.endswith('.xlsx') or archivo.filename.endswith('.csv')):
         flash('Formato no válido. Solo debes subir archivos .xlsx o .csv', 'warning')
         return redirect(url_for('inventory_bp.index'))
-        
+
     try:
-        # Lectura con pandas según la extensión
-        if archivo.filename.endswith('.csv'):
-            df = pd.read_csv(archivo)
-        else:
-            df = pd.read_excel(archivo)
-            
-        required_cols = ['sku', 'nombre', 'cantidad_stock', 'precio_costo', 'precio_minimo', 'precio_sugerido', 'observacion']
-        
-        # Limpieza de encabezados para evitar problemas por mayúsculas o espacios accidentales
+        df = pd.read_csv(archivo) if archivo.filename.endswith('.csv') else pd.read_excel(archivo)
         df.columns = [str(c).strip().lower() for c in df.columns]
-        
-        missing = [c for c in required_cols if c not in df.columns]
-        if missing:
-            flash(f"El archivo rechazado. Faltan las siguientes columnas: {', '.join(missing)}", 'danger')
-            return redirect(url_for('inventory_bp.index'))
-            
-        if 'subcategoria' not in df.columns:
-            df['subcategoria'] = ''
-            
-        tipo = 'bodega' if current_user.rol == 'bodega' else 'tienda'
+
         creados = 0
         actualizados = 0
-        
-        for idx, row in df.iterrows():
-            sku_raw = str(row['sku']).strip()
+
+        for _, row in df.iterrows():
+            sku_raw = str(row.get('codigo_barras', row.get('sku', ''))).strip()
             if not sku_raw or sku_raw.lower() == 'nan':
                 continue
-                
-            # Limpiar cantidades para evitar errores NaN o Nulls
-            cant = int(row['cantidad_stock']) if pd.notna(row['cantidad_stock']) else 0
-            costo = float(row['precio_costo']) if pd.notna(row['precio_costo']) else 0.0
-            minimo = float(row['precio_minimo']) if pd.notna(row['precio_minimo']) else 0.0
-            sugerido = float(row['precio_sugerido']) if pd.notna(row['precio_sugerido']) else 0.0
-            nombre_val = str(row['nombre']).strip()
-            
-            subcat_val = str(row['subcategoria']).strip() if 'subcategoria' in row and pd.notna(row['subcategoria']) else ''
-            if subcat_val.lower() == 'nan': subcat_val = ''
-            
-            obs_val = str(row['observacion']).strip() if pd.notna(row['observacion']) else ''
+
+            nombre_val = str(row.get('nombre', 'Producto Sin Nombre')).strip()
+            st_tienda = int(row['stock_tienda']) if 'stock_tienda' in row and pd.notna(row['stock_tienda']) else (int(row['cantidad_stock']) if 'cantidad_stock' in row and pd.notna(row['cantidad_stock']) else 0)
+            st_bodega = int(row['stock_bodega']) if 'stock_bodega' in row and pd.notna(row['stock_bodega']) else 0
+            st_min = int(row['stock_minimo']) if 'stock_minimo' in row and pd.notna(row['stock_minimo']) else 5
+
+            costo_v = float(row['costo']) if 'costo' in row and pd.notna(row['costo']) else (float(row['precio_costo']) if 'precio_costo' in row and pd.notna(row['precio_costo']) else 0.0)
+            p_dist = float(row['precio_distribuidor']) if 'precio_distribuidor' in row and pd.notna(row['precio_distribuidor']) else (float(row['precio_minimo']) if 'precio_minimo' in row and pd.notna(row['precio_minimo']) else 0.0)
+            p_fin = float(row['precio_final']) if 'precio_final' in row and pd.notna(row['precio_final']) else (float(row['precio_sugerido']) if 'precio_sugerido' in row and pd.notna(row['precio_sugerido']) else 0.0)
+            p_loc = float(row['precio_local']) if 'precio_local' in row and pd.notna(row['precio_local']) else p_fin
+
+            cat_name = str(row.get('categoria', '')).strip() if 'categoria' in row and pd.notna(row.get('categoria')) else ''
+            sub_name = str(row.get('subcategoria', '')).strip() if 'subcategoria' in row and pd.notna(row.get('subcategoria')) else ''
+
+            cat_obj = None
+            sub_obj = None
+            if cat_name and cat_name.lower() != 'nan':
+                cat_obj = Category.query.filter(Category.nombre.ilike(cat_name)).first()
+                if not cat_obj:
+                    cat_obj = Category(nombre=cat_name, stock_minimo_alerta=5)
+                    db.session.add(cat_obj)
+                    db.session.flush()
+            if sub_name and sub_name.lower() != 'nan' and cat_obj:
+                sub_obj = Subcategory.query.filter(Subcategory.categoria_id == cat_obj.id, Subcategory.nombre.ilike(sub_name)).first()
+                if not sub_obj:
+                    sub_obj = Subcategory(nombre=sub_name, categoria_id=cat_obj.id, stock_minimo_alerta=5)
+                    db.session.add(sub_obj)
+                    db.session.flush()
+
+            obs_val = str(row.get('observacion', '')).strip() if 'observacion' in row and pd.notna(row.get('observacion')) else ''
             if obs_val.lower() == 'nan':
                 obs_val = ''
 
-            prod = Product.query.filter_by(sku=sku_raw, tipo_inventario=tipo).first()
-            
+            prod = Product.query.filter(or_(Product.sku == sku_raw, Product.codigo_barras == sku_raw)).first()
             if prod:
-                # Si EXISTE el producto padre
-                if subcat_val:
-                    variante = ProductVariant.query.filter_by(product_id=prod.id, nombre_variante=subcat_val).first()
-                    if variante:
-                        # Actualizar variante existente
-                        stock_anterior = variante.cantidad_stock
-                        variante.cantidad_stock += cant
-                        variante.precio_costo = costo
-                        variante.precio_minimo = minimo
-                        variante.precio_sugerido = sugerido
-                        
-                        if cant > 0:
-                            ajuste = StockAdjustment(
-                                product_id=prod.id,
-                                admin_id=current_user.id,
-                                tipo_movimiento=f'Ingreso Masivo Subcategoría {subcat_val}',
-                                stock_anterior=stock_anterior,
-                                stock_nuevo=variante.cantidad_stock
-                            )
-                            db.session.add(ajuste)
-                        actualizados += 1
-                    else:
-                        # Crear nueva variante dentro del producto existente
-                        nueva_variante = ProductVariant(
-                            product_id=prod.id,
-                            nombre_variante=subcat_val,
-                            cantidad_stock=cant,
-                            precio_costo=costo,
-                            precio_minimo=minimo,
-                            precio_sugerido=sugerido
-                        )
-                        db.session.add(nueva_variante)
-                        # También sumar al historial para el Kardex
-                        ajuste = StockAdjustment(
-                            product_id=prod.id,
-                            admin_id=current_user.id,
-                            tipo_movimiento=f'Creación Excel Subcategoría {subcat_val}',
-                            stock_anterior=0,
-                            stock_nuevo=cant
-                        )
-                        db.session.add(ajuste)
-                        creados += 1
-                else:
-                    # Sin variante, actualizar producto base
-                    stock_anterior = prod.cantidad_stock
-                    prod.cantidad_stock += cant
-                    prod.precio_costo = costo
-                    prod.precio_minimo = minimo
-                    prod.precio_sugerido = sugerido
-                    prod.nombre = nombre_val 
-                    prod.observacion = obs_val
-                    
-                    if cant > 0:
-                        ajuste = StockAdjustment(
-                            product_id=prod.id,
-                            admin_id=current_user.id,
-                            tipo_movimiento='Suma por Ingreso Masivo (Excel)',
-                            stock_anterior=stock_anterior,
-                            stock_nuevo=prod.cantidad_stock
-                        )
-                        db.session.add(ajuste)
-                    actualizados += 1
+                prod.stock_tienda = (prod.stock_tienda or 0) + st_tienda
+                prod.stock_bodega = (prod.stock_bodega or 0) + st_bodega
+                prod.cantidad_stock = prod.stock_tienda
+                prod.costo = costo_v
+                prod.precio_costo = costo_v
+                prod.precio_distribuidor = p_dist
+                prod.precio_minimo = p_dist
+                prod.precio_local = p_loc
+                prod.precio_final = p_fin
+                prod.precio_sugerido = p_fin
+                prod.nombre = nombre_val
+                if cat_obj: prod.categoria_id = cat_obj.id
+                if sub_obj: prod.subcategory_id = sub_obj.id
+                if obs_val: prod.observacion = obs_val
+                actualizados += 1
             else:
-                # CREAR NUEVO PRODUCTO MAESTRO
-                nuevo_prod = Product(
+                nuevo_p = Product(
                     sku=sku_raw,
+                    codigo_barras=sku_raw,
                     nombre=nombre_val,
-                    tipo_inventario=tipo,
-                    cantidad_stock=cant if not subcat_val else 0, # Si provee subcat, todo el stock se va a la subcat
-                    precio_costo=costo,
-                    precio_minimo=minimo,
-                    precio_sugerido=sugerido,
+                    categoria_id=cat_obj.id if cat_obj else None,
+                    subcategory_id=sub_obj.id if sub_obj else None,
+                    stock_tienda=st_tienda,
+                    stock_bodega=st_bodega,
+                    stock_minimo=st_min,
+                    cantidad_stock=st_tienda,
+                    costo=costo_v,
+                    precio_distribuidor=p_dist,
+                    precio_local=p_loc,
+                    precio_final=p_fin,
+                    precio_costo=costo_v,
+                    precio_minimo=p_dist,
+                    precio_sugerido=p_fin,
                     observacion=obs_val
                 )
-                db.session.add(nuevo_prod)
-                db.session.flush() # Generar ID autoincremental
-                
-                if subcat_val:
-                    # Insertar variante atada al nuevo producto
-                    nueva_variante = ProductVariant(
-                        product_id=nuevo_prod.id,
-                        nombre_variante=subcat_val,
-                        cantidad_stock=cant,
-                        precio_costo=costo,
-                        precio_minimo=minimo,
-                        precio_sugerido=sugerido
-                    )
-                    db.session.add(nueva_variante)
-                    
-                    ajuste = StockAdjustment(
-                        product_id=nuevo_prod.id,
-                        admin_id=current_user.id,
-                        tipo_movimiento=f'Cr. Inicial Excel + Subcat {subcat_val}',
-                        stock_anterior=0,
-                        stock_nuevo=cant
-                    )
-                    db.session.add(ajuste)
-                else:
-                    ajuste = StockAdjustment(
-                        product_id=nuevo_prod.id,
-                        admin_id=current_user.id,
-                        tipo_movimiento='Creación Inicial (Excel)',
-                        stock_anterior=0,
-                        stock_nuevo=nuevo_prod.cantidad_stock
-                    )
-                    db.session.add(ajuste)
+                db.session.add(nuevo_p)
                 creados += 1
-                
+
         db.session.commit()
-        flash(f'Carga masiva completada exitosamente. Productos creados: {creados} | Agregados a stock existente: {actualizados}.', 'success')
-        
+        flash(f'Importación completada. Creados: {creados} | Actualizados: {actualizados}.', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Ocurrió un error leyendo las filas de tu archivo: {str(e)}', 'danger')
-        
+        flash(f'Error al importar el archivo: {str(e)}', 'danger')
+
     return redirect(url_for('inventory_bp.index'))
 
 @inventory_bp.route('/api/search')
 @login_required
-@admin_or_bodega_required
 def api_search():
     query = request.args.get('q', '').strip()
-    tipo = 'bodega' if current_user.rol == 'bodega' else 'tienda'
-    
     if len(query) < 1:
         return jsonify([])
-    
-    from sqlalchemy import or_
-    productos = Product.query.filter_by(tipo_inventario=tipo, activo=True).filter(
+
+    productos = Product.query.filter(Product.activo.is_(True)).filter(
         or_(
             Product.sku.ilike(f'%{query}%'),
+            Product.codigo_barras.ilike(f'%{query}%'),
             Product.nombre.ilike(f'%{query}%'),
-            Product.observacion.ilike(f'%{query}%'),
-            Product.variantes.any(ProductVariant.nombre_variante.ilike(f'%{query}%'))
+            Product.observacion.ilike(f'%{query}%')
         )
     ).limit(15).all()
-    
+
     results = []
-    q_lower = query.lower()
     for p in productos:
-        variantes_list = []
-        if p.variantes:
-            for v in p.variantes:
-                variantes_list.append({
-                    'id': v.id,
-                    'nombre': v.nombre_variante,
-                    'stock': v.cantidad_stock or 0,
-                    'matches': q_lower in v.nombre_variante.lower()
-                })
         results.append({
             'id': p.id,
-            'sku': p.sku,
+            'sku': p.codigo_barras or p.sku,
             'nombre': p.nombre,
-            'stock': p.total_stock,
-            'precio_sugerido': float(p.precio_sugerido or 0),
-            'variantes': variantes_list,
+            'categoria': p.categoria.nombre if p.categoria else 'General',
+            'subcategoria': p.subcategoria.nombre if p.subcategoria else '',
+            'stock': p.stock_tienda,
+            'stock_bodega': p.stock_bodega,
+            'alerta_stock': p.alerta_stock_activa,
+            'precio_distribuidor': float(p.precio_distribuidor or 0),
+            'precio_local': float(p.precio_local or 0),
+            'precio_final': float(p.precio_final or p.precio_sugerido or 0),
+            'precio_sugerido': float(p.precio_final or p.precio_sugerido or 0),
+            'variantes': [],
             'url_ver': url_for('inventory_bp.ver_producto', id=p.id),
             'url_editar': url_for('inventory_bp.editar_producto', id=p.id)
         })
-    
-    return jsonify(results)
 
+    return jsonify(results)

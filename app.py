@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 # Cargar variables de entorno desde .env
 load_dotenv()
 
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, url_for, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager, current_user
@@ -93,6 +93,16 @@ def create_app():
     app.register_blueprint(clientes_bp, url_prefix='/clientes')
     app.register_blueprint(maneos_bp, url_prefix='/maneos')
 
+    # Registro de Nuevos Módulos Automotrices POWER LED (Hojas de Trabajo, Instalaciones, Vehículos e Ingresos de Mercancía)
+    from routes.hojas_trabajo import hojas_trabajo_bp
+    from routes.instalaciones import instalaciones_bp
+    from routes.vehiculos import vehiculos_bp
+    from routes.ingresos import ingresos_bp
+    app.register_blueprint(hojas_trabajo_bp, url_prefix='/hojas-trabajo')
+    app.register_blueprint(instalaciones_bp, url_prefix='/instalaciones')
+    app.register_blueprint(vehiculos_bp, url_prefix='/vehiculos')
+    app.register_blueprint(ingresos_bp, url_prefix='/ingresos')
+
     # Registro de Blueprint Aprobaciones de Precios en Tiempo Real
     from routes.aprobaciones import aprobaciones_bp
     app.register_blueprint(aprobaciones_bp, url_prefix='/api')
@@ -104,7 +114,6 @@ def create_app():
         import urllib.parse
         from datetime import datetime
         from itsdangerous import URLSafeTimedSerializer
-        from flask import request
         from models import ServerPayment, obtener_hora_bogota
 
         MESES_ESPANOL = [
@@ -120,14 +129,10 @@ def create_app():
 
             monto = app.config.get('VALOR_MENSUALIDAD_SERVIDOR', '80.000')
             dia_vencimiento = 15
-            dia_preventivo = 8  # Aviso preventivo 7 días antes (del 8 al 14)
+            dia_preventivo = 8
 
-            # Regla de fecha de cobro: 
-            # Cobro los días 15 de cada mes a partir del 15 de octubre de 2026.
-            # Antes de esa fecha (ej: septiembre 2026), el primer corte aplicable es el 15 de Octubre de 2026
-            # y el sistema se encuentra en estado "al día".
-            if anio_actual < 2026 or (anio_actual == 2026 and mes_actual < 10):
-                mes_cobro = 10
+            if anio_actual < 2026 or (anio_actual == 2026 and mes_actual < 11):
+                mes_cobro = 11
                 anio_cobro = 2026
                 pago_existente = ServerPayment.query.filter_by(
                     anio=anio_cobro,
@@ -135,17 +140,15 @@ def create_app():
                     estado='pagado'
                 ).first()
                 estado = 'pagado' if pago_existente else 'al_dia'
-                dias_restantes = (datetime(2026, 10, 15) - datetime(anio_actual, mes_actual, dia_actual)).days
+                dias_restantes = (datetime(2026, 11, 15) - datetime(anio_actual, mes_actual, dia_actual)).days
                 dias_gabela = 0
             else:
-                # A partir de octubre 2026:
                 pago_mes_actual = ServerPayment.query.filter_by(
                     anio=anio_actual,
                     mes=mes_actual,
                     estado='pagado'
                 ).first()
 
-                # Si el mes actual ya fue pagado y ya pasó el día 15, proyectar el cobro al mes siguiente
                 if pago_mes_actual and dia_actual > dia_vencimiento:
                     if mes_actual == 12:
                         mes_cobro = 1
@@ -223,7 +226,7 @@ def create_app():
                 'nu_llave': '@QEI910',
                 'nequi_num': '3505422186'
             }
-        except Exception as e:
+        except Exception:
             ahora_fallback = obtener_hora_bogota()
             dia_venc_fallback = 15 if (ahora_fallback.year > 2026 or (ahora_fallback.year == 2026 and ahora_fallback.month >= 10)) else 30
             pago_servidor = {
@@ -257,6 +260,15 @@ def create_app():
             return redirect(url_for('auth_bp.login'))
         if current_user.rol == 'admin':
             return redirect(url_for('admin_bp.dashboard'))
+        return redirect(url_for('sales_bp.caja_visual'))
+
+    @app.route('/pos')
+    def pos_alias():
+        if not current_user.is_authenticated:
+            return redirect(url_for('auth_bp.login'))
+        hoja_id = request.args.get('hoja_id', type=int)
+        if hoja_id:
+            return redirect(url_for('sales_bp.caja_visual', hoja_id=hoja_id))
         return redirect(url_for('sales_bp.caja_visual'))
 
     @app.route('/sw.js')
@@ -305,21 +317,26 @@ if __name__ == '__main__':
         from models import db, User
         from werkzeug.security import generate_password_hash
         
-        # Aseguramos que las tablas existan sin romper migraciones
-        db.create_all()
+        # Ejecutar migración automática no destructiva (v2 POWER LED)
+        try:
+            from scripts.migrate_v2 import run_migration
+            run_migration(app)
+        except Exception as mig_err:
+            print(f"[WARN] Nota al ejecutar migrate_v2: {mig_err}")
+            db.create_all()
         
         # Crear la carpeta de imágenes si no existe
         os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
         
-        if not User.query.filter(User.email.in_(['admin@maripocell.com', 'admin@mariposacel.com'])).first():
+        if not User.query.filter(User.email.in_(['admin@powerled.com', 'admin@maripocell.com', 'admin@mariposacel.com'])).first():
             master_admin = User(
                 nombre='Administrador Principal',
-                email='admin@maripocell.com',
+                email='admin@powerled.com',
                 password_hash=generate_password_hash('Admin123'),
                 rol='admin'
             )
             db.session.add(master_admin)
             db.session.commit()
-            print("[INFO] Usuario maestro 'admin@maripocell.com' fue creado automaticamente.")
+            print("[INFO] Usuario maestro 'admin@powerled.com' fue creado automaticamente.")
             
     app.run(debug=True)

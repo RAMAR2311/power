@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block title %}POWER LED | Historial de Vehículos{% endblock %}
+
+{% block content %}
+<style>
+    .placa-colombiana {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(180deg, #facc15 0%, #eab308 100%);
+        color: #000000;
+        font-family: 'Orbitron', monospace;
+        font-weight: 900;
+        font-size: 0.95rem;
+        letter-spacing: 1.5px;
+        padding: 4px 12px;
+        border-radius: 6px;
+        border: 2px solid #000000;
+        box-shadow: 0 0 0 2px #facc15, 0 4px 10px rgba(0, 0, 0, 0.5);
+        text-transform: uppercase;
+    }
+    .kpi-veh-card {
+        background: #0d1117;
+        border: 1px solid #21262d;
+        border-radius: 14px;
+        padding: 1.2rem;
+    }
+</style>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <span class="section-subtitle d-block mb-1">EXPEDIENTE TÉCNICO AUTOMOTRIZ</span>
+        <h2 class="fw-bold m-0 text-white">
+            <i class="fa-solid fa-car-burst me-2" style="color: #029CC2;"></i>Historial de Vehículos
+        </h2>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('hojas_trabajo_bp.index') }}" class="btn btn-outline-primary rounded-pill px-3 fw-bold">
+            <i class="fa-solid fa-car-side me-1"></i> Hojas de Trabajo
+        </a>
+        <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#modalNuevoVehiculo">
+            <i class="fa-solid fa-plus me-1"></i> Registrar Vehículo
+        </button>
+    </div>
+</div>
+
+<!-- KPIs -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="kpi-veh-card" style="border-left: 4px solid #029CC2;">
+            <small class="text-muted text-uppercase fw-bold">Vehículos en Historial</small>
+            <h3 class="fw-bold m-0 mt-1" style="color: #029CC2;">{{ total_vehiculos }}</h3>
+            <small class="text-muted">Placas únicas registradas</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-veh-card" style="border-left: 4px solid #f59e0b;">
+            <small class="text-muted text-uppercase fw-bold">Intervenciones en Taller</small>
+            <h3 class="fw-bold m-0 mt-1 text-warning">{{ total_ordenes_global }}</h3>
+            <small class="text-muted">Hojas de trabajo vinculadas</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="kpi-veh-card" style="border-left: 4px solid #40A435;">
+            <small class="text-muted text-uppercase fw-bold">Total Facturado a Vehículos</small>
+            <h3 class="fw-bold m-0 mt-1" style="color: #40A435;">${{ total_facturado_global|cop }}</h3>
+            <small class="text-muted">Accesorios + Mano de Obra</small>
+        </div>
+    </div>
+</div>
+
+<!-- Buscador por Placa, Marca, Modelo o Propietario -->
+<div class="card card-custom p-3 mb-4">
+    <form method="GET" action="{{ url_for('vehiculos_bp.index') }}" class="row g-2 align-items-center">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="fa-solid fa-magnifying-glass text-primary"></i></span>
+                <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Buscar por placa (Ej: ABC123), marca, línea o nombre del propietario...">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select name="tipo" class="form-select" onchange="this.form.submit()">
+                <option value="">Todos los tipos de vehículo</option>
+                <option value="AUTOMOVIL" {% if tipo_filtro == 'AUTOMOVIL' %}selected{% endif %}>🚗 Automóvil</option>
+                <option value="CAMIONETA" {% if tipo_filtro == 'CAMIONETA' %}selected{% endif %}>🚙 Camioneta / SUV / Pick-up</option>
+                <option value="MOTO" {% if tipo_filtro == 'MOTO' %}selected{% endif %}>🏍️ Motocicleta</option>
+                <option value="PESADO" {% if tipo_filtro == 'PESADO' %}selected{% endif %}>🚛 Camión / Pesado</option>
+            </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100 fw-bold">Buscar</button>
+            {% if q or tipo_filtro %}
+            <a href="{{ url_for('vehiculos_bp.index') }}" class="btn btn-outline-secondary">Limpiar</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Tabla de Vehículos -->
+<div class="card card-custom overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Placa</th>
+                    <th>Vehículo (Marca / Línea / Año)</th>
+                    <th>Tipo</th>
+                    <th>Propietario / Cliente</th>
+                    <th class="text-center">Visitas Taller</th>
+                    <th class="text-center">Compras POS</th>
+                    <th class="text-end">Total Invertido</th>
+                    <th>Última Visita</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in vehiculos %}
+                {% set st = resumen_vehiculos.get(v.id, {'ordenes_count': 0, 'ventas_count': 0, 'total_invertido': 0}) %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('vehiculos_bp.historial', id=v.id) }}" class="text-decoration-none">
+                            <span class="placa-colombiana">{{ v.placa }}</span>
+                        </a>
+                    </td>
+                    <td>
+                        <div class="fw-bold text-white">{{ v.descripcion_completa }}</div>
+                        {% if v.color %}
+                        <small class="text-muted"><i class="fa-solid fa-palette me-1"></i>Color: {{ v.color }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge bg-dark border text-info">{{ v.tipo or 'AUTOMOVIL' }}</span>
+                    </td>
+                    <td>
+                        {% if v.propietario %}
+                        <a href="{{ url_for('clientes_bp.estado_cuenta', id=v.propietario.id) }}" class="text-info fw-semibold text-decoration-none">
+                            <i class="fa-solid fa-user me-1"></i>{{ v.propietario.nombre }}
+                        </a>
+                        <small class="d-block text-muted">{{ v.propietario.telefono or v.propietario.documento or '' }}</small>
+                        {% else %}
+                        <span class="text-muted small">Sin propietario asignado</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <span class="badge rounded-pill px-3 py-1" style="background: rgba(2,156,194,0.15); color: #029CC2;">
+                            {{ st.ordenes_count }} órdenes
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge rounded-pill px-3 py-1 bg-dark border text-white">
+                            {{ st.ventas_count }} facturas
+                        </span>
+                    </td>
+                    <td class="text-end fw-bold" style="color: #40A435;">
+                        ${{ st.total_invertido|cop }}
+                    </td>
+                    <td>
+                        <small class="text-muted">{{ v.ultima_visita.strftime('%d/%m/%Y %H:%M') if v.ultima_visita else 'N/A' }}</small>
+                    </td>
+                    <td class="text-end">
+                        <div class="d-inline-flex gap-1">
+                            <a href="{{ url_for('vehiculos_bp.historial', id=v.id) }}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">
+                                <i class="fa-solid fa-clock-rotate-left me-1"></i> Ver Historial
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center py-5 text-muted">
+                        <i class="fa-solid fa-car fa-3x mb-3 opacity-50"></i>
+                        <p class="mb-0">No hay vehículos registrados todavía. Se agregan automáticamente al crear Hojas de Trabajo o Ventas con placa, o desde el botón "Registrar Vehículo".</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Registrar Nuevo Vehículo -->
+<div class="modal fade" id="modalNuevoVehiculo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="POST" action="{{ url_for('vehiculos_bp.crear') }}" class="modal-content">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-white">
+                    <i class="fa-solid fa-car me-2" style="color: #029CC2;"></i>Registrar Vehículo en Historial
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label small fw-bold">Placa *</label>
+                        <input type="text" name="placa" class="form-control text-uppercase fw-bold" placeholder="ABC123" maxlength="10" required>
+                    </div>
+                    <div class="col-md-7">
+                        <label class="form-label small fw-bold">Tipo de Vehículo</label>
+                        <select name="tipo" class="form-select">
+                            <option value="AUTOMOVIL">🚗 Automóvil</option>
+                            <option value="CAMIONETA">🚙 Camioneta / SUV / Pick-up</option>
+                            <option value="MOTO">🏍️ Motocicleta</option>
+                            <option value="PESADO">🚛 Camión / Pesado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Marca</label>
+                        <input type="text" name="marca" class="form-control" placeholder="Ej: Toyota, Mazda, Chevrolet">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Línea / Modelo</label>
+                        <input type="text" name="modelo" class="form-control" placeholder="Ej: Hilux SRX, Mazda 3, Tracker">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label small fw-bold">Año / Modelo</label>
+                        <input type="text" name="anio" class="form-control" placeholder="Ej: 2024">
+                    </div>
+                    <div class="col-md-7">
+                        <label class="form-label small fw-bold">Color</label>
+                        <input type="text" name="color" class="form-control" placeholder="Ej: Blanco Perlado, Negro">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">Propietario / Cliente Vinculado</label>
+                        <select name="cliente_id" class="form-select">
+                            <option value="">-- Seleccionar cliente (Opcional) --</option>
+                            {% for c in clientes %}
+                            <option value="{{ c.id }}">{{ c.nombre }} ({{ c.documento or 'S/D' }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">Observaciones Técnicas (Sistema eléctrico, bombillería, etc.)</label>
+                        <textarea name="observaciones" class="form-control" rows="2" placeholder="Ej: Usa bombillo H4 en altas/bajas, exploradoras H11, sistema CANBUS..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Vehículo
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

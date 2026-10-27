@@ -1,0 +1,596 @@
+{% extends "base.html" %}
+{% block title %}POWER LED | Ingreso de Mercancía & Trazabilidad{% endblock %}
+
+{% block content %}
+<style>
+    .kpi-ingreso-card {
+        background: #0d1117;
+        border: 1px solid #21262d;
+        border-radius: 14px;
+        padding: 1.2rem;
+    }
+    .fila-ingreso-item {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+</style>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <span class="section-subtitle d-block mb-1">RECEPCIÓN, AUDITORÍA Y KARDEX DE ENTRADA</span>
+        <h2 class="fw-bold m-0 text-white">
+            <i class="fa-solid fa-boxes-packing me-2" style="color: #029CC2;"></i>Ingreso de Mercancía & Trazabilidad
+        </h2>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('bodega_bp.traslados') }}" class="btn btn-outline-primary rounded-pill px-3 fw-bold">
+            <i class="fa-solid fa-right-left me-1"></i> Traslados Bodega → Tienda
+        </a>
+        <button type="button" class="btn btn-success rounded-pill px-4 fw-bold shadow" style="background: #40A435;" data-bs-toggle="modal" data-bs-target="#modalNuevoIngreso">
+            <i class="fa-solid fa-plus me-1"></i> + Nuevo Ingreso de Mercancía
+        </button>
+    </div>
+</div>
+
+<!-- KPIs de Trazabilidad de Entradas -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="kpi-ingreso-card" style="border-left: 4px solid #029CC2;">
+            <small class="text-muted text-uppercase fw-bold">Actas de Ingreso</small>
+            <h3 class="fw-bold m-0 mt-1" style="color: #029CC2;">{{ total_actas }}</h3>
+            <small class="text-muted">Recepciones registradas</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-ingreso-card" style="border-left: 4px solid #40A435;">
+            <small class="text-muted text-uppercase fw-bold">Unidades Ingresadas</small>
+            <h3 class="fw-bold m-0 mt-1" style="color: #40A435;">{{ total_unidades_ingresadas }}</h3>
+            <small class="text-muted">Total sumado al inventario</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-ingreso-card" style="border-left: 4px solid #f59e0b;">
+            <small class="text-muted text-uppercase fw-bold">Pendientes de Revisión</small>
+            <h3 class="fw-bold m-0 mt-1 text-warning">{{ pendientes_revision }}</h3>
+            <small class="text-muted">Actas por puntear con ticket</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="kpi-ingreso-card" style="border-left: 4px solid #029CC2;">
+            <small class="text-muted text-uppercase fw-bold">Valor Costo Mercancía</small>
+            <h3 class="fw-bold m-0 mt-1 text-white">${{ total_costo_ingresos|cop }}</h3>
+            <small class="text-muted">Inversión acumulada</small>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros de Búsqueda y Trazabilidad -->
+<div class="card card-custom p-3 mb-4">
+    <form method="GET" action="{{ url_for('ingresos_bp.index') }}" class="row g-2 align-items-center">
+        <div class="col-md-5">
+            <div class="input-group">
+                <span class="input-group-text"><i class="fa-solid fa-magnifying-glass text-primary"></i></span>
+                <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Buscar por # Acta (ING-00001), Factura Proveedor o Nombre...">
+            </div>
+        </div>
+        <div class="col-md-2">
+            <select name="destino" class="form-select" onchange="this.form.submit()">
+                <option value="">Ubicación Destino</option>
+                <option value="BODEGA" {% if destino_filtro == 'BODEGA' %}selected{% endif %}>🏢 Bodega Central</option>
+                <option value="TIENDA" {% if destino_filtro == 'TIENDA' %}selected{% endif %}>🏪 Tienda / Mostrador</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="estado" class="form-select" onchange="this.form.submit()">
+                <option value="">Estado de Revisión</option>
+                <option value="PENDIENTE_REVISION" {% if estado_filtro == 'PENDIENTE_REVISION' %}selected{% endif %}>⏳ Pendiente de Revisión</option>
+                <option value="VERIFICADO" {% if estado_filtro == 'VERIFICADO' %}selected{% endif %}>✅ Verificado Conforme</option>
+                <option value="CON_NOVEDAD" {% if estado_filtro == 'CON_NOVEDAD' %}selected{% endif %}>⚠️ Con Novedad / Faltante</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100 fw-bold">Filtrar</button>
+            {% if q or destino_filtro or estado_filtro %}
+            <a href="{{ url_for('ingresos_bp.index') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-rotate-left"></i></a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Tabla Histórica de Ingresos de Mercancía -->
+<div class="card card-custom overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Acta #</th>
+                    <th>Fecha / Hora</th>
+                    <th>Proveedor & Factura</th>
+                    <th class="text-center">Destino</th>
+                    <th>Detalle de Trazabilidad (Stock Ant. → Nuevo)</th>
+                    <th class="text-center">Total Uds.</th>
+                    <th class="text-end">Costo Total</th>
+                    <th class="text-center">Estado Revisión</th>
+                    <th class="text-end">Ticket Revisión</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ing in ingresos %}
+                <tr>
+                    <td>
+                        <span class="fw-bold font-monospace" style="color: #029CC2; font-size: 0.95rem;">{{ ing.numero_ingreso }}</span>
+                        <small class="d-block text-muted">Recibió: {{ ing.usuario.nombre if ing.usuario else 'Sistema' }}</small>
+                    </td>
+                    <td>
+                        <div class="fw-semibold text-white">{{ ing.fecha_ingreso.strftime('%d/%m/%Y') if ing.fecha_ingreso else '' }}</div>
+                        <small class="text-muted">{{ ing.fecha_ingreso.strftime('%H:%M:%S') if ing.fecha_ingreso else '' }}</small>
+                    </td>
+                    <td>
+                        <div class="fw-bold text-white">
+                            {% if ing.provider_id %}
+                            <a href="{{ url_for('providers_bp.detalle', id=ing.provider_id) }}" class="text-decoration-none" style="color: #029CC2;">
+                                <i class="fa-solid fa-truck-ramp-box me-1"></i>{{ ing.nombre_proveedor_display }}
+                            </a>
+                            {% else %}
+                            {{ ing.nombre_proveedor_display }}
+                            {% endif %}
+                        </div>
+                        {% if ing.numero_factura_proveedor %}
+                        <span class="badge bg-dark border text-muted font-monospace">Fact/Rem: {{ ing.numero_factura_proveedor }}</span>
+                        {% endif %}
+                        {% if ing.provider_invoice_id %}
+                        <span class="badge rounded-pill ms-1" style="background: rgba(64,164,53,0.2); color: #40A435; border: 1px solid #40A435; font-size: 0.68rem;">
+                            <i class="fa-solid fa-file-invoice-dollar me-1"></i>Cargada al Proveedor
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if ing.destino == 'BODEGA' %}
+                        <span class="badge rounded-pill px-3 py-1" style="background: rgba(2,156,194,0.18); color: #029CC2; border: 1px solid #029CC2;">
+                            <i class="fa-solid fa-warehouse me-1"></i>BODEGA
+                        </span>
+                        {% else %}
+                        <span class="badge rounded-pill px-3 py-1" style="background: rgba(64,164,53,0.18); color: #40A435; border: 1px solid #40A435;">
+                            <i class="fa-solid fa-store me-1"></i>TIENDA
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% for it in ing.items[:4] %}
+                        <div class="small mb-1">
+                            <span class="badge bg-dark border text-info">+{{ it.cantidad_recibida }}</span>
+                            <strong class="text-white">{{ it.producto.nombre if it.producto else 'Producto' }}</strong>
+                            <span class="text-muted">({{ it.stock_anterior }} → <strong class="text-success">{{ it.stock_nuevo }}</strong>)</span>
+                            {% if it.conformidad != 'OK' %}
+                            <span class="badge bg-danger ms-1">{{ it.conformidad }}</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        {% if ing.items|length > 4 %}
+                        <small class="text-info">+{{ (ing.items|length) - 4 }} referencias adicionales...</small>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <span class="fs-6 fw-bold text-white">{{ ing.total_unidades }}</span>
+                        <small class="d-block text-muted">{{ ing.total_referencias }} ref.</small>
+                    </td>
+                    <td class="text-end fw-bold" style="color: #40A435;">
+                        ${{ ing.costo_total_ingreso|cop }}
+                    </td>
+                    <td class="text-center">
+                        {% if ing.estado_revision == 'VERIFICADO' %}
+                        <span class="badge rounded-pill px-3 py-1" style="background: #40A435;">
+                            <i class="fa-solid fa-check-double me-1"></i>VERIFICADO
+                        </span>
+                        {% elif ing.estado_revision == 'CON_NOVEDAD' %}
+                        <span class="badge rounded-pill px-3 py-1" style="background: #E31313;">
+                            <i class="fa-solid fa-triangle-exclamation me-1"></i>CON NOVEDAD
+                        </span>
+                        {% else %}
+                        <span class="badge rounded-pill px-3 py-1 bg-warning text-dark fw-bold">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i>POR REVISAR
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{{ url_for('ingresos_bp.ticket_revision', id=ing.id) }}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">
+                            <i class="fa-solid fa-print me-1"></i> Ticket Revisión
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center py-5 text-muted">
+                        <i class="fa-solid fa-boxes-packing fa-3x mb-3 opacity-50"></i>
+                        <p class="mb-0">No hay actas de ingreso de mercancía registradas todavía. Haz clic en "+ Nuevo Ingreso de Mercancía" para cargar stock con trazabilidad y generar su ticket de revisión.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Nuevo Ingreso de Mercancía -->
+<div class="modal fade" id="modalNuevoIngreso" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <form method="POST" action="{{ url_for('ingresos_bp.crear') }}" class="modal-content">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="modal-header border-bottom">
+                <div>
+                    <h5 class="modal-title fw-bold text-white">
+                        <i class="fa-solid fa-boxes-packing me-2" style="color: #40A435;"></i>Registrar Ingreso de Mercancía (Con Ticket de Revisión)
+                    </h5>
+                    <small class="text-muted">Suma automáticamente al inventario seleccionado y genera el Ticket de Revisión Física</small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- Datos de Cabecera del Ingreso y Asignación de Factura al Proveedor -->
+                <div class="row g-3 mb-4 p-3 rounded-3" style="background: #161b22; border: 1px solid #30363d;">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold text-white">Ubicación de Destino (Inventario) *</label>
+                        <select name="destino" class="form-select fw-bold" style="border-color: #029CC2 !important;">
+                            <option value="BODEGA">🏢 Enviar a BODEGA CENTRAL</option>
+                            <option value="TIENDA">🏪 Enviar directo a TIENDA POS</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label small fw-bold text-white m-0">Escoger Proveedor *</label>
+                            <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none fw-bold" style="color: #029CC2; font-size: 0.75rem;" onclick="toggleCrearProveedorRapido()">
+                                <i class="fa-solid fa-plus-circle"></i> Nuevo Proveedor
+                            </button>
+                        </div>
+                        <select name="provider_id" id="selectProveedorIngreso" class="form-select" style="border-color: #029CC2 !important;">
+                            <option value="">-- Seleccionar Proveedor Registrado --</option>
+                            {% for prov in proveedores %}
+                            <option value="{{ prov.id }}">{{ prov.nombre }} {% if prov.empresa %}({{ prov.empresa }}){% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold text-white">N° Factura / Remisión</label>
+                        <input type="text" name="numero_factura_proveedor" class="form-control text-uppercase" placeholder="Ej: FAC-8841">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold" style="color: #40A435;">Valor Total Factura ($) *</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark text-success border-secondary fw-bold">$</span>
+                            <input type="number" step="any" name="monto_factura_proveedor" id="inputMontoFacturaProveedor" class="form-control fw-bold text-end" style="border-color: #40A435 !important; color: #40A435; font-size: 1rem;" placeholder="0" oninput="this.dataset.manual='1'">
+                        </div>
+                        <small class="text-muted" style="font-size: 0.7rem;">Se autocalcula con los ítems o puedes fijarlo manual</small>
+                    </div>
+
+                    <!-- Mini-panel para crear Proveedor Rápido sin salir del modal -->
+                    <div class="col-12" id="panelProveedorRapido" style="display: none;">
+                        <div class="p-3 rounded-3" style="background: #0d1117; border: 1px dashed #029CC2;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="small fw-bold" style="color: #029CC2;"><i class="fa-solid fa-truck-fast me-1"></i>Registrar Nuevo Proveedor Rápido</span>
+                                <button type="button" class="btn-close btn-close-white btn-sm" onclick="toggleCrearProveedorRapido()"></button>
+                            </div>
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-4">
+                                    <label class="form-label small mb-1">Nombre Proveedor / Contacto *</label>
+                                    <input type="text" id="prov_rap_nombre" class="form-control form-control-sm" placeholder="Ej: Distribuidora Autolux">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small mb-1">Empresa / Razón Social</label>
+                                    <input type="text" id="prov_rap_empresa" class="form-control form-control-sm" placeholder="Ej: Autolux Importaciones SAS">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label small mb-1">Teléfono</label>
+                                    <input type="text" id="prov_rap_tel" class="form-control form-control-sm" placeholder="300...">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-sm btn-info w-100 fw-bold text-white" style="background: #029CC2;" onclick="guardarProveedorRapido()">
+                                        Guardar Proveedor
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold text-white">¿Cargar a Cuenta del Proveedor?</label>
+                        <select name="cargar_cuenta_proveedor" class="form-select">
+                            <option value="1" selected>💳 Sí, asignar valor de factura al proveedor</option>
+                            <option value="0">Solo ingresar stock (Sin deuda)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold text-white">Estado Inicial de Revisión</label>
+                        <select name="estado_revision" class="form-select">
+                            <option value="PENDIENTE_REVISION">⏳ Emitir Ticket para Revisión Física (Punteo)</option>
+                            <option value="VERIFICADO">✅ Mercancía ya revisada y verificada</option>
+                            <option value="CON_NOVEDAD">⚠️ Ingreso con novedad / faltantes</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold text-white">Responsable de Revisión</label>
+                        <input type="text" name="revisado_por" value="{{ current_user.nombre }}" class="form-control" placeholder="Nombre de quien revisa">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold text-white">Observaciones / Notas</label>
+                        <input type="text" name="observaciones" class="form-control" placeholder="Ej: Cajas selladas, transportadora...">
+                    </div>
+                </div>
+
+                <!-- Barra para Agregar Productos o Crear Producto Nuevo Rápido -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <h6 class="fw-bold text-white m-0">
+                        <i class="fa-solid fa-list-check me-2" style="color: #029CC2;"></i>Productos a Ingresar y Auditar
+                    </h6>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 fw-bold" onclick="toggleCrearProductoRapido()">
+                            <i class="fa-solid fa-sparkles me-1"></i> ¿Producto Nuevo? Crear Rápido
+                        </button>
+                        <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold" onclick="agregarFilaIngreso()">
+                            <i class="fa-solid fa-plus me-1"></i> + Agregar Fila de Producto
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mini-panel desplegable para crear un producto nuevo sin salir del ingreso -->
+                <div id="panelProductoRapido" style="display: none;" class="p-3 mb-3 rounded-3 border" style="background: #090d13; border-color: #029CC2 !important;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong class="text-info small"><i class="fa-solid fa-box-open me-1"></i>Crear Referencia Nueva en el Catálogo</strong>
+                        <button type="button" class="btn-close btn-close-white btn-sm" onclick="toggleCrearProductoRapido()"></button>
+                    </div>
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label small mb-1">Nombre del Producto *</label>
+                            <input type="text" id="rap_nombre" class="form-control form-control-sm" placeholder="Ej: Kit LED H7 24000LM">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small mb-1">Código / SKU</label>
+                            <input type="text" id="rap_sku" class="form-control form-control-sm text-uppercase" placeholder="Auto o Manual">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small mb-1">Categoría</label>
+                            <select id="rap_cat" class="form-select form-select-sm">
+                                <option value="">-- Categoría --</option>
+                                {% for cat in categorias %}
+                                <option value="{{ cat.id }}">{{ cat.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label small mb-1">Costo</label>
+                            <input type="number" id="rap_costo" class="form-control form-control-sm" placeholder="0">
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label small mb-1">Distrib.</label>
+                            <input type="number" id="rap_dist" class="form-control form-control-sm" placeholder="0">
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label small mb-1">Local</label>
+                            <input type="number" id="rap_loc" class="form-control form-control-sm" placeholder="0">
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label small mb-1">P. Final</label>
+                            <input type="number" id="rap_fin" class="form-control form-control-sm" placeholder="0">
+                        </div>
+                        <div class="col-md-1">
+                            <button type="button" class="btn btn-sm btn-success w-100 fw-bold" onclick="guardarProductoRapido()">Crear</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenedor de Filas de Productos -->
+                <div id="contenedorFilasIngreso"></div>
+            </div>
+            <div class="modal-footer border-top">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold" style="background: #40A435;">
+                    <i class="fa-solid fa-check-double me-1"></i> Procesar Ingreso y Generar Ticket de Revisión
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const csrf_token_ing = "{{ csrf_token() }}";
+const CATALOGO_INGRESOS = [
+    {% for p in productos %}
+    {
+        id: {{ p.id }},
+        nombre: {{ p.nombre|tojson }},
+        sku: {{ (p.codigo_barras or p.sku or '')|tojson }},
+        costo: {{ (p.costo or p.precio_costo or 0)|float }},
+        precio_distribuidor: {{ (p.precio_distribuidor or p.precio_minimo or 0)|float }},
+        precio_local: {{ (p.precio_local or p.precio_final or p.precio_sugerido or 0)|float }},
+        precio_final: {{ (p.precio_final or p.precio_sugerido or 0)|float }},
+        stock_bodega: {{ p.stock_bodega or 0 }},
+        stock_tienda: {{ p.stock_tienda or 0 }}
+    },
+    {% endfor %}
+];
+
+function toggleCrearProveedorRapido() {
+    const panel = document.getElementById('panelProveedorRapido');
+    if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+async function guardarProveedorRapido() {
+    const nombre = document.getElementById('prov_rap_nombre').value.trim();
+    if (!nombre) {
+        alert('Ingresa el nombre del proveedor.');
+        return;
+    }
+    const payload = {
+        nombre: nombre,
+        empresa: document.getElementById('prov_rap_empresa').value.trim(),
+        telefono: document.getElementById('prov_rap_tel').value.trim()
+    };
+
+    try {
+        const res = await fetch('/ingresos/api/crear-proveedor-rapido', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf_token_ing },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+            alert(data.message || 'No se pudo crear el proveedor.');
+            return;
+        }
+        const selectProv = document.getElementById('selectProveedorIngreso');
+        const opt = document.createElement('option');
+        opt.value = data.proveedor.id;
+        opt.textContent = data.proveedor.display;
+        opt.selected = true;
+        selectProv.appendChild(opt);
+        toggleCrearProveedorRapido();
+        document.getElementById('prov_rap_nombre').value = '';
+        document.getElementById('prov_rap_empresa').value = '';
+        document.getElementById('prov_rap_tel').value = '';
+    } catch (e) {
+        alert('Error al crear el proveedor.');
+    }
+}
+
+function recalcularTotalFacturaProveedores() {
+    const filas = document.querySelectorAll('.fila-ingreso-item');
+    let sumaCostos = 0;
+    filas.forEach(fila => {
+        const cant = parseFloat(fila.querySelector('input[name="cantidad_recibida[]"]')?.value) || 0;
+        const costo = parseFloat(fila.querySelector('input[name="costo_unitario[]"]')?.value) || 0;
+        sumaCostos += (cant * costo);
+    });
+    const inputMonto = document.getElementById('inputMontoFacturaProveedor');
+    if (inputMonto && inputMonto.dataset.manual !== '1') {
+        inputMonto.value = Math.round(sumaCostos);
+    }
+}
+
+function toggleCrearProductoRapido() {
+    const panel = document.getElementById('panelProductoRapido');
+    if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+async function guardarProductoRapido() {
+    const nombre = document.getElementById('rap_nombre').value.trim();
+    if (!nombre) {
+        alert('Ingresa el nombre del producto nuevo.');
+        return;
+    }
+    const payload = {
+        nombre: nombre,
+        codigo_barras: document.getElementById('rap_sku').value.trim(),
+        categoria_id: document.getElementById('rap_cat').value || null,
+        costo: parseFloat(document.getElementById('rap_costo').value) || 0,
+        precio_distribuidor: parseFloat(document.getElementById('rap_dist').value) || 0,
+        precio_local: parseFloat(document.getElementById('rap_loc').value) || 0,
+        precio_final: parseFloat(document.getElementById('rap_fin').value) || 0
+    };
+
+    try {
+        const res = await fetch('/ingresos/api/crear-producto-rapido', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf_token_ing },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+            alert(data.message || 'No se pudo crear el producto.');
+            return;
+        }
+        CATALOGO_INGRESOS.unshift(data.producto);
+        agregarFilaIngreso(data.producto.id);
+        toggleCrearProductoRapido();
+        document.getElementById('rap_nombre').value = '';
+        document.getElementById('rap_sku').value = '';
+    } catch (e) {
+        alert('Error al crear el producto.');
+    }
+}
+
+function agregarFilaIngreso(selectedProductId = null) {
+    const container = document.getElementById('contenedorFilasIngreso');
+    const div = document.createElement('div');
+    div.className = 'fila-ingreso-item';
+
+    let optionsHtml = '<option value="">-- Seleccionar Producto del Catálogo --</option>';
+    CATALOGO_INGRESOS.forEach(p => {
+        const sel = (selectedProductId && p.id === selectedProductId) ? 'selected' : '';
+        optionsHtml += `<option value="${p.id}" ${sel}
+            data-costo="${p.costo}"
+            data-dist="${p.precio_distribuidor}"
+            data-loc="${p.precio_local}"
+            data-fin="${p.precio_final}"
+            data-bodega="${p.stock_bodega}"
+            data-tienda="${p.stock_tienda}">
+            [${p.sku}] ${p.nombre} (Bod: ${p.stock_bodega} | Tda: ${p.stock_tienda})
+        </option>`;
+    });
+
+    div.innerHTML = `
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small text-muted mb-1">Producto / Referencia *</label>
+                <select name="product_id[]" class="form-select form-select-sm" required onchange="cargarDatosProductoFila(this)">
+                    ${optionsHtml}
+                </select>
+            </div>
+            <div class="col-md-1">
+                <label class="form-label small text-muted mb-1" title="Cantidad que dice la factura del proveedor">Cant. Fact.</label>
+                <input type="number" name="cantidad_esperada[]" class="form-control form-control-sm text-center" value="1" min="1">
+            </div>
+            <div class="col-md-1">
+                <label class="form-label small fw-bold text-info mb-1" title="Cantidad física real contada">Cant. Real *</label>
+                <input type="number" name="cantidad_recibida[]" class="form-control form-control-sm text-center fw-bold" style="border-color: #029CC2;" value="1" min="1" required oninput="recalcularTotalFacturaProveedores()">
+            </div>
+            <div class="col-md-1">
+                <label class="form-label small text-muted mb-1">Costo U.</label>
+                <input type="number" step="any" name="costo_unitario[]" class="form-control form-control-sm text-end" value="0" oninput="recalcularTotalFacturaProveedores()">
+            </div>
+            <div class="col-md-1">
+                <label class="form-label small text-muted mb-1">P. Distrib.</label>
+                <input type="number" step="any" name="precio_distribuidor[]" class="form-control form-control-sm text-end" placeholder="Opcional">
+            </div>
+            <div class="col-md-1">
+                <label class="form-label small text-muted mb-1">P. Local</label>
+                <input type="number" step="any" name="precio_local[]" class="form-control form-control-sm text-end" placeholder="Opcional">
+            </div>
+            <div class="col-md-1">
+                <label class="form-label small text-muted mb-1">P. Final</label>
+                <input type="number" step="any" name="precio_final[]" class="form-control form-control-sm text-end" placeholder="Opcional">
+            </div>
+            <div class="col-md-2 d-flex gap-1 align-items-center">
+                <input type="text" name="nota_revision[]" class="form-control form-control-sm" placeholder="Nota / Revisión">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.fila-ingreso-item').remove(); recalcularTotalFacturaProveedores();">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    container.appendChild(div);
+
+    if (selectedProductId) {
+        const selEl = div.querySelector('select[name="product_id[]"]');
+        if (selEl) cargarDatosProductoFila(selEl);
+    }
+    recalcularTotalFacturaProveedores();
+}
+
+function cargarDatosProductoFila(selEl) {
+    const opt = selEl.options[selEl.selectedIndex];
+    if (!opt || !opt.value) return;
+    const fila = selEl.closest('.fila-ingreso-item');
+    fila.querySelector('input[name="costo_unitario[]"]').value = Math.round(parseFloat(opt.dataset.costo) || 0);
+    fila.querySelector('input[name="precio_distribuidor[]"]').value = Math.round(parseFloat(opt.dataset.dist) || 0);
+    fila.querySelector('input[name="precio_local[]"]').value = Math.round(parseFloat(opt.dataset.loc) || 0);
+    fila.querySelector('input[name="precio_final[]"]').value = Math.round(parseFloat(opt.dataset.fin) || 0);
+    recalcularTotalFacturaProveedores();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    agregarFilaIngreso();
+});
+</script>
+{% endblock %}

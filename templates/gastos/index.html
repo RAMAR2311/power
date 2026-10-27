@@ -1,11 +1,13 @@
 {% extends "base.html" %}
 
+{% block title %}POWER LED | Control de Gastos y Salidas{% endblock %}
+
 {% block content %}
 <style>
     /* Estilos Modernos para el Módulo de Gastos */
     .gasto-kpi-card {
         border-radius: 16px;
-        background: #ffffff;
+        background: #0d1117;
         border: 1px solid rgba(0, 0, 0, 0.06);
         box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -16,7 +18,7 @@
     }
     .gasto-reg-card {
         border-radius: 18px;
-        background: #ffffff;
+        background: #0d1117;
         border: 1px solid rgba(0, 0, 0, 0.08);
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
     }
@@ -27,8 +29,8 @@
         font-size: 0.85rem;
         font-weight: 600;
         border: 1px solid #e2e8f0;
-        background: #f8fafc;
-        color: #334155;
+        background: #161b22;
+        color: #e6edf3;
         transition: all 0.2s ease;
         display: inline-flex;
         align-items: center;
@@ -41,9 +43,9 @@
         transform: translateY(-1px);
     }
     .category-pill.active {
-        background: #008B8B;
+        background: #029CC2;
         color: #ffffff;
-        border-color: #008B8B;
+        border-color: #029CC2;
         box-shadow: 0 4px 10px rgba(0, 139, 139, 0.3);
     }
     .category-pill.active i {
@@ -55,8 +57,8 @@
         font-size: 0.82rem;
         font-weight: 700;
         border: 1px dashed #cbd5e1;
-        background: #f1f5f9;
-        color: #1e293b;
+        background: #161b22;
+        color: #ffffff;
         transition: all 0.15s ease;
     }
     .quick-cash-btn:hover {
@@ -72,17 +74,17 @@
         border-radius: 12px;
         padding: 8px 12px;
         border: 2px solid #e2e8f0;
-        background: #ffffff;
+        background: #0d1117;
         text-align: center;
         transition: all 0.2s ease;
         user-select: none;
     }
     .paymethod-radio-card:hover {
         border-color: #cbd5e1;
-        background: #f8fafc;
+        background: #161b22;
     }
     .paymethod-radio-card.active {
-        border-color: #008B8B;
+        border-color: #029CC2;
         background: rgba(0, 139, 139, 0.06);
         box-shadow: 0 2px 8px rgba(0, 139, 139, 0.15);
     }
@@ -105,19 +107,19 @@
         font-weight: 600;
         padding: 5px 14px;
         border: 1px solid #e2e8f0;
-        background: #ffffff;
+        background: #0d1117;
         color: #64748b;
         cursor: pointer;
         transition: all 0.15s ease;
     }
     .chip-filter:hover {
-        background: #f1f5f9;
-        color: #1e293b;
+        background: #161b22;
+        color: #ffffff;
     }
     .chip-filter.active {
         background: #1e293b;
         color: #ffffff;
-        border-color: #1e293b;
+        border-color: #ffffff;
     }
     /* Toast flotante */
     .toast-container-custom {
@@ -182,7 +184,7 @@
 <div class="row g-3 mb-4">
     <!-- KPI 1: Gastos Diarios (Caja Operativa) -->
     <div class="col-12 col-sm-6 col-xl-3">
-        <div class="gasto-kpi-card p-3 h-100" style="border-left: 5px solid #008B8B !important;">
+        <div class="gasto-kpi-card p-3 h-100" style="border-left: 5px solid #029CC2 !important;">
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <span class="text-muted small fw-bold text-uppercase">Gastos Diarios (Caja)</span>
                 <span class="badge bg-info bg-opacity-10 text-primary rounded-pill p-2">

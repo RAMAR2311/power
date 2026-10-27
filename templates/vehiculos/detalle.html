@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+{% block title %}POWER LED | Historial Vehículo {{ vehiculo.placa }}{% endblock %}
+
+{% block content %}
+<style>
+    .placa-hero {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(180deg, #facc15 0%, #eab308 100%);
+        color: #000000;
+        font-family: 'Orbitron', monospace;
+        font-weight: 900;
+        font-size: 1.5rem;
+        letter-spacing: 2.5px;
+        padding: 8px 20px;
+        border-radius: 8px;
+        border: 3px solid #000000;
+        box-shadow: 0 0 0 2px #facc15, 0 8px 20px rgba(0, 0, 0, 0.7);
+        text-transform: uppercase;
+    }
+    .nav-pills .nav-link {
+        color: #8b949e;
+        background: #161b22;
+        border: 1px solid #30363d;
+        font-weight: 700;
+        border-radius: 10px;
+        margin-right: 8px;
+    }
+    .nav-pills .nav-link.active {
+        background: #029CC2 !important;
+        color: #FFFFFF !important;
+        border-color: #029CC2 !important;
+        box-shadow: 0 0 14px rgba(2, 156, 194, 0.4);
+    }
+</style>
+
+<!-- Cabecera del Expediente Automotriz -->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <a href="{{ url_for('vehiculos_bp.index') }}" class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <div class="placa-hero">{{ vehiculo.placa }}</div>
+        <div>
+            <span class="badge bg-dark border text-info mb-1">{{ vehiculo.tipo or 'AUTOMOVIL' }}</span>
+            <h3 class="fw-bold text-white m-0">{{ vehiculo.descripcion_completa }}</h3>
+            {% if vehiculo.color %}
+            <small class="text-muted"><i class="fa-solid fa-palette me-1"></i>Color: {{ vehiculo.color }}</small>
+            {% endif %}
+        </div>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('hojas_trabajo_bp.index', q=vehiculo.placa) }}" class="btn btn-outline-primary rounded-pill px-3 fw-bold">
+            <i class="fa-solid fa-car-side me-1"></i> Abrir en Taller
+        </a>
+        <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#modalEditarVehiculo">
+            <i class="fa-solid fa-pen-to-square me-1"></i> Editar Ficha Técnica
+        </button>
+    </div>
+</div>
+
+<!-- Tarjetas de Resumen del Vehículo -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card card-custom p-3 h-100" style="border-left: 4px solid #029CC2 !important;">
+            <small class="text-muted text-uppercase fw-bold">Propietario Registrado</small>
+            {% if vehiculo.propietario %}
+            <h5 class="fw-bold text-white mt-1 mb-1">
+                <a href="{{ url_for('clientes_bp.estado_cuenta', id=vehiculo.propietario.id) }}" class="text-info text-decoration-none">
+                    {{ vehiculo.propietario.nombre }}
+                </a>
+            </h5>
+            <small class="text-muted">{{ vehiculo.propietario.documento or 'Sin CC/NIT' }} • {{ vehiculo.propietario.telefono or 'Sin Tel.' }}</small>
+            {% else %}
+            <h6 class="text-muted mt-2 mb-0">Sin propietario asignado</h6>
+            <small class="text-muted">Puedes vincularlo en "Editar Ficha"</small>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-custom p-3 h-100" style="border-left: 4px solid #f59e0b !important;">
+            <small class="text-muted text-uppercase fw-bold">Ingresos a Taller</small>
+            <h3 class="fw-bold text-warning mt-1 mb-0">{{ ordenes|length }}</h3>
+            <small class="text-muted">Hojas de trabajo registradas</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-custom p-3 h-100" style="border-left: 4px solid #029CC2 !important;">
+            <small class="text-muted text-uppercase fw-bold">Servicios & Accesorios</small>
+            <h3 class="fw-bold text-white mt-1 mb-0">{{ (repuestos_instalados|length) + (servicios_realizados|length) }}</h3>
+            <small class="text-muted">{{ repuestos_instalados|length }} repuestos • {{ servicios_realizados|length }} mano de obra</small>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-custom p-3 h-100" style="border-left: 4px solid #40A435 !important;">
+            <small class="text-muted text-uppercase fw-bold">Total Invertido en POWER LED</small>
+            <h3 class="fw-bold mt-1 mb-0" style="color: #40A435;">${{ total_invertido|cop }}</h3>
+            <small class="text-muted">{{ ventas|length }} facturas emitidas</small>
+        </div>
+    </div>
+</div>
+
+{% if vehiculo.observaciones %}
+<div class="alert border rounded-4 mb-4" style="background: rgba(2, 156, 194, 0.08); border-color: #30363d !important;">
+    <strong class="text-info d-block mb-1"><i class="fa-solid fa-clipboard-list me-1"></i>Notas Técnicas del Vehículo:</strong>
+    <span class="text-white small">{{ vehiculo.observaciones }}</span>
+</div>
+{% endif %}
+
+<!-- Pestañas de Historial Conectado -->
+<ul class="nav nav-pills mb-3" id="vehiculoTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-taller" data-bs-toggle="pill" data-bs-target="#pane-taller" type="button" role="tab">
+            <i class="fa-solid fa-car-side me-1"></i> Hojas de Trabajo ({{ ordenes|length }})
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-servicios" data-bs-toggle="pill" data-bs-target="#pane-servicios" type="button" role="tab">
+            <i class="fa-solid fa-screwdriver-wrench me-1"></i> Mano de Obra & Técnicos ({{ servicios_realizados|length }})
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-repuestos" data-bs-toggle="pill" data-bs-target="#pane-repuestos" type="button" role="tab">
+            <i class="fa-solid fa-lightbulb me-1"></i> Accesorios Instalados ({{ repuestos_instalados|length }})
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-facturas" data-bs-toggle="pill" data-bs-target="#pane-facturas" type="button" role="tab">
+            <i class="fa-solid fa-receipt me-1"></i> Facturas POS ({{ ventas|length }})
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <!-- 1. Hojas de Trabajo (Taller) -->
+    <div class="tab-pane fade show active" id="pane-taller" role="tabpanel">
+        <div class="card card-custom overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Orden #</th>
+                            <th>Fecha Ingreso</th>
+                            <th>Asesor</th>
+                            <th>Técnico Instalador</th>
+                            <th>Ítems / Trabajos</th>
+                            <th class="text-end">Total Estimado</th>
+                            <th class="text-center">Estado</th>
+                            <th class="text-end">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for o in ordenes %}
+                        <tr>
+                            <td class="fw-bold text-info">{{ o.numero_orden }}</td>
+                            <td>{{ o.fecha_creacion.strftime('%d/%m/%Y %H:%M') if o.fecha_creacion else '' }}</td>
+                            <td>{{ o.asesor.nombre if o.asesor else 'N/A' }}</td>
+                            <td>{{ o.instalador.nombre if o.instalador else 'Sin asignar' }}</td>
+                            <td>
+                                {% for it in o.items %}
+                                <span class="badge bg-dark border me-1 mb-1">
+                                    {{ it.cantidad }}x {{ it.servicio.nombre if it.tipo == 'SERVICIO' and it.servicio else (it.producto.nombre if it.producto else 'Ítem') }}
+                                </span>
+                                {% endfor %}
+                                {% if o.observaciones %}
+                                <small class="d-block text-muted">{{ o.observaciones }}</small>
+                                {% endif %}
+                            </td>
+                            <td class="text-end fw-bold">${{ o.total_estimado|cop }}</td>
+                            <td class="text-center">
+                                {% if o.estado == 'COBRADO' %}
+                                <span class="badge rounded-pill" style="background: #40A435;">COBRADO</span>
+                                {% elif o.estado == 'LISTO_COBRO' %}
+                                <span class="badge rounded-pill" style="background: #029CC2;">LISTO COBRO</span>
+                                {% elif o.estado == 'CANCELADO' %}
+                                <span class="badge rounded-pill" style="background: #E31313;">CANCELADO</span>
+                                {% else %}
+                                <span class="badge rounded-pill bg-warning text-dark">EN PROCESO</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if o.estado != 'COBRADO' and o.estado != 'CANCELADO' %}
+                                <a href="{{ url_for('hojas_trabajo_bp.cobrar_en_caja', id=o.id) }}" class="btn btn-sm btn-success rounded-pill px-3 fw-bold">
+                                    <i class="fa-solid fa-cash-register me-1"></i> Cobrar en POS
+                                </a>
+                                {% else %}
+                                <span class="text-muted small">Finalizada</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">No hay hojas de trabajo registradas para esta placa.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Servicios de Mano de Obra e Instaladores -->
+    <div class="tab-pane fade" id="pane-servicios" role="tabpanel">
+        <div class="card card-custom overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Ticket POS</th>
+                            <th>Servicio de Instalación</th>
+                            <th>Técnico Instalador</th>
+                            <th>Asesor</th>
+                            <th class="text-center">Cant.</th>
+                            <th class="text-end">Valor Cobrado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for srv in servicios_realizados %}
+                        <tr>
+                            <td>{{ srv.fecha.strftime('%d/%m/%Y %H:%M') if srv.fecha else '' }}</td>
+                            <td>
+                                <a href="{{ url_for('sales_bp.imprimir_ticket', sale_id=srv.sale_id) }}" target="_blank" class="text-info fw-bold">
+                                    #{{ srv.sale_id }}
+                                </a>
+                            </td>
+                            <td class="fw-bold text-white"><i class="fa-solid fa-screwdriver-wrench text-success me-1"></i>{{ srv.concepto }}</td>
+                            <td><span class="badge bg-dark border text-info">{{ srv.tecnico }}</span></td>
+                            <td>{{ srv.asesor }}</td>
+                            <td class="text-center">{{ srv.cantidad }}</td>
+                            <td class="text-end fw-bold" style="color: #40A435;">${{ srv.valor|cop }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No se han facturado servicios de mano de obra para este vehículo.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Accesorios y Repuestos Instalados -->
+    <div class="tab-pane fade" id="pane-repuestos" role="tabpanel">
+        <div class="card card-custom overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Fecha Compra (Garantía)</th>
+                            <th>Ticket POS</th>
+                            <th>Accesorio / Repuesto</th>
+                            <th>Código / SKU</th>
+                            <th>Asesor</th>
+                            <th class="text-center">Cant.</th>
+                            <th class="text-end">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rep in repuestos_instalados %}
+                        <tr>
+                            <td>{{ rep.fecha.strftime('%d/%m/%Y %H:%M') if rep.fecha else '' }}</td>
+                            <td>
+                                <a href="{{ url_for('sales_bp.imprimir_ticket', sale_id=rep.sale_id) }}" target="_blank" class="text-info fw-bold">
+                                    #{{ rep.sale_id }}
+                                </a>
+                            </td>
+                            <td class="fw-bold text-white">{{ rep.producto }}</td>
+                            <td class="font-monospace text-muted small">{{ rep.sku }}</td>
+                            <td>{{ rep.asesor }}</td>
+                            <td class="text-center">{{ rep.cantidad }}</td>
+                            <td class="text-end fw-bold">${{ rep.valor|cop }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No hay accesorios facturados para este vehículo.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Facturas POS Emitidas -->
+    <div class="tab-pane fade" id="pane-facturas" role="tabpanel">
+        <div class="card card-custom overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Ticket #</th>
+                            <th>Fecha</th>
+                            <th>Asesor / Cajero</th>
+                            <th>Instalador</th>
+                            <th>Método de Pago</th>
+                            <th class="text-end">Total Factura</th>
+                            <th class="text-end">Recibo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for v in ventas %}
+                        <tr>
+                            <td class="fw-bold text-info">#{{ v.id }}</td>
+                            <td>{{ v.fecha_venta.strftime('%d/%m/%Y %H:%M') if v.fecha_venta else '' }}</td>
+                            <td>{{ v.asesor.nombre if v.asesor else v.vendedor.nombre }}</td>
+                            <td>{{ v.instalador.nombre if v.instalador else 'Mostrador' }}</td>
+                            <td><span class="badge bg-dark border text-uppercase">{{ v.metodo_pago_display }}</span></td>
+                            <td class="text-end fw-bold" style="color: #40A435;">${{ v.monto_total|cop }}</td>
+                            <td class="text-end">
+                                <a href="{{ url_for('sales_bp.imprimir_ticket', sale_id=v.id) }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                    <i class="fa-solid fa-print me-1"></i> Ver Ticket
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No hay facturas POS registradas para este vehículo.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Ficha Técnica del Vehículo -->
+<div class="modal fade" id="modalEditarVehiculo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="POST" action="{{ url_for('vehiculos_bp.editar', id=vehiculo.id) }}" class="modal-content">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-white">
+                    <i class="fa-solid fa-pen-to-square me-2" style="color: #029CC2;"></i>Editar Vehículo [{{ vehiculo.placa }}]
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Tipo de Vehículo</label>
+                        <select name="tipo" class="form-select">
+                            <option value="AUTOMOVIL" {% if vehiculo.tipo == 'AUTOMOVIL' %}selected{% endif %}>🚗 Automóvil</option>
+                            <option value="CAMIONETA" {% if vehiculo.tipo == 'CAMIONETA' %}selected{% endif %}>🚙 Camioneta / SUV / Pick-up</option>
+                            <option value="MOTO" {% if vehiculo.tipo == 'MOTO' %}selected{% endif %}>🏍️ Motocicleta</option>
+                            <option value="PESADO" {% if vehiculo.tipo == 'PESADO' %}selected{% endif %}>🚛 Camión / Pesado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Marca</label>
+                        <input type="text" name="marca" value="{{ vehiculo.marca or '' }}" class="form-control" placeholder="Ej: Toyota, Mazda">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Línea / Modelo</label>
+                        <input type="text" name="modelo" value="{{ vehiculo.modelo or '' }}" class="form-control" placeholder="Ej: Hilux, Mazda 3">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Año</label>
+                        <input type="text" name="anio" value="{{ vehiculo.anio or '' }}" class="form-control" placeholder="2024">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Color</label>
+                        <input type="text" name="color" value="{{ vehiculo.color or '' }}" class="form-control" placeholder="Blanco">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">Propietario / Cliente Vinculado</label>
+                        <select name="cliente_id" class="form-select">
+                            <option value="">-- Sin propietario asignado --</option>
+                            {% for c in clientes %}
+                            <option value="{{ c.id }}" {% if vehiculo.cliente_id == c.id %}selected{% endif %}>{{ c.nombre }} ({{ c.documento or 'S/D' }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">Observaciones Técnicas</label>
+                        <textarea name="observaciones" class="form-control" rows="3">{{ vehiculo.observaciones or '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

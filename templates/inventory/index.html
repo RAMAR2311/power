@@ -1,338 +1,206 @@
 {% extends "base.html" %}
 
-{% block content %}
-<style>
-    .action-btn-hover {
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        background-color: #f8fafc !important;
-        border-color: #e2e8f0 !important;
-    }
-    .action-btn-hover:hover {
-        background-color: var(--brand-primary) !important;
-        border-color: var(--brand-primary) !important;
-        color: #ffffff !important;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(0, 123, 255, 0.25) !important;
-    }
-    .action-btn-hover:hover i {
-        color: #ffffff !important;
-    }
-    .action-btn-danger-hover {
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        background-color: #f8fafc !important;
-        border-color: #e2e8f0 !important;
-    }
-    .action-btn-danger-hover:hover {
-        background-color: #dc3545 !important;
-        border-color: #dc3545 !important;
-        color: #ffffff !important;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(220, 53, 69, 0.25) !important;
-    }
-    .action-btn-danger-hover:hover i {
-        color: #ffffff !important;
-    }
-</style>
+{% block title %}POWER LED | Inventario Automotriz{% endblock %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold text-brand-black m-0">Inventario Central</h2>
-    <div class="d-flex gap-2">
-        <button type="button" class="btn btn-outline-success rounded-pill px-4 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#importarModal">
-            <i class="fa-solid fa-file-excel me-1"></i> Importar Masivo
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h2 class="fw-bold text-white m-0" style="font-family: var(--font-heading);">
+            <i class="fa-solid fa-boxes-stacked me-2" style="color: #029CC2;"></i>Inventario Central & Listas de Precios
+        </h2>
+        <small class="text-muted">Control de existencias en Mostrador (Tienda) y Bodega con 3 tarifas comerciales</small>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('ingresos_bp.index') }}" class="btn rounded-pill px-3 fw-bold text-white shadow" style="background-color: #40A435;">
+            <i class="fa-solid fa-dolly me-1"></i> Ingreso de Mercancía
+        </a>
+        <button type="button" class="btn btn-outline-info rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#modalCategorias">
+            <i class="fa-solid fa-sitemap me-1"></i> Categorías
         </button>
-        <a href="/inventory/nuevo" class="btn btn-blue rounded-pill px-4 fw-bold shadow-sm">
+        <a href="{{ url_for('bodega_bp.traslados') }}" class="btn btn-outline-light rounded-pill px-3 fw-bold">
+            <i class="fa-solid fa-truck-arrow-right me-1" style="color: #029CC2;"></i> Traslado Bodega &rarr; Tienda
+        </a>
+        <button type="button" class="btn btn-outline-success rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#importarModal">
+            <i class="fa-solid fa-file-excel me-1"></i> Importar Excel
+        </button>
+        <a href="{{ url_for('inventory_bp.nuevo') }}" class="btn btn-blue rounded-pill px-4 fw-bold shadow">
             <i class="fa-solid fa-plus me-1"></i> Nuevo Producto
         </a>
     </div>
 </div>
 
-<!-- Fila de Tarjetas Dinámicas de Inventario (Mismo color de tarjeta de Proveedores: #7BC8D0) -->
+<!-- Tarjetas KPI de Inventario -->
 <div class="row g-3 mb-4">
-    <!-- 1. Cantidad de Productos -->
-    <div class="col-12 col-md-4">
-        <div class="card card-custom h-100 p-4 border-0 shadow-sm bg-white" style="border-left: 5px solid #7BC8D0 !important; border-radius: 16px;">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <div>
-                    <span class="text-muted small fw-bold text-uppercase d-block mb-1" style="letter-spacing: 0.5px;">Cantidad de Productos</span>
-                    <h2 class="fw-bolder mb-0 text-brand-black font-orbitron">
-                        {{ "{:,.0f}".format(total_unidades_fisicas) }} <span class="fs-6 text-muted fw-normal">uds.</span>
-                    </h2>
-                </div>
-                <div class="rounded-circle p-3 d-flex align-items-center justify-content-center shadow-sm" style="background-color: rgba(123, 200, 208, 0.15); width: 52px; height: 52px;">
-                    <i class="fa-solid fa-boxes-stacked fs-4" style="color: #4ea5ad;"></i>
-                </div>
-            </div>
-            <div class="mt-2 pt-2 border-top d-flex justify-content-between align-items-center text-muted small">
-                <span><i class="fa-solid fa-tag me-1 text-muted"></i> <strong>{{ total_productos }}</strong> referencias activas</span>
-                <span class="badge bg-light text-dark border rounded-pill px-2 py-1">Stock Físico</span>
-            </div>
+    <div class="col-12 col-md-3">
+        <div class="card card-custom h-100 p-3" style="border-left: 4px solid #029CC2 !important;">
+            <span class="text-muted small fw-bold text-uppercase">Stock en Tienda / Bodega</span>
+            <h3 class="fw-bolder text-white mt-1 mb-0" style="font-family: var(--font-heading);">
+                {{ "{:,.0f}".format(total_unidades_fisicas) }} <small class="fs-6 text-muted">tienda</small>
+                <span class="text-muted mx-1">/</span>
+                <span style="color: #029CC2;">{{ "{:,.0f}".format(total_unidades_bodega) }}</span> <small class="fs-6 text-muted">bod.</small>
+            </h3>
+            <small class="text-muted mt-2 d-block">{{ total_productos }} referencias activas</small>
         </div>
     </div>
 
-    <!-- 2. Valor de Productos a Costo -->
-    <div class="col-12 col-md-4">
-        <div class="card card-custom h-100 p-4 border-0 shadow-sm bg-white" style="border-left: 5px solid #7BC8D0 !important; border-radius: 16px;">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <div>
-                    <span class="text-muted small fw-bold text-uppercase d-block mb-1" style="letter-spacing: 0.5px;">Valor Productos a Costo</span>
-                    <h2 class="fw-bolder mb-0 text-brand-black font-orbitron">
-                        ${{ (valor_costo)|cop }}
-                    </h2>
-                </div>
-                <div class="rounded-circle p-3 d-flex align-items-center justify-content-center shadow-sm" style="background-color: rgba(123, 200, 208, 0.15); width: 52px; height: 52px;">
-                    <i class="fa-solid fa-file-invoice-dollar fs-4" style="color: #4ea5ad;"></i>
-                </div>
-            </div>
-            <div class="mt-2 pt-2 border-top d-flex justify-content-between align-items-center text-muted small">
-                <span><i class="fa-solid fa-calculator me-1 text-muted"></i> Inversión en inventario</span>
-                <span class="badge bg-light text-dark border rounded-pill px-2 py-1">Costo Adquisición</span>
-            </div>
+    <div class="col-12 col-md-3">
+        <div class="card card-custom h-100 p-3" style="border-left: 4px solid #029CC2 !important;">
+            <span class="text-muted small fw-bold text-uppercase">Capital a Costo</span>
+            <h3 class="fw-bolder text-white mt-1 mb-0" style="font-family: var(--font-heading);">
+                ${{ (valor_costo)|cop }}
+            </h3>
+            <small class="text-muted mt-2 d-block">Inversión total en inventario</small>
         </div>
     </div>
 
-    <!-- 3. Valor de Productos a Venta -->
-    <div class="col-12 col-md-4">
-        <div class="card card-custom h-100 p-4 border-0 shadow-sm bg-white" style="border-left: 5px solid #7BC8D0 !important; border-radius: 16px;">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <div>
-                    <span class="text-muted small fw-bold text-uppercase d-block mb-1" style="letter-spacing: 0.5px;">Valor Productos a Venta</span>
-                    <h2 class="fw-bolder mb-0 text-brand-black font-orbitron">
-                        ${{ (valor_sugerido)|cop }}
-                    </h2>
-                </div>
-                <div class="rounded-circle p-3 d-flex align-items-center justify-content-center shadow-sm" style="background-color: rgba(123, 200, 208, 0.15); width: 52px; height: 52px;">
-                    <i class="fa-solid fa-sack-dollar fs-4" style="color: #4ea5ad;"></i>
-                </div>
+    <div class="col-12 col-md-3">
+        <div class="card card-custom h-100 p-3" style="border-left: 4px solid #40A435 !important;">
+            <span class="text-muted small fw-bold text-uppercase">Proyección P. Final</span>
+            <h3 class="fw-bolder mt-1 mb-0" style="color: #40A435; font-family: var(--font-heading);">
+                ${{ (valor_sugerido)|cop }}
+            </h3>
+            <small class="text-muted mt-2 d-block">Margen: +${{ (valor_sugerido - valor_costo)|cop }}</small>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-3">
+        <div class="card card-custom h-100 p-3" style="border-left: 4px solid #E31313 !important;">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small fw-bold text-uppercase">Alertas de Stock</span>
+                <span class="badge rounded-pill" style="background: #E31313; color: #FFFFFF;">Umbral &le; 5</span>
             </div>
-            <div class="mt-2 pt-2 border-top d-flex justify-content-between align-items-center text-muted small">
-                <span><i class="fa-solid fa-arrow-trend-up me-1 text-success"></i> Margen: <strong>+${{ (valor_sugerido - valor_costo)|cop }}</strong></span>
-                <span class="badge bg-light text-dark border rounded-pill px-2 py-1">PVP Sugerido</span>
+            <h3 class="fw-bolder mt-1 mb-0" style="color: #E31313; font-family: var(--font-heading);">
+                {{ productos_alerta_count }} <small class="fs-6 text-muted">productos</small>
+            </h3>
+            <div class="mt-2">
+                {% if filtro_alerta == 'critico' %}
+                    <a href="{{ url_for('inventory_bp.index') }}" class="badge text-decoration-none" style="background: #21262d; color: #FFFFFF;">Ver todos los productos</a>
+                {% else %}
+                    <a href="{{ url_for('inventory_bp.index', alerta='critico') }}" class="badge text-decoration-none" style="background: rgba(227, 19, 19, 0.2); color: #E31313; border: 1px solid #E31313;">
+                        <i class="fa-solid fa-filter me-1"></i>Filtrar reposición urgente
+                    </a>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
 
-<!-- Buscador Dinámico de Inventario -->
-<div class="card card-custom p-3 mb-4 border-0 shadow-sm bg-white">
-    <div class="row align-items-center">
-        <div class="col-md-8 col-lg-7 position-relative">
-            <form method="GET" action="{{ url_for('inventory_bp.index') }}" id="searchForm" class="m-0 position-relative">
-                <div class="input-group input-group-lg shadow-sm rounded-pill border bg-white overflow-hidden">
-                    <span class="input-group-text bg-white border-0 ps-4 text-muted">
-                        <i class="fa-solid fa-magnifying-glass" id="searchIcon"></i>
-                        <span class="spinner-border spinner-border-sm text-primary d-none" id="searchSpinner" role="status"></span>
-                    </span>
-                    <input type="text" 
-                           name="q" 
-                           id="inventarioSearch" 
-                           class="form-control border-0 bg-white shadow-none ps-2" 
-                           placeholder="Buscar por SKU, Nombre o Subcategoría (ej: S20FE, Silicon)..." 
-                           autocomplete="off" 
-                           value="{{ q or '' }}">
-                    <button class="btn btn-light border-0 px-3 text-muted {% if not q %}d-none{% endif %}" type="button" id="clearSearch" title="Limpiar búsqueda">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                    <button type="submit" class="btn btn-blue px-4 fw-bold">
-                        Buscar
-                    </button>
-                </div>
-            </form>
-            <!-- Contenedor para resultados desplegables de autocompletado en vivo -->
-            <div id="searchDropdown" class="dropdown-menu shadow-lg border-0 w-100 p-0 mt-2 d-none" style="max-height: 420px; overflow-y: auto; z-index: 1050; border-radius: 16px;">
+<!-- Barra de Búsqueda y Filtro en Cascada (Categoría -> Subcategoría) -->
+<div class="card card-custom p-3 mb-4">
+    <form method="GET" action="{{ url_for('inventory_bp.index') }}" class="row g-2 align-items-center">
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input type="text" name="q" class="form-control" placeholder="Buscar por código de barras, SKU o nombre..." value="{{ q or '' }}">
             </div>
         </div>
-        <div class="col-md-4 col-lg-5 text-md-end mt-3 mt-md-0">
-            {% if q %}
-            <div class="d-inline-flex align-items-center bg-light border rounded-pill px-3 py-1 me-2 mb-1">
-                <span class="small text-muted me-1">Filtro activo:</span>
-                <strong class="small text-brand-pink me-2">"{{ q }}"</strong>
-                <a href="{{ url_for('inventory_bp.index') }}" class="text-secondary hover-danger text-decoration-none" title="Quitar filtro">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                </a>
-            </div>
+        <div class="col-md-3">
+            <select name="categoria_id" id="filterCategoria" class="form-select">
+                <option value="">Todas las Categorías</option>
+                {% for c in categorias %}
+                    <option value="{{ c.id }}" {% if categoria_id == c.id %}selected{% endif %}>{{ c.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="subcategory_id" id="filterSubcategoria" class="form-select">
+                <option value="">Todas las Subcategorías</option>
+                {% for s in subcategorias %}
+                    <option value="{{ s.id }}" {% if subcategory_id == s.id %}selected{% endif %}>{{ s.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-blue w-100 fw-bold">Filtrar</button>
+            {% if q or categoria_id or subcategory_id or filtro_alerta %}
+                <a href="{{ url_for('inventory_bp.index') }}" class="btn btn-outline-secondary" title="Limpiar"><i class="fa-solid fa-rotate-left"></i></a>
             {% endif %}
-            <small class="text-muted fw-bold text-uppercase d-block d-sm-inline" style="font-size: 0.75rem;">
-                Mostrando <span id="visibleCount" class="text-brand-pink">{% if q %}{{ paginacion.total }}{% else %}{{ productos|length }}{% endif %}</span>
-                de <strong>{{ total_productos }}</strong> productos
-                {% if paginacion.pages > 1 %}<span class="text-muted">&nbsp;· pág. {{ paginacion.page }}/{{ paginacion.pages }}</span>{% endif %}
-            </small>
         </div>
-    </div>
+    </form>
 </div>
 
+<!-- Tabla Principal de Inventario -->
 <div class="card card-custom p-0 overflow-hidden">
     <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0">
-            <thead class="bg-light">
+        <table class="table table-hover table-custom mb-0 align-middle">
+            <thead>
                 <tr>
-                    <th width="120" class="ps-4">SKU</th>
-                    <th>PRODUCTO</th>
-                    <th width="150" class="text-center">STOCK</th>
-                    <th width="150" class="text-end">PRECIO COSTO</th>
-                    <th width="150" class="text-end">PRECIO MÍNIMO</th>
-                    <th width="150" class="text-end pe-4">PRECIO SUGERIDO</th>
-                    <th width="230" class="text-end pe-4">ACCIONES</th>
+                    <th class="ps-3">CÓDIGO / SKU</th>
+                    <th>ACCESORIO / REPUESTO</th>
+                    <th>CATEGORÍA</th>
+                    <th class="text-center">STOCK TIENDA</th>
+                    <th class="text-center">STOCK BODEGA</th>
+                    <th class="text-end">COSTO</th>
+                    <th class="text-end" style="color: #029CC2;">P. DISTRIBUIDOR</th>
+                    <th class="text-end text-warning">P. LOCAL</th>
+                    <th class="text-end" style="color: #40A435;">P. FINAL</th>
+                    <th class="text-end pe-3">ACCIONES</th>
                 </tr>
             </thead>
             <tbody>
                 {% for p in productos %}
-                <tr class="producto-fila" 
-                    id="fila-prod-{{ p.id }}" 
-                    data-id="{{ p.id }}" 
-                    data-sku="{{ p.sku|lower }}" 
-                    data-nombre="{{ p.nombre|lower }}" 
-                    data-variantes="{% if p.variantes %}{% for v in p.variantes %}{{ v.nombre_variante|lower }} {% endfor %}{% endif %}">
-                    <td class="text-muted text-nowrap">
-                        {% if p.variantes %}
-                            <button class="btn btn-sm btn-light border me-1 rounded-circle shadow-sm p-1" style="width: 28px; height: 28px;" type="button" data-bs-toggle="collapse" data-bs-target="#collapseVariantes{{ p.id }}" aria-expanded="false" title="Ver Subcategorías">
-                                <i class="fa-solid fa-chevron-down small"></i>
-                            </button>
-                        {% endif %}
-                        <small><strong>{{ p.sku }}</strong></small>
+                <tr>
+                    <td class="ps-3 font-monospace small fw-bold" style="color: #029CC2;">
+                        {{ p.codigo_barras or p.sku }}
                     </td>
-                    <td class="fw-semibold text-brand-black">{{ p.nombre }}</td>
                     <td>
-                        <!-- Regla Estricta: Badge rojo si el stock <= 3 -->
-                        {% if p.total_stock <= 3 %}
-                            <span class="badge bg-danger rounded-pill px-3 py-2"><i class="fa-solid fa-triangle-exclamation me-1"></i> {{ p.total_stock }} (Stock Bajo)</span>
-                        {% else %}
-                            <!-- Badge limpio para stock normal -->
-                            <span class="badge bg-light text-dark border rounded-pill px-3 py-2 fw-semibold">{{ p.total_stock }} unidades</span>
+                        <div class="fw-bold text-white">{{ p.nombre }}</div>
+                        {% if p.observacion %}
+                            <small class="text-muted">{{ p.observacion[:55] }}{% if p.observacion|length > 55 %}...{% endif %}</small>
                         {% endif %}
                     </td>
-                    <td class="text-end fw-bold" style="color: var(--brand-pink);">
-                        {% if p.rango_costos %}
-                            {% if p.rango_costos is number %}
-                                ${{ (p.rango_costos)|cop }}
-                            {% else %}
-                                <div class="small text-muted fw-normal" style="line-height:1;">Desde</div>
-                                ${{ (p.rango_costos[0])|cop }}
-                                <div class="small text-muted fw-normal mt-1" style="line-height:1;">hasta</div>
-                                ${{ (p.rango_costos[1])|cop }}
+                    <td>
+                        {% if p.categoria %}
+                            <span class="badge bg-dark border border-secondary text-white">{{ p.categoria.nombre }}</span>
+                            {% if p.subcategoria %}
+                                <span class="badge rounded-pill d-inline-block mt-1" style="background: rgba(2,156,194,0.16); color: #029CC2; border: 1px solid rgba(2,156,194,0.45); font-size: 0.72rem;">
+                                    <i class="fa-solid fa-sitemap me-1"></i>{{ p.subcategoria.nombre }}
+                                </span>
                             {% endif %}
                         {% else %}
-                            ${{ (p.precio_costo)|cop }}
+                            <span class="text-muted small">Sin categoría</span>
                         {% endif %}
                     </td>
-                    <td class="text-end text-muted fw-bold">
-                        {% if p.rango_minimos %}
-                            {% if p.rango_minimos is number %}
-                                ${{ (p.rango_minimos)|cop }}
-                            {% else %}
-                                <div class="small text-muted fw-normal" style="line-height:1;">Desde</div>
-                                ${{ (p.rango_minimos[0])|cop }}
-                                <div class="small text-muted fw-normal mt-1" style="line-height:1;">hasta</div>
-                                ${{ (p.rango_minimos[1])|cop }}
-                            {% endif %}
+                    <td class="text-center">
+                        {% if p.alerta_stock_activa %}
+                            <span class="badge rounded-pill px-3 py-2 fw-bold" style="background-color: #E31313 !important; color: #FFFFFF;" title="Requiere reposición (Mínimo: {{ p.umbral_alerta }})">
+                                <i class="fa-solid fa-triangle-exclamation me-1"></i> {{ p.stock_tienda }} uds (Alerta)
+                            </span>
                         {% else %}
-                            ${{ (p.precio_minimo)|cop }}
+                            <span class="badge rounded-pill px-3 py-2 fw-bold" style="background-color: rgba(64, 164, 53, 0.18); color: #40A435; border: 1px solid #40A435;">
+                                <i class="fa-solid fa-circle-check me-1"></i> {{ p.stock_tienda }} uds
+                            </span>
                         {% endif %}
                     </td>
-                    <td class="text-end fw-bold text-brand-black pe-4">
-                        {% if p.rango_precios %}
-                            {% if p.rango_precios is number %}
-                                ${{ (p.rango_precios)|cop }}
-                            {% else %}
-                                <div class="small text-muted fw-normal" style="line-height:1;">Desde</div>
-                                ${{ (p.rango_precios[0])|cop }}<br>
-                                <div class="small text-muted fw-normal mt-1" style="line-height:1;">hasta</div>
-                                ${{ (p.rango_precios[1])|cop }}
-                            {% endif %}
-                        {% else %}
-                            ${{ (p.precio_sugerido)|cop }}
-                        {% endif %}
+                    <td class="text-center">
+                        <span class="badge rounded-pill px-3 py-2 fw-bold" style="background-color: #161b22; color: #029CC2; border: 1px solid #30363d;">
+                            {{ p.stock_bodega or 0 }} uds
+                        </span>
                     </td>
+                    <td class="text-end text-muted">${{ (p.costo or p.precio_costo or 0)|cop }}</td>
+                    <td class="text-end fw-bold" style="color: #029CC2;">${{ (p.precio_distribuidor or p.precio_minimo or 0)|cop }}</td>
+                    <td class="text-end fw-bold text-warning">${{ (p.precio_local or p.precio_final or 0)|cop }}</td>
+                    <td class="text-end fw-bolder" style="color: #40A435;">${{ (p.precio_final or p.precio_sugerido or 0)|cop }}</td>
                     <td class="text-end pe-3 text-nowrap">
-                        <div class="d-inline-flex align-items-center justify-content-end gap-1">
-                            <!-- Gestionar Subcategorías -->
-                            <button type="button" 
-                                    class="btn btn-sm btn-outline-primary rounded-pill px-2 py-1 d-inline-flex align-items-center gap-1 shadow-2xs" 
-                                    title="Gestionar Subcategorías / Variantes" 
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#variantesModal{{ p.id }}"
-                                    style="font-size: 0.78rem; font-weight: 600;">
-                                <i class="fa-solid fa-sitemap text-primary"></i> 
-                                <span class="d-none d-xl-inline">Subcategorías</span>
+                        <a href="{{ url_for('inventory_bp.editar_producto', id=p.id) }}" class="btn btn-sm btn-outline-info rounded-pill px-2" title="Editar">
+                            <i class="fa-solid fa-pen"></i>
+                        </a>
+                        <a href="{{ url_for('inventory_bp.ver_producto', id=p.id) }}" class="btn btn-sm btn-outline-secondary rounded-pill px-2" title="Kardex / Historial">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </a>
+                        <form action="{{ url_for('inventory_bp.eliminar_producto', id=p.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Retirar este producto del catálogo activo?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2" title="Eliminar">
+                                <i class="fa-solid fa-trash"></i>
                             </button>
-
-                            <!-- Ver Detalle -->
-                            <a href="{{ url_for('inventory_bp.ver_producto', id=p.id) }}" 
-                               class="btn btn-sm btn-light border text-primary rounded-circle p-0 d-inline-flex align-items-center justify-content-center shadow-2xs action-btn-hover" 
-                               style="width: 32px; height: 32px;" 
-                               title="Ver Detalle Completo">
-                                <i class="fa-solid fa-eye" style="font-size: 0.82rem;"></i>
-                            </a>
-
-                            <!-- Editar Producto -->
-                            <a href="{{ url_for('inventory_bp.editar_producto', id=p.id) }}" 
-                               class="btn btn-sm btn-light border text-dark rounded-circle p-0 d-inline-flex align-items-center justify-content-center shadow-2xs action-btn-hover" 
-                               style="width: 32px; height: 32px;" 
-                               title="Editar Producto">
-                                <i class="fa-solid fa-pen" style="font-size: 0.82rem;"></i>
-                            </a>
-
-                            <!-- Eliminar Producto -->
-                            <form method="POST" action="{{ url_for('inventory_bp.eliminar_producto', id=p.id) }}" class="d-inline m-0 p-0" onsubmit="return confirm('¿Está seguro de que desea eliminar este producto del catálogo? Sus ventas y reportes anteriores se conservarán intactos.');">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" 
-                                        class="btn btn-sm btn-light border text-danger rounded-circle p-0 d-inline-flex align-items-center justify-content-center shadow-2xs action-btn-danger-hover" 
-                                        style="width: 32px; height: 32px;" 
-                                        title="Eliminar Producto">
-                                    <i class="fa-solid fa-trash-can" style="font-size: 0.82rem;"></i>
-                                </button>
-                            </form>
-                        </div>
+                        </form>
                     </td>
                 </tr>
-                {% if p.variantes %}
-                <tr class="collapse bg-light collapse-variantes-fila" id="collapseVariantes{{ p.id }}" data-parent-id="{{ p.id }}">
-                    <td colspan="7" class="p-0 border-bottom border-dark border-opacity-10 shadow-inner">
-                        <div class="p-3 bg-white" style="border-left: 4px solid var(--brand-pink); border-radius: 0 0 8px 8px;">
-                            <table class="table table-sm table-borderless mb-0">
-                                <thead class="text-muted" style="font-size: 0.8rem; border-bottom: 1px solid #eee;">
-                                    <tr>
-                                        <th class="ps-3"><i class="fa-solid fa-arrow-turn-down me-2 text-black-50"></i>Subcategoría (Variante)</th>
-                                        <th class="text-center">Stock Físico</th>
-                                        <th class="text-end">Costo Unitario</th>
-                                        <th class="text-end text-success">Valor Invertido (Costo)</th>
-                                        <th class="text-end">Sugerido</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for v in p.variantes %}
-                                    <tr class="align-middle">
-                                        <td class="ps-4 fw-semibold text-brand-black" style="font-size: 0.95rem;">{{ v.nombre_variante }}</td>
-                                        <td class="text-center">
-                                            {% if v.cantidad_stock <= 3 %}
-                                                <span class="badge bg-danger rounded-pill">{{ v.cantidad_stock }}</span>
-                                            {% else %}
-                                                <span class="badge bg-secondary rounded-pill text-white">{{ v.cantidad_stock }}</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-end text-muted">${{ (v.precio_costo or p.precio_costo)|cop }}</td>
-                                        <td class="text-end fw-bold text-success">${{ ((v.precio_costo or p.precio_costo) * v.cantidad_stock)|cop }}</td>
-                                        <td class="text-end text-muted">${{ (v.precio_sugerido or p.precio_sugerido)|cop }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </td>
-                </tr>
-                {% endif %}
                 {% else %}
                 <tr>
-                    <td colspan="7" class="text-center py-5 text-muted">
-                        <!-- Icono en Rosa Pastel -->
-                        <i class="fa-solid fa-box-open fs-1 mb-3 text-brand-pink"></i>
-                        <p class="mb-0">
-                            {% if q %}
-                                No se encontraron productos coincidentes con "<strong>{{ q }}</strong>". 
-                                <a href="{{ url_for('inventory_bp.index') }}" class="btn btn-sm btn-outline-primary rounded-pill ms-2">Ver todo el catálogo</a>
-                            {% else %}
-                                El inventario está vacío.
-                            {% endif %}
-                        </p>
+                    <td colspan="10" class="text-center py-5 text-muted">
+                        <i class="fa-solid fa-box-open fs-1 mb-2 d-block"></i>
+                        No se encontraron productos con los filtros seleccionados.
                     </td>
                 </tr>
                 {% endfor %}
@@ -341,84 +209,137 @@
     </div>
 </div>
 
-<!-- ════════════════════════════════════ PAGINACIÓN ════════════════════════════════════ -->
-{% if paginacion.pages > 1 %}
-<nav aria-label="Paginación de inventario" class="mt-4">
-    <ul class="pagination justify-content-center flex-wrap gap-1 mb-0">
-
-        <!-- Anterior -->
-        <li class="page-item {% if not paginacion.has_prev %}disabled{% endif %}">
-            <a class="page-link rounded-pill px-3 shadow-sm"
-               href="{% if paginacion.has_prev %}{{ url_for('inventory_bp.index', page=paginacion.prev_num, q=q if q else None) }}{% else %}#{% endif %}"
-               aria-label="Anterior">
-                <i class="fa-solid fa-chevron-left"></i>
-            </a>
-        </li>
-
-        <!-- Páginas numeradas -->
-        {% for p_num in paginacion.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
-            {% if p_num %}
-                <li class="page-item {% if p_num == paginacion.page %}active{% endif %}">
-                    <a class="page-link rounded-pill px-3 shadow-sm"
-                       href="{{ url_for('inventory_bp.index', page=p_num, q=q if q else None) }}">{{ p_num }}</a>
-                </li>
-            {% else %}
-                <li class="page-item disabled">
-                    <span class="page-link rounded-pill px-3">…</span>
-                </li>
-            {% endif %}
-        {% endfor %}
-
-        <!-- Siguiente -->
-        <li class="page-item {% if not paginacion.has_next %}disabled{% endif %}">
-            <a class="page-link rounded-pill px-3 shadow-sm"
-               href="{% if paginacion.has_next %}{{ url_for('inventory_bp.index', page=paginacion.next_num, q=q if q else None) }}{% else %}#{% endif %}"
-               aria-label="Siguiente">
-                <i class="fa-solid fa-chevron-right"></i>
-            </a>
-        </li>
-
-    </ul>
-</nav>
-{% endif %}
-<!-- ═══════════════════════════════════════════════════════════════════════════════════ -->
-
-<!-- Modales de Variantes generados fuera de la tabla para evitar cortes de interfaz -->
-{% for p in productos %}
-    {% include 'inventory/modal_variantes.html' %}
-{% endfor %}
-
-<!-- Modal para Importación Masiva -->
-<div class="modal fade" id="importarModal" tabindex="-1" aria-labelledby="importarModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <form method="POST" action="{{ url_for('inventory_bp.importar_inventario') }}" enctype="multipart/form-data">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="modal-header border-0 bg-light">
-                    <h5 class="modal-title fw-bold text-success" id="importarModalLabel">
-                        <i class="fa-solid fa-cloud-arrow-up me-2"></i>Carga Masiva de Productos
-                    </h5>
-                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-4 text-center">
-                    <i class="fa-solid fa-file-excel text-success d-block mb-3" style="font-size: 3rem;"></i>
-                    <p class="mb-4">Puedes registrar o actualizar docenas de productos simultáneamente subiendo un documento Excel <strong>(.xlsx)</strong> o <strong>CSV</strong>.</p>
-                    
-                    <a href="{{ url_for('inventory_bp.descargar_plantilla') }}" class="btn btn-outline-secondary rounded-pill fw-bold w-100 mb-4 text-start shadow-sm">
-                        <i class="fa-solid fa-download ms-2 me-2"></i> 1. Descargar Plantilla de Ejemplo
-                    </a>
-
-                    <div class="text-start mb-2">
-                        <label class="form-label fw-bold">2. Subir archivo rellenado</label>
-                        <input type="file" name="archivo" accept=".xlsx, .csv" class="form-control bg-light border-0 shadow-sm" required>
-                        <small class="text-muted d-block mt-2"><i class="fa-solid fa-circle-info text-info me-1"></i>Si el código SKU ya existe, su cantidad será <strong>SUMADA</strong> al inventario actual y se pisarán los precios.</small>
+<!-- Modal Gestión de Categorías y Subcategorías -->
+<div class="modal fade" id="modalCategorias" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="background: #0d1117; border: 1px solid #21262d;">
+            <div class="modal-header border-bottom" style="border-color: #21262d !important;">
+                <h5 class="modal-title fw-bold text-white" style="font-family: var(--font-heading);">
+                    <i class="fa-solid fa-sitemap me-2" style="color: #029CC2;"></i>Categorías, Subcategorías y Alertas de Stock
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <h6 class="fw-bold text-white mb-3">Nueva Categoría Principal</h6>
+                        <form action="{{ url_for('inventory_bp.crear_categoria') }}" method="POST" class="p-3 rounded-3" style="background: #161b22; border: 1px solid #30363d;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">Nombre de Categoría</label>
+                                <input type="text" name="nombre" class="form-control form-control-sm" required placeholder="Ej: Iluminación LED">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Stock Mínimo Alerta (Default: 5)</label>
+                                <input type="number" name="stock_minimo_alerta" class="form-control form-control-sm" value="5" min="1">
+                            </div>
+                            <button type="submit" class="btn btn-blue btn-sm w-100 fw-bold">Crear Categoría</button>
+                        </form>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="fw-bold text-white mb-3">Nueva Subcategoría</h6>
+                        <form action="{{ url_for('inventory_bp.crear_subcategoria') }}" method="POST" class="p-3 rounded-3" style="background: #161b22; border: 1px solid #30363d;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">Categoría Padre</label>
+                                <select name="categoria_id" class="form-select form-select-sm" required>
+                                    <option value="">Seleccionar...</option>
+                                    {% for c in categorias %}
+                                        <option value="{{ c.id }}">{{ c.nombre }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">Nombre de Subcategoría</label>
+                                <input type="text" name="nombre" class="form-control form-control-sm" required placeholder="Ej: Exploradoras Bicolor">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">Umbral Alerta Específico (Opcional)</label>
+                                <input type="number" name="stock_minimo_alerta" class="form-control form-control-sm" placeholder="Hereda de categoría (5)">
+                            </div>
+                            <button type="submit" class="btn btn-outline-info btn-sm w-100 fw-bold">Crear Subcategoría</button>
+                        </form>
                     </div>
                 </div>
-                <div class="modal-footer border-0 bg-light rounded-bottom">
-                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success rounded-pill fw-bold px-4 shadow-sm">
-                        <i class="fa-solid fa-gear me-1"></i> Subir y Procesar
-                    </button>
+
+                <!-- Árbol Visual de Categorías y Subcategorías Activas -->
+                <hr class="my-4" style="border-color: #30363d;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold text-white m-0" style="font-family: var(--font-heading);">
+                        <i class="fa-solid fa-layer-group me-2" style="color: #40A435;"></i>Árbol de Categorías & Subcategorías Registradas
+                    </h6>
+                    <span class="badge rounded-pill" style="background: #161b22; border: 1px solid #30363d; color: #029CC2;">
+                        {{ categorias|length }} Categorías Principales
+                    </span>
+                </div>
+
+                <div class="row g-3" style="max-height: 360px; overflow-y: auto;">
+                    {% for cat in categorias %}
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3 h-100" style="background: #161b22; border: 1px solid #30363d;">
+                            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom" style="border-color: #21262d !important;">
+                                <div>
+                                    <a href="{{ url_for('inventory_bp.index', categoria_id=cat.id) }}" class="fw-bold text-decoration-none" style="color: #029CC2;">
+                                        <i class="fa-solid fa-folder-open me-1"></i>{{ cat.nombre }}
+                                    </a>
+                                    <small class="text-muted d-block" style="font-size: 0.72rem;">
+                                        Alerta min: {{ cat.stock_minimo_alerta }} uds • {{ cat.productos|length }} productos
+                                    </small>
+                                </div>
+                                <form action="{{ url_for('inventory_bp.eliminar_categoria', id=cat.id) }}" method="POST" onsubmit="return confirm('¿Eliminar categoría {{ cat.nombre }}?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Eliminar categoría">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="d-flex flex-wrap gap-1 mt-2">
+                                {% for sub in cat.subcategorias %}
+                                <div class="d-inline-flex align-items-center rounded-pill px-2 py-1" style="background: #0d1117; border: 1px solid #30363d; font-size: 0.76rem;">
+                                    <a href="{{ url_for('inventory_bp.index', categoria_id=cat.id, subcategory_id=sub.id) }}" class="text-white text-decoration-none me-1" title="Filtrar por esta subcategoría">
+                                        <i class="fa-solid fa-tag me-1" style="color: #40A435; font-size: 0.68rem;"></i>{{ sub.nombre }}
+                                        <span class="badge rounded-pill ms-1" style="background: rgba(2,156,194,0.2); color: #029CC2; font-size: 0.65rem;">{{ sub.productos|length }}</span>
+                                    </a>
+                                    <form action="{{ url_for('inventory_bp.eliminar_subcategoria', id=sub.id) }}" method="POST" class="d-inline ms-1" onsubmit="return confirm('¿Eliminar subcategoría {{ sub.nombre }}?');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                        <button type="submit" class="btn btn-link text-muted p-0 border-0" style="font-size: 0.68rem; line-height: 1;" title="Quitar subcategoría">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                                {% else %}
+                                <span class="text-muted small fst-italic">Sin subcategorías registradas</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Importar Excel -->
+<div class="modal fade" id="importarModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: #0d1117; border: 1px solid #21262d;">
+            <div class="modal-header border-bottom" style="border-color: #21262d !important;">
+                <h5 class="modal-title fw-bold text-white">Importar Inventario POWER LED</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('inventory_bp.importar_inventario') }}" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="modal-body p-4">
+                    <p class="small text-muted">Sube un archivo <code>.xlsx</code> o <code>.csv</code> con las 3 listas de precios (Distribuidor, Local, Final) y stocks por ubicación.</p>
+                    <a href="{{ url_for('inventory_bp.descargar_plantilla') }}" class="btn btn-sm btn-outline-info rounded-pill mb-3">
+                        <i class="fa-solid fa-download me-1"></i> Descargar Plantilla Oficial
+                    </a>
+                    <input type="file" name="archivo" class="form-control" accept=".xlsx,.csv" required>
+                </div>
+                <div class="modal-footer border-top" style="border-color: #21262d !important;">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-blue rounded-pill px-4 fw-bold">Procesar Archivo</button>
                 </div>
             </form>
         </div>
@@ -427,262 +348,29 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('inventarioSearch');
-    const clearBtn = document.getElementById('clearSearch');
-    const searchIcon = document.getElementById('searchIcon');
-    const searchSpinner = document.getElementById('searchSpinner');
-    const dropdown = document.getElementById('searchDropdown');
-    const searchForm = document.getElementById('searchForm');
-    const productRows = document.querySelectorAll('tbody tr.producto-fila');
-    const visibleCount = document.getElementById('visibleCount');
-    const tbody = document.querySelector('tbody');
-
-    function escapeHtml(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    // Fila para indicar "Sin resultados locales en esta página"
-    let noResultsRow = document.querySelector('.no-results-local');
-    if (!noResultsRow) {
-        noResultsRow = document.createElement('tr');
-        noResultsRow.className = 'no-results-local d-none';
-        noResultsRow.innerHTML = `<td colspan="7" class="text-center py-5 text-muted">
-            <i class="fa-solid fa-magnifying-glass-arrow-right fs-2 mb-3 text-brand-pink opacity-75"></i>
-            <p class="mb-1 fw-bold text-brand-black">No hay coincidencias en esta página actual.</p>
-            <p class="small text-muted mb-0">Presiona <strong>Enter</strong> o el botón <strong>"Buscar"</strong> para consultar en todo el catálogo de la nube.</p>
-        </td>`;
-        tbody.appendChild(noResultsRow);
-    }
-
-    let debounceTimer;
-
-    function filterLocalTable(query) {
-        let matches = 0;
-        productRows.forEach(row => {
-            const sku = row.dataset.sku || '';
-            const nombre = row.dataset.nombre || '';
-            const variantes = row.dataset.variantes || '';
-            const id = row.dataset.id;
-            const collapseRow = document.getElementById(`collapseVariantes${id}`);
-
-            if (!query) {
-                row.classList.remove('d-none');
-                matches++;
-                return;
-            }
-
-            const matchProduct = sku.includes(query) || nombre.includes(query);
-            const matchVariant = variantes.includes(query);
-
-            if (matchProduct || matchVariant) {
-                row.classList.remove('d-none');
-                matches++;
-                // Si la coincidencia fue por variante / subcategoría, desplegamos automáticamente el acordeón
-                if (matchVariant && collapseRow && !collapseRow.classList.contains('show')) {
-                    const bsCollapse = new bootstrap.Collapse(collapseRow, { toggle: false });
-                    bsCollapse.show();
+    const filterCat = document.getElementById('filterCategoria');
+    const filterSub = document.getElementById('filterSubcategoria');
+    if (filterCat && filterSub) {
+        filterCat.addEventListener('change', async function() {
+            const catId = this.value;
+            filterSub.innerHTML = '<option value="">Todas las Subcategorías</option>';
+            if (!catId) return;
+            try {
+                const resp = await fetch(`/inventory/api/subcategorias/${catId}`);
+                if (resp.ok) {
+                    const subs = await resp.json();
+                    subs.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s.id;
+                        opt.textContent = s.nombre;
+                        filterSub.appendChild(opt);
+                    });
                 }
-            } else {
-                row.classList.add('d-none');
-                if (collapseRow && collapseRow.classList.contains('show')) {
-                    const bsCollapse = bootstrap.Collapse.getInstance(collapseRow);
-                    if (bsCollapse) bsCollapse.hide();
-                }
+            } catch (e) {
+                console.error(e);
             }
         });
-
-        if (visibleCount) {
-            visibleCount.textContent = matches;
-        }
-
-        if (matches === 0 && query !== '') {
-            noResultsRow.classList.remove('d-none');
-        } else {
-            noResultsRow.classList.add('d-none');
-        }
     }
-
-    function searchGlobal(query) {
-        clearTimeout(debounceTimer);
-        if (!query || query.length < 1) {
-            dropdown.classList.add('d-none');
-            dropdown.classList.remove('show');
-            if (searchSpinner) searchSpinner.classList.add('d-none');
-            if (searchIcon) searchIcon.classList.remove('d-none');
-            return;
-        }
-
-        if (searchSpinner) searchSpinner.classList.remove('d-none');
-        if (searchIcon) searchIcon.classList.add('d-none');
-
-        debounceTimer = setTimeout(() => {
-            fetch(`/inventory/api/search?q=${encodeURIComponent(query)}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (searchSpinner) searchSpinner.classList.add('d-none');
-                    if (searchIcon) searchIcon.classList.remove('d-none');
-
-                    dropdown.innerHTML = '';
-
-                    if (data && data.length > 0) {
-                        const header = document.createElement('div');
-                        header.className = 'px-3 py-2 bg-light border-bottom d-flex justify-content-between align-items-center';
-                        header.innerHTML = `
-                            <small class="text-muted fw-bold text-uppercase" style="font-size:0.75rem;">
-                                <i class="fa-solid fa-bolt text-warning me-1"></i> Resultados rápidos (${data.length})
-                            </small>
-                            <small class="text-muted" style="font-size:0.75rem;">Enter para filtrar tabla</small>
-                        `;
-                        dropdown.appendChild(header);
-
-                        data.forEach(item => {
-                            const itemDiv = document.createElement('div');
-                            itemDiv.className = 'dropdown-item p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap';
-                            itemDiv.style.whiteSpace = 'normal';
-
-                            // Badges de variantes
-                            let variantesHtml = '';
-                            if (item.variantes && item.variantes.length > 0) {
-                                variantesHtml = '<div class="mt-1 d-flex flex-wrap gap-1">';
-                                item.variantes.slice(0, 4).forEach(v => {
-                                    const isMatch = v.matches;
-                                    const badgeClass = isMatch ? 'bg-warning text-dark border border-warning fw-bold' : 'bg-light text-muted border';
-                                    variantesHtml += `<span class="badge ${badgeClass}" style="font-size: 0.72rem;">${escapeHtml(v.nombre)} (${v.stock})</span>`;
-                                });
-                                if (item.variantes.length > 4) {
-                                    variantesHtml += `<span class="badge bg-light text-muted border" style="font-size: 0.72rem;">+${item.variantes.length - 4} más</span>`;
-                                }
-                                variantesHtml += '</div>';
-                            }
-
-                            const stockBadge = item.stock <= 3 
-                                ? `<span class="badge bg-danger rounded-pill px-2 py-1"><i class="fa-solid fa-triangle-exclamation me-1"></i>${item.stock} uds</span>`
-                                : `<span class="badge bg-brand-pink text-dark border rounded-pill px-2 py-1">${item.stock} uds</span>`;
-
-                            itemDiv.innerHTML = `
-                                <div class="me-2" style="max-width: 70%;">
-                                    <div class="fw-bold text-brand-black" style="font-size: 0.95rem;">${escapeHtml(item.nombre)}</div>
-                                    <div class="small text-muted">
-                                        <span class="badge bg-light text-dark border me-1">SKU: ${escapeHtml(item.sku)}</span>
-                                        ${item.precio_sugerido ? `<span class="text-success fw-semibold">$${Number(item.precio_sugerido).toLocaleString('es-CO')}</span>` : ''}
-                                    </div>
-                                    ${variantesHtml}
-                                </div>
-                                <div class="d-flex align-items-center gap-2 mt-2 mt-sm-0">
-                                    ${stockBadge}
-                                    <a href="${item.url_ver}" class="btn btn-sm btn-outline-info rounded-pill px-2 py-1 shadow-sm" title="Ver detalle">
-                                        <i class="fa-solid fa-eye"></i>
-                                    </a>
-                                    <a href="${item.url_editar}" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-1 shadow-sm" title="Editar">
-                                        <i class="fa-solid fa-pen"></i>
-                                    </a>
-                                </div>
-                            `;
-
-                            itemDiv.addEventListener('click', function(e) {
-                                if (!e.target.closest('a') && !e.target.closest('button')) {
-                                    window.location.href = item.url_ver;
-                                }
-                            });
-
-                            dropdown.appendChild(itemDiv);
-                        });
-
-                        // Botón de pie para ver todos los resultados en la tabla
-                        const footer = document.createElement('div');
-                        footer.className = 'p-2 bg-light text-center border-top';
-                        footer.innerHTML = `
-                            <button type="button" class="btn btn-sm text-brand-pink fw-bold w-100 py-1" id="btnVerTodosDropdown">
-                                <i class="fa-solid fa-list-check me-1"></i> Ver todos los resultados filtrados en la tabla &rarr;
-                            </button>
-                        `;
-                        dropdown.appendChild(footer);
-
-                        footer.querySelector('#btnVerTodosDropdown').addEventListener('click', () => {
-                            searchForm.submit();
-                        });
-
-                        dropdown.classList.remove('d-none');
-                        dropdown.classList.add('show');
-                    } else {
-                        dropdown.innerHTML = `
-                            <div class="p-4 text-center text-muted">
-                                <i class="fa-solid fa-box-open text-brand-pink fs-3 mb-2"></i>
-                                <p class="mb-0 small fw-semibold">No se encontraron productos para "<strong>${escapeHtml(query)}</strong>".</p>
-                            </div>
-                        `;
-                        dropdown.classList.remove('d-none');
-                        dropdown.classList.add('show');
-                    }
-                })
-                .catch(err => {
-                    console.error('Error buscando productos:', err);
-                    if (searchSpinner) searchSpinner.classList.add('d-none');
-                    if (searchIcon) searchIcon.classList.remove('d-none');
-                });
-        }, 250);
-    }
-
-    function handleInput() {
-        const query = searchInput.value.toLowerCase().trim();
-
-        // Control del botón limpiar
-        if (query.length > 0) {
-            clearBtn.classList.remove('d-none');
-        } else {
-            clearBtn.classList.add('d-none');
-        }
-
-        // 1. Filtrado instantáneo local en la tabla
-        filterLocalTable(query);
-
-        // 2. Búsqueda global con autocompletado en toda la base de datos
-        searchGlobal(query);
-    }
-
-    searchInput.addEventListener('input', handleInput);
-
-    searchInput.addEventListener('focus', function() {
-        const query = searchInput.value.toLowerCase().trim();
-        if (query.length >= 1 && dropdown.children.length > 0) {
-            dropdown.classList.remove('d-none');
-            dropdown.classList.add('show');
-        }
-    });
-
-    searchInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            dropdown.classList.add('d-none');
-            dropdown.classList.remove('show');
-        }
-    });
-
-    // Cerrar dropdown al hacer click fuera
-    document.addEventListener('click', function(e) {
-        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
-            dropdown.classList.add('d-none');
-            dropdown.classList.remove('show');
-        }
-    });
-
-    // Botón para limpiar búsqueda
-    clearBtn.addEventListener('click', function() {
-        searchInput.value = '';
-        clearBtn.classList.add('d-none');
-        dropdown.classList.add('d-none');
-        dropdown.classList.remove('show');
-
-        // Si la página vino filtrada por el servidor (?q=...), recargar limpio
-        if (window.location.search.includes('q=')) {
-            window.location.href = "{{ url_for('inventory_bp.index') }}";
-        } else {
-            filterLocalTable('');
-            searchInput.focus();
-        }
-    });
 });
 </script>
 {% endblock %}

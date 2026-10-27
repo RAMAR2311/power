@@ -1062,3 +1062,96 @@ def modulo_abonos():
         clientes_con_deuda=clientes_con_deuda,
         cartera_total=float(cartera_total)
     )
+
+
+# =========================================================================
+# TRASLADOS INTERNOS DE BODEGA A TIENDA (POWER LED)
+# =========================================================================
+
+@bodega_bp.route('/traslados', methods=['GET'])
+@login_required
+def traslados():
+    from models import StockTransfer
+    productos = Product.query.filter(Product.activo.is_(True)).order_by(Product.nombre).all()
+    historial_traslados = StockTransfer.query.order_by(StockTransfer.fecha.desc()).limit(50).all()
+    return render_template(
+        'bodega/traslados.html',
+        productos=productos,
+        historial_traslados=historial_traslados
+    )
+
+@bodega_bp.route('/traslados/nuevo', methods=['POST'])
+@login_required
+def crear_traslado():
+    from models import StockTransfer, StockTransferItem, get_bogota_time
+    observaciones = (request.form.get('observaciones') or '').strip()
+    prod_ids = request.form.getlist('product_id[]')
+    cantidades = request.form.getlist('cantidad[]')
+
+    if not prod_ids:
+        flash('Selecciona al menos un producto para trasladar a Tienda.', 'warning')
+        return redirect(url_for('bodega_bp.traslados'))
+
+    try:
+        transfer = StockTransfer(
+            fecha=get_bogota_time(),
+            usuario_id=current_user.id,
+            observaciones=observaciones or 'Traslado interno Bodega -> Tienda'
+        )
+        db.session.add(transfer)
+        db.session.flush()
+
+        items_procesados = 0
+        for i in range(len(prod_ids)):
+            if not prod_ids[i]:
+                continue
+            pid = int(prod_ids[i])
+            cant = int(cantidades[i] or 0)
+            if cant <= 0:
+                continue
+
+            prod = Product.query.with_for_update().get(pid)
+            if not prod:
+                raise ValueError(f'El producto con ID {pid} no existe.')
+
+            disponible_bodega = prod.stock_bodega or 0
+            if cant > disponible_bodega:
+                raise ValueError(f'Stock insuficiente en Bodega para "{prod.nombre}". Solicitado: {cant}, Disponible en Bodega: {disponible_bodega}.')
+
+            stock_tienda_ant = prod.stock_tienda or 0
+            prod.stock_bodega = disponible_bodega - cant
+            prod.stock_tienda = stock_tienda_ant + cant
+            prod.cantidad_stock = prod.stock_tienda
+
+            item_tr = StockTransferItem(
+                transfer_id=transfer.id,
+                product_id=prod.id,
+                cantidad=cant
+            )
+            db.session.add(item_tr)
+
+            ajuste = StockAdjustment(
+                product_id=prod.id,
+                admin_id=current_user.id,
+                tipo_movimiento=f'Traslado Bodega -> Tienda #{transfer.id} (+{cant} uds)',
+                stock_anterior=stock_tienda_ant,
+                stock_nuevo=prod.stock_tienda
+            )
+            db.session.add(ajuste)
+            items_procesados += 1
+
+        if items_procesados == 0:
+            db.session.rollback()
+            flash('No se ingresaron cantidades válidas para trasladar.', 'warning')
+            return redirect(url_for('bodega_bp.traslados'))
+
+        db.session.commit()
+        flash(f'Remisión de Traslado #{transfer.id} procesada con éxito. Stock actualizado en Tienda.', 'success')
+    except ValueError as ve:
+        db.session.rollback()
+        flash(str(ve), 'danger')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al procesar traslado: {str(e)}', 'danger')
+
+    return redirect(url_for('bodega_bp.traslados'))

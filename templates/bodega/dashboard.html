@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block title %}POWER LED | Bodega & Mayoristas{% endblock %}
+
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold text-brand-black m-0"><i class="fa-solid fa-boxes-stacked text-brand-blue me-2"></i> Área de Bodega</h2>
@@ -134,11 +136,11 @@
                             <td class="text-muted"><small>{{ f.fecha_subida.strftime('%d/%m/%Y %H:%M') }}</small></td>
                             <td class="text-center">
                                 {% if f.estado == 'Pagado' %}
-                                    <span class="badge bg-success rounded-pill px-2 py-1">Pagado</span>
+                                    <span class="badge rounded-pill px-2 py-1" style="background-color: #40A435 !important; color: #FFFFFF;">Pagado</span>
                                 {% elif f.estado == 'Parcial' %}
                                     <span class="badge bg-warning text-dark rounded-pill px-2 py-1">Parcial</span>
                                 {% else %}
-                                    <span class="badge bg-danger rounded-pill px-2 py-1">Pend.</span>
+                                    <span class="badge rounded-pill px-2 py-1" style="background-color: #E31313 !important; color: #FFFFFF;">Pendiente</span>
                                 {% endif %}
                                 {% if f.archivo_ruta %}
                                 <a href="{{ url_for('static', filename=f.archivo_ruta) }}" target="_blank" class="btn btn-outline-secondary btn-sm ms-2 rounded-pill"><i class="fa-solid fa-download"></i></a>
